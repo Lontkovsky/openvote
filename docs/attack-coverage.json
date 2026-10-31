@@ -357,7 +357,8 @@
       ],
       "prs": [
         "https://github.com/Lontkovsky/openvote/pull/43",
-        "https://github.com/Lontkovsky/openvote/pull/45"
+        "https://github.com/Lontkovsky/openvote/pull/45",
+        "https://github.com/Lontkovsky/openvote/pull/84"
       ],
       "defenseOutcome": "PartiallyMitigated",
       "evidenceState": "AutomatedTested",
