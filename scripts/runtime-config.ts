@@ -1,5 +1,6 @@
 import { generateKeyPairSync, randomBytes } from 'node:crypto';
-import { access, chmod, mkdir, readFile, readdir, stat, writeFile } from 'node:fs/promises';
+import { constants } from 'node:fs';
+import { access, chmod, mkdir, open, readdir, writeFile } from 'node:fs/promises';
 import { z } from 'zod';
 import { Config } from '../apps/api/src/common.ts';
 import type { ConfigType } from '../apps/api/src/common.ts';
@@ -138,9 +139,22 @@ function sameDatabase(actual: DatabaseSettingsType | undefined, expected: Databa
     actual.database === expected.database && actual.user === expected.user && actual.password === expected.password;
 }
 async function requirePrivateFile(path: string): Promise<string> {
-  const details = await stat(path);
-  if (!details.isFile() || (details.mode & 0o777) !== 0o600) fail('RUNTIME_FILE_PERMISSIONS_INVALID');
-  return readFile(path, 'utf8');
+  let file;
+  try {
+    file = await open(path, constants.O_RDONLY | constants.O_NOFOLLOW);
+  } catch (error) {
+    if (error instanceof Error && 'code' in error && error.code === 'ELOOP') {
+      fail('RUNTIME_FILE_PERMISSIONS_INVALID');
+    }
+    throw error;
+  }
+  try {
+    const details = await file.stat();
+    if (!details.isFile() || (details.mode & 0o777) !== 0o600) fail('RUNTIME_FILE_PERMISSIONS_INVALID');
+    return await file.readFile('utf8');
+  } finally {
+    await file.close();
+  }
 }
 
 export async function validateRuntimeMaterial(root: string, environment: 'development' | 'demo', publicOrigin: string,
