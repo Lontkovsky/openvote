@@ -13,7 +13,7 @@ This gate is the authoritative boundary between the completed synthetic developm
 | Public hosting | Render serves only the demand image and `openvote-demand`; direct catalogue routes still render the demand landing | The catalogue, identity, ballot, management and trustee flows are not public |
 | Key custody | Local/demo keys simulate separate roles but one operator controls the repository, hosting and runtime | No organizational independence or production anonymity is claimed |
 | External validation | Repository tests and self-review are public; no independent cryptographic, security, privacy or legal approval exists | Self-review cannot authorize a real politically sensitive launch |
-| Repository security analysis | Dependabot vulnerability alerts and security updates, secret scanning with push protection, and extended CodeQL default setup are enabled. Initial CodeQL run `41212450725` passed and opened 36 retained findings | V039–V041 must reproduce and remediate the findings; a successful analysis job is not a clean security result |
+| Repository security analysis | Dependabot vulnerability alerts and security updates, secret scanning with push protection, and extended CodeQL default setup are enabled. Initial CodeQL run `41212450725` passed and opened 36 retained findings; V040 and V041 fixed eight without dismissal | V039 must reproduce and remediate the remaining 28 findings; a successful analysis job is not a clean security result |
 
 ## Required internal security remediation
 
@@ -21,7 +21,7 @@ This gate is the authoritative boundary between the completed synthetic developm
 |---|---|---|---|
 | Unbounded API route operations | [V039](https://github.com/Lontkovsky/openvote/issues/76) | Route-by-route reproduction, compatible bounded request control, positive and adversarial tests, and a subsequent extended CodeQL analysis closing alerts 1–28 without manual dismissal | 28 high-severity findings are open |
 | Runtime configuration file race | [V040](https://github.com/Lontkovsky/openvote/issues/77) | Exact time-of-check/time-of-use reproduction, focused correction and tests, and a subsequent extended CodeQL analysis closing alert 36 without manual dismissal | Alert 36 is fixed without dismissal; PR #80 and its exact-head/merge Verification and CodeQL runs passed; V040 is Done |
-| File-data outbound request boundaries | [V041](https://github.com/Lontkovsky/openvote/issues/78) | Individual production/test data-path mapping, focused remediation and adversarial tests, and a subsequent extended CodeQL analysis closing alerts 29–35 without manual dismissal | Production and test paths are reproduced and focused local checks pass; exact-head CI and subsequent alert closure remain pending |
+| File-data outbound request boundaries | [V041](https://github.com/Lontkovsky/openvote/issues/78) | Individual production/test data-path mapping, focused remediation and adversarial tests, and a subsequent extended CodeQL analysis closing alerts 29–35 without manual dismissal | Alerts 29–35 are fixed without dismissal; PR #82 and its final exact-head/merge Verification and CodeQL runs passed; V041 is Done |
 
 ## Required external readiness evidence
 
