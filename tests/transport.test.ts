@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { setTimeout } from 'node:timers/promises';
 import { application, serviceResourceLimits } from '../apps/api/src/common.ts';
 
@@ -11,6 +11,37 @@ it('rejects request bodies above the shared limit', async () => {
     expect(response.statusCode).toBe(413);
     expect(response.json()).toEqual({ error: 'INVALID_INPUT' });
   } finally { await app.close(); }
+});
+
+it('bounds sequential requests in one window and recovers at the declared boundary', async () => {
+  vi.useFakeTimers({ toFake: ['Date'] });
+  vi.setSystemTime(new Date('2026-10-31T00:00:00.000Z'));
+  const app = await application({ environment: 'test', role: 'management', port: 0,
+    serviceToken: 'synthetic-rate-limit-token-not-a-real-secret' }, 'http://localhost:5173');
+  app.get('/bounded-rate', async () => ({ accepted: true }));
+  try {
+    let boundary;
+    for (let index = 0; index < serviceResourceLimits.requestsPerWindow; index += 1) {
+      boundary = await app.inject({ method: 'GET', url: '/bounded-rate' });
+      expect(boundary.statusCode).toBe(200);
+    }
+    expect(boundary?.headers['x-ratelimit-limit']).toBe(String(serviceResourceLimits.requestsPerWindow));
+    expect(boundary?.headers['x-ratelimit-remaining']).toBe('0');
+
+    const overflow = await app.inject({ method: 'GET', url: '/bounded-rate' });
+    expect(overflow.statusCode).toBe(429);
+    expect(overflow.json()).toEqual({ error: 'RATE_LIMITED' });
+    expect(overflow.headers['retry-after']).toBe(String(serviceResourceLimits.requestWindowMs / 1000));
+    expect((await app.inject({ method: 'GET', url: '/health' })).statusCode).toBe(200);
+
+    vi.setSystemTime(new Date(Date.now() + serviceResourceLimits.requestWindowMs));
+    const recovered = await app.inject({ method: 'GET', url: '/bounded-rate' });
+    expect(recovered.statusCode).toBe(200);
+    expect(recovered.headers['x-ratelimit-remaining']).toBe(String(serviceResourceLimits.requestsPerWindow - 1));
+  } finally {
+    await app.close();
+    vi.useRealTimers();
+  }
 });
 
 it('bounds active requests and the waiting queue', async () => {
