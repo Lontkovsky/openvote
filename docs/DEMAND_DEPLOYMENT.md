@@ -52,6 +52,14 @@ The approved Blueprint is deployed in the `OpenVote` project as one `openvote` w
 
 The Ukraine.com.ua zone was exported before the approved DNS change. The apex uses Render's `216.24.57.1`; `www` is a CNAME to `openvote-launch.onrender.com.` because Render service slugs are immutable even after a display-name change. Mail, SPF and the unrelated wildcard record remain unchanged. Render serves a valid certificate for the apex and redirects `https://www.openvote.com.ua/` to the canonical apex over HTTPS.
 
+## Evidence-only merge boundary
+
+The active service uses `autoDeployTrigger: checksPass`, so a successful commit on `main` normally creates a Render deploy even when the diff changes only repository evidence. An evidence-only squash merge that must not redeploy the unchanged demand image therefore requires the exact marker `[skip render]` in the final squash subject that reaches `main`. A marker only in the source-branch commit is insufficient when the squash subject replaces that commit message.
+
+This behavior was reproduced directly. PR #85 had `[skip render]` in its source commit, but the marker was absent from merge commit `91584862b05e8daba2aff4e88b15e8083d99d11d`; Render auto-deploy `dep-dbj1unlg1s2s73fgviq0` consequently reached Live. PR #86 retained the marker in merge commit `3f7f05d940baa332ed1f3503bc2b8faa4a496ee1`; no new deploy appeared, and the last successfully deployed commit remained `91584862b05e8daba2aff4e88b15e8083d99d11d`.
+
+Use the marker only when the reviewed diff cannot alter the built image, application, assets, dependencies, Blueprint, runtime configuration or deployment behavior. It does not replace exact-head or merge-commit CI.
+
 ## Hosted verification evidence
 
 PR #57 exact-head CI passed and merged as `33042ef83209a290cc1df6ee450ee15405a0eb94`; the exact `main` workflow also passed. Render deploy `dep-dbifsjqvcj2c73fan370` reached `live`. In the retained in-app Browser, the apex displayed two accepted responses as `Підтримую 2`, `Не підтримую 0`, `Утримуюсь 0`, with the representativeness warning and no console warnings/errors. The same values remained readable without horizontal overflow at 390×844.
