@@ -124,11 +124,11 @@ export async function ballotApp(config: ConfigType, publicOrigin: string) {
     authorize(request.headers.authorization, config.serviceToken);
     const { id } = Params.parse(request.params);
     const input = z.strictObject({ trusteeId: z.number().int().min(1).max(4), share: z.unknown() }).parse(request.body);
-    const share = parseNativeShare(input.share, input.trusteeId);
     return transaction(pool, async client => {
       const found = await client.query<ElectionRow>('SELECT * FROM elections WHERE id=$1 FOR UPDATE', [id]);
       const record = required(found.rows[0]);
       if (record.state !== 'Closed') throw new Failure('NO_PUBLISHABLE_FINAL_SET', 409);
+      const share = parseNativeShare(input.share, input.trusteeId);
       const verified = z.strictObject({ verifiedBy: z.literal('Belenios 3.3.0 check_factor'), trusteeId: z.number().int() }).parse(
         await core(config, { action: 'verify-share', archive: required(record.final_archive), share }));
       if (verified.trusteeId !== input.trusteeId) throw new Failure('TRUSTEE_ID_MISMATCH', 422);
