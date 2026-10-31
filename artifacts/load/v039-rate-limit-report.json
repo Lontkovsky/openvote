@@ -1,0 +1,53 @@
+{
+  "format": "openvote-load-report-v1",
+  "startedAt": "2026-10-31T16:29:50.460Z",
+  "target": "GET /v1/polls",
+  "environment": "local-development",
+  "client": {
+    "node": "v24.20.0",
+    "platform": "darwin",
+    "release": "25.6.0",
+    "arch": "arm64",
+    "cpuModel": "Apple M3 Pro",
+    "logicalCpus": 12,
+    "totalMemoryBytes": 38654705664
+  },
+  "dataset": {
+    "polls": 1,
+    "responseBytes": 4393,
+    "states": {
+      "Open": 1
+    }
+  },
+  "profile": {
+    "requests": 1000,
+    "concurrency": 8,
+    "warmupRequests": 16,
+    "requestTimeoutMs": 10000
+  },
+  "serviceLimits": {
+    "requestBodyBytes": 1048576,
+    "activeRequests": 8,
+    "queuedRequests": 16,
+    "queueWaitMs": 2000,
+    "requestTimeoutMs": 100000,
+    "connectionTimeoutMs": 100000,
+    "parameterLength": 100,
+    "requestsPerWindow": 1024,
+    "requestWindowMs": 5000
+  },
+  "results": {
+    "succeeded": 1000,
+    "failed": 0,
+    "durationMs": 280.375,
+    "requestsPerSecond": 3566.657,
+    "latencyMs": {
+      "min": 0.699,
+      "mean": 2.232,
+      "p50": 2.12,
+      "p95": 3.276,
+      "p99": 4.448,
+      "max": 11.546
+    }
+  }
+}

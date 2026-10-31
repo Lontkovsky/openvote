@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 import Fastify, { LogController, type FastifyRequest } from 'fastify';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
+import rateLimit from '@fastify/rate-limit';
 import pg from 'pg';
 import { z } from 'zod';
 import { Envelope, Environment } from '../../../packages/domain/src/index.ts';
@@ -17,6 +18,8 @@ export const serviceResourceLimits = {
   requestTimeoutMs: 100000,
   connectionTimeoutMs: 100000,
   parameterLength: 100,
+  requestsPerWindow: 1024,
+  requestWindowMs: 5000,
 } as const;
 export const Config = z.strictObject({
   environment: Environment, role: Role, port: z.number().int(), serviceToken: z.string().min(32),
@@ -189,6 +192,13 @@ export async function application<T extends Pick<ConfigType, 'environment' | 'ro
     logController: new LogController({ disableRequestLogging: true }) });
   await app.register(cors, { origin, credentials: false, methods: ['GET', 'POST', 'PATCH', 'DELETE'] });
   await app.register(helmet, { referrerPolicy: { policy: 'no-referrer' } });
+  await app.register(rateLimit, {
+    global: true,
+    max: serviceResourceLimits.requestsPerWindow,
+    timeWindow: serviceResourceLimits.requestWindowMs,
+    keyGenerator: () => config.role,
+    errorResponseBuilder: () => new Failure('RATE_LIMITED', 429),
+  });
   app.addHook('onRequest', async (request, reply) => {
     reply.raw.once('close', () => gate.release(request));
     reply.header('cache-control', 'no-store');
@@ -203,6 +213,6 @@ export async function application<T extends Pick<ConfigType, 'environment' | 'ro
     if (error instanceof Error && 'code' in error && error.code === 'FST_ERR_CTP_BODY_TOO_LARGE') return reply.code(413).send({ error: 'INVALID_INPUT' });
     return reply.code(500).send({ error: 'REQUEST_FAILED' });
   });
-  app.get('/health', () => ({ state: 'ok', role: config.role, environment: config.environment }));
+  app.get('/health', { config: { rateLimit: false } }, () => ({ state: 'ok', role: config.role, environment: config.environment }));
   return app;
 }

@@ -19,7 +19,7 @@ This gate is the authoritative boundary between the completed synthetic developm
 
 | Gate | Owning issue | Evidence required to pass | Current state |
 |---|---|---|---|
-| Unbounded API route operations | [V039](https://github.com/Lontkovsky/openvote/issues/76) | Route-by-route reproduction, compatible bounded request control, positive and adversarial tests, and a subsequent extended CodeQL analysis closing alerts 1–28 without manual dismissal | 28 high-severity findings are open |
+| Unbounded API route operations | [V039](https://github.com/Lontkovsky/openvote/issues/76) | Route-by-route reproduction, compatible bounded request control, positive and adversarial tests, and a subsequent extended CodeQL analysis closing alerts 1–28 without manual dismissal | Local shared rate boundary, route map, focused/affected-service/load and in-app Browser checks pass. PR, exact-head/merge Verification and CodeQL closure without dismissal remain pending; 28 findings are still open |
 | Runtime configuration file race | [V040](https://github.com/Lontkovsky/openvote/issues/77) | Exact time-of-check/time-of-use reproduction, focused correction and tests, and a subsequent extended CodeQL analysis closing alert 36 without manual dismissal | Alert 36 is fixed without dismissal; PR #80 and its exact-head/merge Verification and CodeQL runs passed; V040 is Done |
 | File-data outbound request boundaries | [V041](https://github.com/Lontkovsky/openvote/issues/78) | Individual production/test data-path mapping, focused remediation and adversarial tests, and a subsequent extended CodeQL analysis closing alerts 29–35 without manual dismissal | Alerts 29–35 are fixed without dismissal; PR #82 and its final exact-head/merge Verification and CodeQL runs passed; V041 is Done |
 

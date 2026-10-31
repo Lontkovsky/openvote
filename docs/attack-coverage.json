@@ -343,7 +343,7 @@
       "title": "Недоступність провайдера ідентифікації",
       "attackerCapabilities": "A/B failure, delayed callbacks, conflicting claims and request bursts",
       "trustBoundary": "A and B have distinct mock keys/processes; real upstream unknown",
-      "controls": "Idempotent return; same person/credential through B; conflict revokes session; production mocks refused; eight active requests, sixteen FIFO waiters and two-second queue expiry per service process",
+      "controls": "Idempotent return; same person/credential through B; conflict revokes session; production mocks refused; eight active requests, sixteen FIFO waiters, two-second queue expiry and 1,024 accepted requests per fixed five-second window per service process",
       "residualRisk": "Production adapters AwaitingProviderContract; real upstream independence, upstream DDoS protection and production attribute contracts unverified",
       "requirements": [
         "15.1",
@@ -352,7 +352,8 @@
       "issues": [
         "https://github.com/Lontkovsky/openvote/issues/17",
         "https://github.com/Lontkovsky/openvote/issues/18",
-        "https://github.com/Lontkovsky/openvote/issues/34"
+        "https://github.com/Lontkovsky/openvote/issues/34",
+        "https://github.com/Lontkovsky/openvote/issues/76"
       ],
       "prs": [
         "https://github.com/Lontkovsky/openvote/pull/43",
@@ -373,7 +374,8 @@
         "artifacts/e2e/report.json",
         "docs/IDENTITY_PROVIDERS.md",
         "docs/LOAD_TEST.md",
-        "artifacts/load/report.json"
+        "artifacts/load/report.json",
+        "artifacts/load/v039-rate-limit-report.json"
       ],
       "remainingAcceptanceCriteria": "Production adapters AwaitingProviderContract; real upstream independence, upstream DDoS protection and fresh-attribute contracts require external access. The local read profile is not production capacity evidence. Full revocation remains in V009."
     },
