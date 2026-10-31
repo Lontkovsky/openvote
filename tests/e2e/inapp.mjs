@@ -2,11 +2,17 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { basename } from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { isDeepStrictEqual } from 'node:util';
+import { z } from 'zod';
 
 const root = new URL('../../', import.meta.url);
 const localDate = value => { const d = new Date(value); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16); };
-export async function createRunner(tab) {
-  const run = JSON.parse(await readFile(new URL('.runtime/e2e-run.json', root), 'utf8'));
+export const E2eRun = z.strictObject({
+  token: z.string().regex(/^[0-9a-f]{64}$/), runId: z.string().regex(/^[0-9a-f]{10}$/),
+  sourceHash: z.string().regex(/^[0-9a-f]{64}$/), closesAt: z.iso.datetime(),
+});
+export async function createRunner(tab, input) {
+  const run = E2eRun.parse(input);
+  const endpoint = 'http://127.0.0.1:4329';
   const p = tab.playwright;
   const title = 'Чи підтримуєте перевірку відкритого коду в браузерному сценарії ' + run.runId + '?';
   let pollId = null, firstTracker = null;
@@ -25,7 +31,7 @@ export async function createRunner(tab) {
   async function visible(role, name) { await until(async () => await p.getByRole(role, { name, exact: true }).count() === 1 && await p.getByRole(role, { name, exact: true }).isVisible(), name); }
   async function fill(label, value) { await p.getByRole('textbox', { name: label, exact: true }).fill(value); await state(); }
   async function fixture(path, body) {
-    const response = await fetch(run.endpoint + path, { method: 'POST', headers: { authorization: 'Bearer ' + run.token }, body: JSON.stringify(body) });
+    const response = await fetch(endpoint + path, { method: 'POST', headers: { authorization: 'Bearer ' + run.token }, body: JSON.stringify(body) });
     if (!response.ok) throw new Error('E2E_FIXTURE_CONTROL_FAILED');
     return response.json();
   }
@@ -259,11 +265,11 @@ export async function createRunner(tab) {
       const assertions = [];
       try {
         await stages[name](assertions);
-        const response = await fetch(run.endpoint + '/event', { method: 'POST', headers: { authorization: 'Bearer ' + run.token }, body: JSON.stringify({ step: name, status: 'Passed', assertions }) });
+        const response = await fetch(endpoint + '/event', { method: 'POST', headers: { authorization: 'Bearer ' + run.token }, body: JSON.stringify({ step: name, status: 'Passed', assertions }) });
         if (!response.ok) throw new Error('E2E_REPORT_REJECTED');
         return { step: name, status: 'Passed', assertions, pollId };
       } catch (error) {
-        await fetch(run.endpoint + '/event', { method: 'POST', headers: { authorization: 'Bearer ' + run.token }, body: JSON.stringify({ step: name, status: 'Failed', assertions: [...assertions, 'Stage did not complete'], error: error instanceof Error ? error.message : String(error) }) });
+        await fetch(endpoint + '/event', { method: 'POST', headers: { authorization: 'Bearer ' + run.token }, body: JSON.stringify({ step: name, status: 'Failed', assertions: [...assertions, 'Stage did not complete'], error: error instanceof Error ? error.message : String(error) }) });
         throw error;
       }
     },

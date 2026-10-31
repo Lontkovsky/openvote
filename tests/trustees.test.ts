@@ -1,7 +1,8 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { generateKeyPairSync, randomUUID, sign } from 'node:crypto';
 import { spawn } from 'node:child_process';
-import { mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, readdir, rm, symlink, writeFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
 import { z } from 'zod';
 import { Checkpoint, Envelope, Manifest } from '../packages/domain/src/index.ts';
 import { CoreReport, FinalSet, Trust, digest, verifyFinal } from '../packages/domain/src/checkpoints.ts';
@@ -116,5 +117,15 @@ describe('actual native trustee client guards', () => {
     expect(unanimous.result).toEqual({ result: [[5, 0, 0]] });
     // The threshold permits this result; knowing that somebody participated in
     // a unanimous poll reveals their answer. No absolute privacy claim follows.
+  }, 30000);
+
+  it('rejects a replaced stored share before returning file data to the caller', async () => {
+    const path = await directory(), outside = await directory();
+    await writeFile(path + '/private.json', JSON.stringify(setup.trustees[0]), { mode: 0o600, flag: 'wx' });
+    await prepareTrusteeShare(final, trust, path, 1, now);
+    await writeFile(outside + '/not-a-share', 'synthetic file data outside the trustee directory', { mode: 0o600, flag: 'wx' });
+    await rm(path + '/share.jsons');
+    await symlink(resolve(outside + '/not-a-share'), path + '/share.jsons');
+    await expect(prepareTrusteeShare(final, trust, path, 1, now)).rejects.toThrow('LOCAL_REFERENCE_REJECTED');
   }, 30000);
 });

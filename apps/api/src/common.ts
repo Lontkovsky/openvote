@@ -49,6 +49,28 @@ export async function readConfig(role: string, runtimeRoot = '.runtime'): Promis
   return config;
 }
 export function sha(value: string | Buffer): string { return createHash('sha256').update(value).digest('hex'); }
+const PartialDecryption = z.strictObject({
+  decryption_factors: z.array(z.array(z.string().min(1).max(1000)).length(3)).length(1),
+  decryption_proofs: z.array(z.array(z.strictObject({
+    challenge: z.string().min(1).max(1000), response: z.string().min(1).max(1000),
+  })).length(3)).length(1),
+});
+const PartialDecryptionOwner = z.strictObject({
+  owner: z.number().int().min(1).max(4), payload: z.string().regex(/^[0-9a-f]{64}$/),
+});
+export function parseNativeShare(value: unknown, trusteeId: number): string {
+  let share: string, lines: string[], owner: z.infer<typeof PartialDecryptionOwner>;
+  try {
+    share = z.string().min(50).max(100000).parse(value);
+    lines = share.split('\n');
+    if (lines.length !== 2) throw new Error('INVALID_SHARE_FORMAT');
+    PartialDecryption.parse(JSON.parse(required(lines[0])));
+    owner = PartialDecryptionOwner.parse(JSON.parse(required(lines[1])));
+  } catch { throw new Failure('INVALID_SHARE_FORMAT', 422); }
+  if (sha(required(lines[0])) !== owner.payload) throw new Failure('INVALID_SHARE_FORMAT', 422);
+  if (owner.owner !== trusteeId) throw new Failure('TRUSTEE_ID_MISMATCH', 422);
+  return share;
+}
 export function token(): string { return randomBytes(32).toString('base64url'); }
 export function pseudonym(subject: string, key: string): string { return createHmac('sha256', key).update('openvote-person-v1\0' + subject).digest('hex'); }
 export function envelope(value: unknown, privateKey: string): EnvelopeType {

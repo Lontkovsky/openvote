@@ -3,7 +3,7 @@ import { isDeepStrictEqual } from 'node:util';
 import type pg from 'pg';
 import { Checkpoint, Envelope, Manifest, Receipt, ResultContract, representativenessWarning } from '../../../packages/domain/src/index.ts';
 import { resultCsv, resultSvg } from '../../../packages/domain/src/result-exports.ts';
-import { application, authorize, core, database, envelope, Failure, required, sha, transaction } from './common.ts';
+import { application, authorize, core, database, envelope, Failure, parseNativeShare, required, sha, transaction } from './common.ts';
 import type { ConfigType } from './common.ts';
 
 type ElectionRow = { id: string; manifest_raw: string; manifest_hash: string; archive: string; state: string;
@@ -123,23 +123,19 @@ export async function ballotApp(config: ConfigType, publicOrigin: string) {
   app.post('/internal/share/:id', async request => {
     authorize(request.headers.authorization, config.serviceToken);
     const { id } = Params.parse(request.params);
-    const input = z.strictObject({ trusteeId: z.number().int().min(1).max(4), share: z.string().min(50).max(100000) }).parse(request.body);
+    const input = z.strictObject({ trusteeId: z.number().int().min(1).max(4), share: z.unknown() }).parse(request.body);
     return transaction(pool, async client => {
       const found = await client.query<ElectionRow>('SELECT * FROM elections WHERE id=$1 FOR UPDATE', [id]);
       const record = required(found.rows[0]);
       if (record.state !== 'Closed') throw new Failure('NO_PUBLISHABLE_FINAL_SET', 409);
-      const lines = input.share.split('\n');
-      if (lines.length !== 2) throw new Failure('INVALID_SHARE_FORMAT', 422);
-      const parsed = z.strictObject({ owner: z.number().int(), payload: z.string() }).parse(JSON.parse(required(lines[1])));
-      if (sha(required(lines[0])) !== parsed.payload) throw new Failure('INVALID_SHARE_FORMAT', 422);
-      if (parsed.owner !== input.trusteeId) throw new Failure('TRUSTEE_ID_MISMATCH', 422);
+      const share = parseNativeShare(input.share, input.trusteeId);
       const verified = z.strictObject({ verifiedBy: z.literal('Belenios 3.3.0 check_factor'), trusteeId: z.number().int() }).parse(
-        await core(config, { action: 'verify-share', archive: required(record.final_archive), share: input.share }));
+        await core(config, { action: 'verify-share', archive: required(record.final_archive), share }));
       if (verified.trusteeId !== input.trusteeId) throw new Failure('TRUSTEE_ID_MISMATCH', 422);
       const existing = await client.query<{ share: string }>('SELECT share FROM shares WHERE poll_id=$1 AND trustee_id=$2', [id, input.trusteeId]);
       if (existing.rows[0]) {
-        if (existing.rows[0].share !== input.share) throw new Failure('SHARE_ALREADY_RECORDED', 409);
-      } else await client.query('INSERT INTO shares VALUES($1,$2,$3)', [id, input.trusteeId, input.share]);
+        if (existing.rows[0].share !== share) throw new Failure('SHARE_ALREADY_RECORDED', 409);
+      } else await client.query('INSERT INTO shares VALUES($1,$2,$3)', [id, input.trusteeId, share]);
       return { recorded: true };
     });
   });

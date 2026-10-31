@@ -35,7 +35,7 @@ async function sourceDigest() {
 const sourceHash = await sourceDigest();
 await mkdir('.runtime', { recursive: true, mode: 0o700 });
 const closesAt = new Date(Math.floor(Date.now() / 60000) * 60000 + 300000).toISOString();
-await writeFile('.runtime/e2e-run.json', JSON.stringify({ endpoint: 'http://127.0.0.1:4329', token, runId, sourceHash, closesAt }), { mode: 0o600 });
+await writeFile('.runtime/e2e-run.json', JSON.stringify({ token, runId, sourceHash, closesAt }), { mode: 0o600 });
 const results = [];
 let finished = false;
 const startedAt = new Date().toISOString();
@@ -96,4 +96,4 @@ process.once('SIGINT', () => { void stop('Run interrupted'); });
 process.once('SIGTERM', () => { void stop('Run terminated'); });
 await new Promise((resolve, reject) => { server.once('error', reject); server.listen(4329, '127.0.0.1', resolve); });
 console.log('E2E run ' + runId + ' awaits the existing in-app Browser binding. No browser is launched.');
-console.log('Import tests/e2e/inapp.mjs in that Browser runtime and call createRunner(existingTab). Run stages in the documented order.');
+console.log('Read .runtime/e2e-run.json in that Browser runtime, import tests/e2e/inapp.mjs and call createRunner(existingTab, runConfiguration). Run stages in the documented order.');

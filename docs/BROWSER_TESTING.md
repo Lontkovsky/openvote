@@ -5,7 +5,8 @@
 In the in-app Browser tool runtime, keep the existing tab binding and import the checked-in test module:
 
 ```js
-const suite = await (await import("/absolute/checkout/tests/e2e/inapp.mjs")).createRunner(existingTab);
+const runConfiguration = JSON.parse(await (await import("node:fs/promises")).readFile("/absolute/checkout/.runtime/e2e-run.json", "utf8"));
+const suite = await (await import("/absolute/checkout/tests/e2e/inapp.mjs")).createRunner(existingTab, runConfiguration);
 ```
 
 Execute each stage with `await suite.step(name)` in this order:
