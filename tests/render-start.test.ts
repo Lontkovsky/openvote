@@ -1,12 +1,13 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { execFile } from 'node:child_process';
-import { mkdir, mkdtemp, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, readdir, rm, stat, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
 import pg from 'pg';
 import { Config } from '../apps/api/src/common.ts';
 import { initializeRenderRuntime, parseRenderConfiguration } from '../scripts/render-start.ts';
+import { validateRuntimeMaterial, writeRuntimeMarker, writeRuntimeMaterial } from '../scripts/runtime-config.ts';
 import type { DatabaseMap } from '../scripts/runtime-config.ts';
 
 const execute = promisify(execFile);
@@ -78,6 +79,21 @@ afterAll(async () => {
 });
 
 describe('Render runtime initialization', () => {
+  it('rejects runtime files reached through symbolic links', async () => {
+    const root = await directory();
+    const externalRoot = await directory();
+    const publicOrigin = 'https://openvote.com.ua';
+    await writeRuntimeMaterial(root, 'demo', databases);
+    await writeRuntimeMarker(root, 'demo', publicOrigin);
+    const externalMarker = join(externalRoot, 'bootstrap.json');
+    await writeFile(externalMarker, await readFile(join(root, 'bootstrap.json')), { mode: 0o600 });
+    await rm(join(root, 'bootstrap.json'));
+    await symlink(externalMarker, join(root, 'bootstrap.json'));
+
+    await expect(validateRuntimeMaterial(root, 'demo', publicOrigin, databases))
+      .rejects.toThrow('RUNTIME_FILE_PERMISSIONS_INVALID');
+  });
+
   it('initializes beneath provider mount entries once and reuses every runtime byte on restart', async () => {
     const diskRoot = await directory();
     await mkdir(join(diskRoot, 'lost+found'));
