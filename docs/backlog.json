@@ -1301,6 +1301,131 @@
       "risk": "Medium",
       "issue": "https://github.com/Lontkovsky/openvote/issues/73",
       "number": 73
+    },
+    {
+      "id": "V038",
+      "epic": "E10",
+      "title": "Enable repository vulnerability and CodeQL analysis",
+      "goal": "Establish an explicit repository security-analysis baseline without changing application or deployment behavior.",
+      "scope": "Enable vulnerability alerts, automated Dependabot security updates and extended CodeQL default setup for Actions, JavaScript/TypeScript and Python; record every initial alert.",
+      "outOfScope": "Application, database, Render, public-domain behavior, manual alert dismissal or remediation of findings discovered by the initial analysis.",
+      "dependencies": [
+        "E10"
+      ],
+      "acceptance": [
+        "Dependabot vulnerability alerts and automated security updates are enabled",
+        "Extended CodeQL default setup is configured for Actions, JavaScript/TypeScript and Python with the remote threat model and standard runner",
+        "The initial CodeQL analysis succeeds and every Dependabot, code-scanning and secret-scanning alert is read",
+        "Every actual CodeQL finding remains open and is assigned to a dedicated remediation issue rather than hidden or dismissed"
+      ],
+      "verification": "Read the repository security settings, wait for the exact initial CodeQL run, query all three alert APIs and link the retained findings to V039–V041.",
+      "privacy": "Do not upload runtime credentials, private trustee material or personal data; repository analysis must operate only on the public source and established workflow context.",
+      "fixtures": "Exact main commit 7622b76ce88f68e5387d61dbadb75ef5efa92ebb and GitHub-hosted default analysis runners.",
+      "howToVerify": "Follow issue #75 and CodeQL workflow 41212450725; no Browser E2E applies because user-visible behavior is unchanged.",
+      "requirements": [
+        "7",
+        "9",
+        "11",
+        "12"
+      ],
+      "priority": "P1",
+      "phase": "Production Readiness",
+      "risk": "Medium",
+      "issue": "https://github.com/Lontkovsky/openvote/issues/75",
+      "number": 75
+    },
+    {
+      "id": "V039",
+      "epic": "E10",
+      "title": "Remediate unbounded API route operations",
+      "goal": "Bound confirmed expensive API operations against request abuse without changing authorized behavior.",
+      "scope": "Reproduce and remediate CodeQL missing-rate-limiting alerts 1–28 across ballot, identity, management and provider routes.",
+      "outOfScope": "Manual alert dismissal, client-only throttling, unrelated API refactoring, deployment cutover or changes to voting semantics.",
+      "dependencies": [
+        "E10",
+        "V038"
+      ],
+      "acceptance": [
+        "Every alert 1–28 is mapped to a reproduced route and evidence",
+        "Positive and adversarial tests cover the selected request limit and recovery window",
+        "A subsequent extended CodeQL analysis closes the remediated alerts without manual dismissal",
+        "Existing authorized API behavior and the demand-only public boundary remain intact"
+      ],
+      "verification": "Reproduce the affected routes under their actual authorization and storage conditions, run focused positive and adversarial tests, and inspect the subsequent CodeQL result.",
+      "privacy": "Do not key request controls on ballot choice, identity attributes or cross-service correlation identifiers.",
+      "fixtures": "Synthetic TEST-PERSON identities, isolated databases and the existing service authorization contracts.",
+      "howToVerify": "Follow issue #76 and code-scanning alerts 1–28; no finding may be dismissed to satisfy the gate.",
+      "requirements": [
+        "7",
+        "12"
+      ],
+      "priority": "P1",
+      "phase": "Production Readiness",
+      "risk": "High",
+      "issue": "https://github.com/Lontkovsky/openvote/issues/76",
+      "number": 76
+    },
+    {
+      "id": "V040",
+      "epic": "E10",
+      "title": "Remediate runtime configuration file race",
+      "goal": "Remove the confirmed time-of-check/time-of-use risk from runtime configuration handling.",
+      "scope": "Reproduce and remediate CodeQL file-system-race alert 36 in scripts/runtime-config.ts.",
+      "outOfScope": "Manual alert dismissal, deployment redesign, unrelated runtime initialization changes or configuration normalization.",
+      "dependencies": [
+        "E10",
+        "V038"
+      ],
+      "acceptance": [
+        "The current operation and exact race condition are documented from evidence",
+        "Positive and adversarial tests cover the corrected file operation",
+        "A subsequent extended CodeQL analysis closes alert 36 without manual dismissal",
+        "Runtime configuration contracts and deployment behavior remain intact"
+      ],
+      "verification": "Exercise the exact runtime configuration operation, confirm the causal file-state change, run focused tests and inspect the subsequent CodeQL result.",
+      "privacy": "Never expose generated runtime secrets or private key material in tests, logs, artifacts or issue evidence.",
+      "fixtures": "Synthetic temporary runtime state with no production credentials or trustee material.",
+      "howToVerify": "Follow issue #77 and code-scanning alert 36; no finding may be dismissed to satisfy the gate.",
+      "requirements": [
+        "7",
+        "12"
+      ],
+      "priority": "P1",
+      "phase": "Production Readiness",
+      "risk": "High",
+      "issue": "https://github.com/Lontkovsky/openvote/issues/77",
+      "number": 77
+    },
+    {
+      "id": "V041",
+      "epic": "E10",
+      "title": "Audit file-data outbound request boundaries",
+      "goal": "Prove and constrain every path where file-derived data reaches an outbound request.",
+      "scope": "Reproduce and remediate CodeQL file-access-to-http alerts 29–35 in the API and retained in-app Browser coordinator.",
+      "outOfScope": "Manual alert dismissal, replacing the in-app Browser workflow, unrelated networking changes or invented data-flow assumptions.",
+      "dependencies": [
+        "E10",
+        "V038"
+      ],
+      "acceptance": [
+        "Alerts 29–35 are individually mapped to reproduced inputs, destinations and evidence",
+        "Positive and adversarial tests cover the confirmed production boundary",
+        "A subsequent extended CodeQL analysis closes remediated alerts without manual dismissal",
+        "Test-only classifications remain explicitly separated from production behavior"
+      ],
+      "verification": "Trace each file input and outbound destination, reproduce the production and test-only paths separately, run focused adversarial tests and inspect the subsequent CodeQL result.",
+      "privacy": "No credential, private key, identity payload, ballot choice or unrestricted local file may cross an outbound request boundary.",
+      "fixtures": "Synthetic public artifacts and explicit temporary test files only; no real identity data or private trustee material.",
+      "howToVerify": "Follow issue #78 and code-scanning alerts 29–35; no finding may be dismissed to satisfy the gate.",
+      "requirements": [
+        "7",
+        "12"
+      ],
+      "priority": "P1",
+      "phase": "Production Readiness",
+      "risk": "Medium",
+      "issue": "https://github.com/Lontkovsky/openvote/issues/78",
+      "number": 78
     }
   ]
 }
