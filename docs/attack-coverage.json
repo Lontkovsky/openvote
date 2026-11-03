@@ -319,7 +319,8 @@
         "https://github.com/Lontkovsky/openvote/issues/12",
         "https://github.com/Lontkovsky/openvote/issues/13",
         "https://github.com/Lontkovsky/openvote/issues/35",
-        "https://github.com/Lontkovsky/openvote/issues/40"
+        "https://github.com/Lontkovsky/openvote/issues/40",
+        "https://github.com/Lontkovsky/openvote/issues/90"
       ],
       "prs": [],
       "defenseOutcome": "PartiallyMitigated",
@@ -334,7 +335,8 @@
       "actualEvidence": [
         "docs/REPRODUCIBLE_RELEASE.md",
         "The real HTTP monitor accepted the trusted HTML/JavaScript pair and rejected substituted JavaScript at the same path",
-        "The release command compares every full and demand client byte from two fresh source and dependency directories before writing manifests, checksums, SBOM and provenance"
+        "The release command compares every full and demand client byte from two fresh source and dependency directories before writing manifests, checksums, SBOM and provenance",
+        "V042 reproduced 17 repository dependency alerts and reduced both full and production pnpm audits to zero advisories with the patched locked graph; exact-head CI remains pending"
       ],
       "remainingAcceptanceCriteria": "Operate the monitor independently, sign release attestations, extend reproducibility to native/runtime artifacts and complete release governance"
     },
