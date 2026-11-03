@@ -1,6 +1,6 @@
 # Launch readiness gate
 
-Status at `7622b76ce88f68e5387d61dbadb75ef5efa92ebb`: **not approved for real identity-verified voting**. The public service at `https://openvote.com.ua` is the separate demand-validation landing. The full OpenVote platform remains synthetic, unavailable on the public domain and fail-closed for a `production` environment.
+Status at `8297157c6fb08e1f44cf907112a7f4ffeab36d19`: **not approved for real identity-verified voting**. The public service at `https://openvote.com.ua` is the separate demand-validation landing. The full OpenVote platform remains synthetic, unavailable on the public domain and fail-closed for a `production` environment.
 
 This gate is the authoritative boundary between the completed synthetic development work and a real launch. Documentation, self-review, local mock providers, one-owner hosting and test trustee keys cannot satisfy an external prerequisite.
 
@@ -13,7 +13,7 @@ This gate is the authoritative boundary between the completed synthetic developm
 | Public hosting | Render serves only the demand image and `openvote-demand`; direct catalogue routes still render the demand landing | The catalogue, identity, ballot, management and trustee flows are not public |
 | Key custody | Local/demo keys simulate separate roles but one operator controls the repository, hosting and runtime | No organizational independence or production anonymity is claimed |
 | External validation | Repository tests and self-review are public; no independent cryptographic, security, privacy or legal approval exists | Self-review cannot authorize a real politically sensitive launch |
-| Repository security analysis | Dependabot vulnerability alerts and security updates, secret scanning with push protection, and extended CodeQL default setup are enabled. Initial CodeQL run `41212450725` opened 36 retained findings; V039–V041 fixed all 36 without dismissal, and the repository API reports zero open CodeQL alerts | Internal remediation of the initial findings is complete. Independent security, cryptographic, privacy and legal evidence remain external readiness gates |
+| Repository security analysis | Dependabot vulnerability alerts and security updates, secret scanning with push protection, and extended CodeQL default setup are enabled. V039–V041 fixed all 36 initial CodeQL findings without dismissal. On `2026-11-03`, CodeQL and secret scanning remained at zero open alerts, while Dependabot reported 17 newly opened dependency alerts owned by V042 | Initial CodeQL remediation is complete, but dependency remediation and its exact-head evidence remain open. Independent security, cryptographic, privacy and legal evidence remain external readiness gates |
 
 ## Required internal security remediation
 
@@ -22,6 +22,7 @@ This gate is the authoritative boundary between the completed synthetic developm
 | Unbounded API route operations | [V039](https://github.com/Lontkovsky/openvote/issues/76) | Route-by-route reproduction, compatible bounded request control, positive and adversarial tests, and a subsequent extended CodeQL analysis closing alerts 1–28 without manual dismissal | PR #84 merged as `c88ed4b5b93fa58ef00954b591162d84590673e1`. Local route-map, focused, affected-service, load and retained in-app Browser checks passed; exact-head and merge Verification/CodeQL passed. Alerts 1–28 are fixed without dismissal; V039 is Done |
 | Runtime configuration file race | [V040](https://github.com/Lontkovsky/openvote/issues/77) | Exact time-of-check/time-of-use reproduction, focused correction and tests, and a subsequent extended CodeQL analysis closing alert 36 without manual dismissal | Alert 36 is fixed without dismissal; PR #80 and its exact-head/merge Verification and CodeQL runs passed; V040 is Done |
 | File-data outbound request boundaries | [V041](https://github.com/Lontkovsky/openvote/issues/78) | Individual production/test data-path mapping, focused remediation and adversarial tests, and a subsequent extended CodeQL analysis closing alerts 29–35 without manual dismissal | Alerts 29–35 are fixed without dismissal; PR #82 and its final exact-head/merge Verification and CodeQL runs passed; V041 is Done |
+| Dependency advisories | [V042](https://github.com/Lontkovsky/openvote/issues/90), [PR #91](https://github.com/Lontkovsky/openvote/pull/91) | Exact dependency-path reproduction; smallest compatible patched versions; full and production audits; affected tests/builds/images; exact-head Verification, CodeQL and Trivy; default-branch alert closure | Local audits report zero advisories and focused/full compatibility checks pass. Exact-head CI, pinned Trivy evidence and closure of the 17 default-branch alerts remain pending; V042 is In Review |
 
 ## Required external readiness evidence
 
