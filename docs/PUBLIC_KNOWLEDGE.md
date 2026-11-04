@@ -1,6 +1,6 @@
 # OpenVote public knowledge
 
-Snapshot: V045, 2026-11-04. This file is the public, read-only knowledge source for the Taras assistant. It contains no secrets, credentials, private keys, personal data or private review material. A deployed assistant knows only this snapshot and the visible FAQ; it cannot browse GitHub, read arbitrary files, call tools, run commands or change the repository.
+Snapshot: V045, 2026-11-04. This file is the public, read-only knowledge source for the Taras assistant. It contains no secrets, credentials, private keys, personal data or private review material. A deployed assistant knows only this snapshot and the validated current public demand aggregate supplied with each question; the visible FAQ is separate presentation copy and does not change the assistant context. Taras cannot browse GitHub, read arbitrary files, call tools, run commands or change the repository.
 
 Status labels are part of the meaning of every statement:
 
@@ -9,15 +9,23 @@ Status labels are part of the meaning of every statement:
 - **Owner decision / planned** means explicitly selected product direction that is not necessarily implemented.
 - **Open** means not decided, not integrated or not evidenced. Taras must describe it as open rather than inventing an answer.
 
+## Plain-language overview / Коротко для користувача
+
+OpenVote є волонтерським проєктом із відкритим кодом, у розробці якого може взяти участь будь-хто. Майбутня платформа дозволить людям створювати питання й опитування на різні теми, обговорювати їх, голосувати та переглядати результати, щоб розуміти думку учасників.
+
+Наразі працює перша публічна сторінка OpenVote. На ній можна проголосувати за потребу в платформі, переглянути її задум, прочитати відповіді на поширені питання та поспілкуватися з Тарасом. Повна платформа ще розробляється, а реальні громадські голосування поки не запущені.
+
+OpenVote завжди буде безкоштовною та відкритою платформою. На платформі не буде реклами, продажу користувацьких даних, платних функцій або інших способів монетизації.
+
 ## Live now / Працює зараз
 
 - `openvote.com.ua` serves a demand-validation landing, not the full voting platform. It asks one versioned question with the three fixed answers «Підтримую», «Не підтримую» and «Утримуюсь» and publishes their current counts.
 - For every Taras request, the OpenVote server supplies the same validated public poll identifier, version, immutable question, total response count and three labeled counts that the landing exposes. Taras receives no browser credential, credential hash, current user's answer or row-level response.
 - The demand poll is voluntary and self-selected. It does not verify identity, citizenship, age or one-person uniqueness and must not be presented as the opinion of Ukraine, an official election or a legally binding referendum.
 - A browser receives a random HttpOnly credential. The demand database stores the poll identifier and version, a SHA-256 hash of that browser credential and the selected answer. It has no name, document, email, phone, IP, User-Agent or response timestamp column.
-- The public landing contains a synthetic walkthrough, this FAQ and the Taras assistant. OpenVote does not store chat questions, answers or conversation history. The page keeps the current conversation only in browser memory.
+- The public landing contains a synthetic walkthrough, a twenty-item owner-approved user FAQ and the Taras assistant. The FAQ is not inserted into the assistant prompt. OpenVote does not store chat questions, answers or conversation history. The page keeps the current conversation only in browser memory.
 - The source code, requirements, decisions, progress evidence, issues and pull requests are public in `github.com/Lontkovsky/openvote` under AGPL-3.0-only for OpenVote-owned code. Secrets and private security material are deliberately excluded from public artifacts.
-- OpenVote is currently a volunteer, open-source initiative. There is no advertising, sale of data, token, paid vote or paid influence on results.
+- OpenVote is a volunteer, open-source initiative. The owner selected a permanently free and open platform with no advertising, sale of user data, paid feature or other monetization.
 
 ## Implemented synthetically / Реалізовано на тестових даних
 
@@ -36,7 +44,9 @@ Status labels are part of the meaning of every statement:
 
 - The target is a civic, informational platform. Its polls are not legally binding. The owner plans a Ukrainian operator named ТОВ «ОПЕН ВОУТ», but the entity is not registered and no legal/operator policy is approved yet.
 - The working implementation budget named by the owner is 100,000 UAH. It is a planning boundary, not proof of secured funding or a launch date.
+- The public launch goal is 10,000 «Підтримую» responses in the current demand poll. The owner selected launch only after both reaching that goal and completing the core functions, identity connection and security checks; there is no committed date.
 - For a real initial version, participation is planned for citizens of Ukraine from age 14. The selected initial identity direction is BankID NBU only. Дія is not planned for the initial version; qualified electronic signature may be considered later.
+- Other identity methods remain development work and are not available now.
 - No passport photo or copy is to be uploaded. Manual entry of tax number, date of birth or similar attributes is not a fallback for unavailable BankID. A participant may retry or choose another available bank. If BankID as a whole is unavailable, identity-verified participation is unavailable and the poll deadline does not move.
 - The identity zone is intended to derive only a pseudonymous internal identifier needed for eligibility and duplicate prevention. Raw tax number, birth date, citizenship and other BankID attributes are not intended to be retained after the required checks. The exact production attribute and deletion contract remains open until an approved provider contract exists.
 - The planned authenticated session duration is configurable and defaults to one day. A shorter 15-minute or longer one-week value may be considered later. Idle extension or automatic renewal is allowed only if the security design supports it; it is not yet a production contract.
