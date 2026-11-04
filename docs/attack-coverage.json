@@ -202,7 +202,7 @@
       "title": "Маніпуляція формулюванням і контекстом",
       "attackerCapabilities": "Author/moderator changes official content or manipulates language",
       "trustBoundary": "Honest review and client receiving expected code",
-      "controls": "Five-point rubric, reasoned duplicate decisions with an appeal journal, fixed official manifest/context across management and ballot APIs, retained predecessor links and client comparison; the demand assistant uses the shared FAQ as its only approved context, disables tools and web access, and has strict prompt-boundary and request-limit tests",
+      "controls": "Five-point rubric, reasoned duplicate decisions with an appeal journal, fixed official manifest/context across management and ballot APIs, retained predecessor links and client comparison; the demand assistant uses the visible FAQ and one validated startup-loaded public knowledge snapshot as its only approved context, disables tools and live repository/web access, and has strict prompt-boundary and request-limit tests",
       "residualRisk": "External model behavior, the broader malicious language suite and source/content removal policy tests remain pending",
       "requirements": [
         "15.1",
