@@ -1,14 +1,17 @@
+import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import staticPlugin from '@fastify/static';
 import pg from 'pg';
 import { z } from 'zod';
-import { OpenAiDemandChatProvider } from '../apps/api/src/demand-chat-provider.ts';
+import { DemandPublicKnowledge, OpenAiDemandChatProvider } from '../apps/api/src/demand-chat-provider.ts';
 import { demandApp } from '../apps/api/src/demand.ts';
 import { parsePublicOrigin } from '../apps/api/src/common.ts';
 import { migrateDirectory } from './migrate.ts';
 
 type DemandConfiguration = { port: number; publicOrigin: string; databaseUrl: string; openAiApiKey: string };
+
+export const demandPublicKnowledgePath = resolve('docs/PUBLIC_KNOWLEDGE.md');
 
 function fail(code: string): never { throw new Error(code); }
 
@@ -34,11 +37,16 @@ function pool(databaseUrl: string): pg.Pool {
     idleTimeoutMillis: 10000, statement_timeout: 10000 });
 }
 
+export async function loadDemandPublicKnowledge(filePath: string): Promise<string> {
+  return DemandPublicKnowledge.parse(await readFile(filePath, 'utf8'));
+}
+
 export async function createDemandService(configuration: DemandConfiguration, staticRoot: string) {
+  const publicKnowledge = await loadDemandPublicKnowledge(demandPublicKnowledgePath);
   const databasePool = pool(configuration.databaseUrl);
   try {
     await migrateDirectory(databasePool, 'migrations/demand');
-    const chatProvider = new OpenAiDemandChatProvider(configuration.openAiApiKey, fetch);
+    const chatProvider = new OpenAiDemandChatProvider(configuration.openAiApiKey, fetch, publicKnowledge);
     const app = await demandApp(databasePool, 'demo', configuration.publicOrigin, chatProvider);
     await app.register(staticPlugin, { root: staticRoot, index: false });
     app.get('/', (_request, reply) => reply.sendFile('demand.html'));

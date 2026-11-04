@@ -53,6 +53,7 @@ input:not([type=radio]):not([type=checkbox]),select,textarea{border-color:#b9c3d
 .result-row progress::-webkit-progress-bar{background:#e6e8ef}.result-row progress::-webkit-progress-value{background:var(--accent)}.result-row progress::-moz-progress-bar{background:var(--accent)}
 footer{padding:27px max(5%,calc((100% - 1180px)/2));border-top:1px solid var(--line);background:#fff}
 
+.demand-chat-message.assistant p{white-space:pre-wrap;overflow-wrap:anywhere}
 @media(max-width:900px){
   .site-header{height:auto;min-height:76px;flex-wrap:wrap;padding-top:12px;padding-bottom:12px}.site-header nav{order:3;width:100%;justify-content:center}.site-header>.button,.site-header>.account-actions{margin-left:auto}
   main:not(.demand-main){padding-top:44px}.page-heading{min-height:0;padding:38px}.catalog-layout,.detail-layout{grid-template-columns:1fr}.principles,.participation{position:static}.reading-grid,.steps{grid-template-columns:1fr}.form-grid,.arguments{grid-template-columns:1fr}

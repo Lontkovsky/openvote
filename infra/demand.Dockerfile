@@ -21,6 +21,7 @@ COPY packages/domain packages/domain
 COPY scripts/demand-start.ts scripts/demand-start.ts
 COPY scripts/migrate.ts scripts/migrate.ts
 COPY migrations/demand migrations/demand
+COPY docs/PUBLIC_KNOWLEDGE.md docs/PUBLIC_KNOWLEDGE.md
 COPY package.json LICENSE ./
 ENV NODE_ENV=production
 USER node

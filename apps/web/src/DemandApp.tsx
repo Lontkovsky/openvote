@@ -48,6 +48,11 @@ export function DemandApp() {
     return () => { active = false; };
   }, []);
 
+  useEffect(() => {
+    if (!chatOpen || chatMessages.current === null) return;
+    chatMessages.current.scrollTop = chatMessages.current.scrollHeight;
+  }, [chatBusy, chatError, chatHistory, chatOpen, pendingChatQuestion]);
+
   async function submit() {
     if (selected === null || !confirmed || poll === null) return;
     setBusy(true); setError(null);
@@ -64,7 +69,6 @@ export function DemandApp() {
     const request = DemandChatRequest.safeParse({ question: chatQuestion });
     if (!request.success) return;
     setChatBusy(true); setChatError(null); setPendingChatQuestion(request.data.question); setChatQuestion('');
-    requestAnimationFrame(() => { if (chatMessages.current !== null) chatMessages.current.scrollTop = chatMessages.current.scrollHeight; });
     try {
       const result: DemandChatResponseType = await askDemandChat(request.data.question);
       setChatHistory(history => [...history, { question: request.data.question, answer: result.answer }]);
@@ -76,7 +80,6 @@ export function DemandApp() {
     } finally {
       setPendingChatQuestion(null);
       setChatBusy(false);
-      requestAnimationFrame(() => { if (chatMessages.current !== null) chatMessages.current.scrollTop = chatMessages.current.scrollHeight; });
     }
   }
 
