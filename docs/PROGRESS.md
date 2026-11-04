@@ -431,4 +431,4 @@ Read the current GitHub issues/board and working tree before proceeding. Do not 
 | Taras context separation | Captured provider request | Reviewed snapshot, exact question and current aggregate only; no visible FAQ | Focused provider contract passed |
 | Existing chat boundaries | Valid, invalid and limited requests | Current counts, factual answers and fixed off-topic response remain available without extra data; every answer is at most 250 characters | Automated 251-character rejection plus real 237, 92, 61 and 110-character Browser answers passed |
 | Desktop and 390×844 layout | Retained in-app Browser session | All FAQ disclosures are readable with no overflow or console errors | Passed with twenty items, equal client/scroll widths, in-bounds chat, auto-scroll and clean console |
-| Release evidence | Exact PR head, merge and deployed revision | Verification/CodeQL pass and hosted FAQ plus Taras checks pass without a production response | Pending |
+| Release evidence | Exact PR head, merge and deployed revision | Verification/CodeQL pass and hosted FAQ plus Taras checks pass without a production response | PR #101 open; exact-head CI pending |
