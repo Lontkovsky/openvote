@@ -1,16 +1,23 @@
 import pg from 'pg';
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { demandApp, demandCredentialCookie } from '../apps/api/src/demand.ts';
 import type { DemandChatProvider } from '../apps/api/src/demand-chat-provider.ts';
 import { database, readConfig, sha } from '../apps/api/src/common.ts';
 import { DemandPollStatus, DemandResponseReceipt, demandAnswers, demandPollId, demandQuestion } from '../packages/domain/src/demand.ts';
+import type { DemandPollResultsType } from '../packages/domain/src/demand.ts';
 import { migrateDirectory } from '../scripts/migrate.ts';
 import { parseDemandConfiguration } from '../scripts/demand-start.ts';
 
 const origin = 'http://localhost:5174';
 let pool: pg.Pool;
 let app: Awaited<ReturnType<typeof demandApp>>;
-const testChatProvider: DemandChatProvider = { async answer() { return 'Підтверджена тестова відповідь.'; } };
+let receivedChatRequests: Array<{ question: string; results: DemandPollResultsType }>;
+const testChatProvider: DemandChatProvider = {
+  async answer(question, results) {
+    receivedChatRequests.push({ question, results });
+    return 'Підтверджена тестова відповідь.';
+  },
+};
 
 function cookiePair(response: { headers: Record<string, string | string[] | number | undefined> }): string {
   const header = response.headers['set-cookie'];
@@ -36,6 +43,8 @@ beforeAll(async () => {
   await migrateDirectory(pool, 'migrations/demand');
   app = await demandApp(pool, 'test', origin, testChatProvider);
 });
+
+beforeEach(() => { receivedChatRequests = []; });
 
 afterEach(async () => {
   await pool.query('DELETE FROM demand_responses');
@@ -95,7 +104,7 @@ describe('minimal demand poll', () => {
     expect(columns.rows.map(row => row.column_name)).toEqual(['poll_id', 'poll_version', 'credential_hash', 'answer']);
   });
 
-  it('publishes exact counts for all three answers with a total equal to their sum', async () => {
+  it('publishes exact counts and passes the same current aggregate to Taras', async () => {
     const first = await bootstrap();
     const second = await bootstrap();
     const third = await bootstrap();
@@ -110,6 +119,12 @@ describe('minimal demand poll', () => {
     expect(status.results).toEqual({ totalResponses: 4, counts: [1, 2, 1] });
     expect(status.results.counts.reduce((sum, count) => sum + count, 0)).toBe(status.results.totalResponses);
     expect(response.body).not.toMatch(/credential|hash|percentage/i);
+    const question = 'скільки зараз голосів за відкриття платформи?';
+    const chat = await app.inject({ method: 'POST', url: '/api/v1/demand-chat',
+      headers: { cookie: first.cookie, origin, 'content-type': 'application/json' }, payload: { question } });
+    expect(chat.statusCode).toBe(200);
+    expect(receivedChatRequests).toEqual([{ question, results: { totalResponses: 4, counts: [1, 2, 1] } }]);
+    expect(JSON.stringify(receivedChatRequests)).not.toContain(first.cookie);
   });
 
   it('treats the same final answer as idempotent and rejects a changed answer', async () => {

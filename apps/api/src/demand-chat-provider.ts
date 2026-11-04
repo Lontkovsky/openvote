@@ -1,5 +1,14 @@
 import { z } from 'zod';
-import { DemandChatResponse, demandFaqIntro, demandFaqItems } from '../../../packages/domain/src/demand.ts';
+import {
+  DemandChatResponse,
+  DemandPollResults,
+  demandAnswers,
+  demandFaqIntro,
+  demandFaqItems,
+  demandPollId,
+  demandQuestion,
+} from '../../../packages/domain/src/demand.ts';
+import type { DemandPollResultsType } from '../../../packages/domain/src/demand.ts';
 import { Failure } from './common.ts';
 
 export const demandChatModel = 'gpt-5.4-mini-2026-03-17';
@@ -16,7 +25,7 @@ export const DemandPublicKnowledge = z.string()
   .regex(/^## Public source map$/mu);
 
 export interface DemandChatProvider {
-  answer(question: string): Promise<string>;
+  answer(question: string, results: DemandPollResultsType): Promise<string>;
 }
 
 const OpenAiResponse = z.object({
@@ -52,7 +61,20 @@ export class OpenAiDemandChatProvider implements DemandChatProvider {
     ].join('\n\n');
   }
 
-  async answer(question: string): Promise<string> {
+  async answer(question: string, results: DemandPollResultsType): Promise<string> {
+    const currentResults = DemandPollResults.parse(results);
+    const instructions = [
+      this.instructions,
+      'АКТУАЛЬНИЙ ПУБЛІЧНИЙ СТАН ОПИТУВАННЯ НА МОМЕНТ ЦЬОГО ЗАПИТУ',
+      `Ідентифікатор: ${demandPollId}`,
+      'Версія: 1',
+      `Питання: ${demandQuestion}`,
+      `Всього відповідей: ${currentResults.totalResponses}`,
+      `${demandAnswers[0]}: ${currentResults.counts[0]}`,
+      `${demandAnswers[1]}: ${currentResults.counts[1]}`,
+      `${demandAnswers[2]}: ${currentResults.counts[2]}`,
+      'Для питання про поточні голоси чітко відрізняй загальну кількість відповідей від кількості «Підтримую» та називай усі три значення. Ці числа можуть змінитися після відповіді.',
+    ].join('\n\n');
     let response: Response;
     try {
       response = await this.request('https://api.openai.com/v1/responses', {
@@ -63,7 +85,7 @@ export class OpenAiDemandChatProvider implements DemandChatProvider {
           store: false,
           reasoning: { effort: 'none' },
           max_output_tokens: 900,
-          instructions: this.instructions,
+          instructions,
           input: question,
         }),
         signal: AbortSignal.timeout(20000),

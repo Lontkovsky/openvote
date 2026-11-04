@@ -70,6 +70,7 @@ export const DemandChatResponse = z.strictObject({
 });
 
 export type DemandAnswerType = z.infer<typeof DemandAnswer>;
+export type DemandPollResultsType = z.infer<typeof DemandPollResults>;
 export type DemandPollStatusType = z.infer<typeof DemandPollStatus>;
 export type DemandResponseReceiptType = z.infer<typeof DemandResponseReceipt>;
 export type DemandChatRequestType = z.infer<typeof DemandChatRequest>;
