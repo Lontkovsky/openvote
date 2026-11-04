@@ -150,7 +150,8 @@ export async function demandApp(
     globalChatRequests.push(now);
     activeChatRequests += 1;
     try {
-      return DemandChatResponse.parse({ answer: await chatProvider.answer(input.question) });
+      const snapshot = await demandSnapshot(pool, credentialHash);
+      return DemandChatResponse.parse({ answer: await chatProvider.answer(input.question, snapshot.results) });
     } finally { activeChatRequests -= 1; }
   });
 

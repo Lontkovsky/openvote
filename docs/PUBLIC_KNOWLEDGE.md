@@ -12,6 +12,7 @@ Status labels are part of the meaning of every statement:
 ## Live now / Працює зараз
 
 - `openvote.com.ua` serves a demand-validation landing, not the full voting platform. It asks one versioned question with the three fixed answers «Підтримую», «Не підтримую» and «Утримуюсь» and publishes their current counts.
+- For every Taras request, the OpenVote server supplies the same validated public poll identifier, version, immutable question, total response count and three labeled counts that the landing exposes. Taras receives no browser credential, credential hash, current user's answer or row-level response.
 - The demand poll is voluntary and self-selected. It does not verify identity, citizenship, age or one-person uniqueness and must not be presented as the opinion of Ukraine, an official election or a legally binding referendum.
 - A browser receives a random HttpOnly credential. The demand database stores the poll identifier and version, a SHA-256 hash of that browser credential and the selected answer. It has no name, document, email, phone, IP, User-Agent or response timestamp column.
 - The public landing contains a synthetic walkthrough, this FAQ and the Taras assistant. OpenVote does not store chat questions, answers or conversation history. The page keeps the current conversation only in browser memory.
