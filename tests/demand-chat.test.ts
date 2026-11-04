@@ -7,7 +7,7 @@ import { OpenAiDemandChatProvider, demandChatModel } from '../apps/api/src/deman
 import type { DemandChatProvider } from '../apps/api/src/demand-chat-provider.ts';
 import { demandApp, demandChatLimits, demandCredentialCookie } from '../apps/api/src/demand.ts';
 import { database, readConfig } from '../apps/api/src/common.ts';
-import { DemandChatResponse, DemandPollResults, demandAnswers, demandFaqItems } from '../packages/domain/src/demand.ts';
+import { DemandChatResponse, DemandPollResults, demandAnswers, demandFaqIntro, demandFaqItems } from '../packages/domain/src/demand.ts';
 import type { DemandPollResultsType } from '../packages/domain/src/demand.ts';
 import { demandPublicKnowledgePath, loadDemandPublicKnowledge } from '../scripts/demand-start.ts';
 import { migrateDirectory } from '../scripts/migrate.ts';
@@ -161,11 +161,18 @@ describe('demand AI chat API', () => {
 });
 
 describe('OpenAI demand chat provider', () => {
-  it('publishes exactly eighteen unique FAQ answers grounded in the public snapshot', () => {
-    expect(demandFaqItems).toHaveLength(18);
-    expect(new Set(demandFaqItems.map(item => item.question)).size).toBe(18);
-    expect(demandFaqItems.map(item => item.answer).join('\n')).toContain('Публічно працює лише сторінка перевірки попиту');
+  it('publishes exactly twenty agreed user-facing FAQ answers independently from the assistant snapshot', () => {
+    expect(demandFaqItems).toHaveLength(20);
+    expect(new Set(demandFaqItems.map(item => item.question)).size).toBe(20);
+    const visibleFaqCopy = [demandFaqIntro, ...demandFaqItems.flatMap(item => [item.question, item.answer])].join('\n');
+    expect(visibleFaqCopy).toContain('Що таке OpenVote?');
+    expect(visibleFaqCopy).toContain('Як OpenVote захищатиме дані у разі витоку?');
+    expect(visibleFaqCopy).not.toContain('Чому OpenVote спростив формулювання на головній сторінці?');
+    expect(visibleFaqCopy).not.toContain('—');
+    expect(visibleFaqCopy).not.toMatch(/development|threshold|Belenios|production-модел|identity-verified|ciphertext|poll-scoped|election-scoped|provider|manifest|V0[0-9]{2}|Тарас не повинен/iu);
     expect(publicKnowledge).toContain('The production tally/key-custody design is still open.');
+    expect(publicKnowledge).toContain('## Plain-language overview / Коротко для користувача');
+    expect(publicKnowledge).toContain('OpenVote завжди буде безкоштовною та відкритою платформою.');
     expect(publicKnowledge).toContain('V044 removed stronger trust wording');
     expect(publicKnowledge).toContain('For every Taras request, the OpenVote server supplies the same validated public poll');
   });
@@ -193,12 +200,21 @@ describe('OpenAI demand chat provider', () => {
       model: demandChatModel,
       store: false,
       reasoning: { effort: 'none' },
-      max_output_tokens: 900,
-      instructions: expect.stringContaining(demandFaqItems[0].answer),
+      max_output_tokens: 80,
+      instructions: expect.stringContaining('ПУБЛІЧНИЙ SNAPSHOT ЗНАНЬ'),
       input: injection,
     });
     const instructions = (requestBody as { instructions: string }).instructions;
     expect(instructions).toContain('ПУБЛІЧНИЙ SNAPSHOT ЗНАНЬ');
+    expect(instructions).toContain('Коли користувач прямо не просить технічні деталі');
+    expect(instructions).toContain('Не копіюй стиль або формулювання джерела');
+    expect(instructions).toContain('Не використовуй довге тире');
+    expect(instructions).toContain('Не використовуй у відповіді службові рубрики');
+    expect(instructions).toContain('Без прямого питання про керування проєктом не згадуй власника');
+    expect(instructions).toContain('якщо там сказано «завжди буде», не замінюй це на «планується»');
+    expect(instructions).toContain('не більше ніж 250 символів разом із пробілами');
+    expect(instructions).not.toContain('ВИДИМИЙ FAQ');
+    expect(instructions).not.toContain(demandFaqItems[0].answer);
     expect(instructions).toContain('openvote.com.ua` serves a demand-validation landing');
     expect(instructions).toContain('The production tally/key-custody design is still open.');
     expect(instructions).toContain('V044 removed stronger trust wording');
@@ -254,5 +270,9 @@ describe('OpenAI demand chat provider', () => {
       output: [{ type: 'message', content: [{ type: 'refusal' }] }],
     }), { status: 200, headers: { 'content-type': 'application/json' } }), publicKnowledge);
     await expect(noText.answer('Що таке OpenVote?', emptyResults)).rejects.toMatchObject({ message: 'AI_RESPONSE_INVALID', statusCode: 502 });
+    const tooLong = new OpenAiDemandChatProvider(testApiKey, async () => new Response(JSON.stringify({
+      output: [{ type: 'message', content: [{ type: 'output_text', text: 'а'.repeat(251) }] }],
+    }), { status: 200, headers: { 'content-type': 'application/json' } }), publicKnowledge);
+    await expect(tooLong.answer('Що таке OpenVote?', emptyResults)).rejects.toMatchObject({ message: 'AI_RESPONSE_INVALID', statusCode: 502 });
   });
 });
