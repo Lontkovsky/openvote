@@ -55,6 +55,14 @@ afterAll(async () => {
 });
 
 describe('minimal demand poll', () => {
+  it('allows only the demand analytics endpoints in the demand content security policy', async () => {
+    const response = await app.inject({ method: 'GET', url: '/health' });
+    expect(response.statusCode).toBe(200);
+    expect(response.headers['content-security-policy']).toContain('https://www.googletagmanager.com');
+    expect(response.headers['content-security-policy']).toContain('https://www.google-analytics.com');
+    expect(response.headers['content-security-policy']).toContain('https://region1.google-analytics.com');
+  });
+
   it('bootstraps one private browser credential and returns the zero-result public contract', async () => {
     const { response, cookie } = await bootstrap();
     expect(cookie).toMatch(new RegExp(`^${demandCredentialCookie}=[A-Za-z0-9_-]{43}$`));

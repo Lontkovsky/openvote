@@ -405,6 +405,8 @@ describe('real service boundaries', () => {
       expect(response.status).toBe(200);
       expect(response.headers.get('content-type')).toContain('application/json');
       expect(response.headers.get('content-security-policy')).toContain("script-src 'self'");
+      expect(response.headers.get('content-security-policy')).not.toContain('googletagmanager.com');
+      expect(response.headers.get('content-security-policy')).not.toContain('google-analytics.com');
       const draft = z.object({ poll: Poll }).parse(await response.json()).poll;
       pollId = draft.id;
       expect(draft.content.question).toBe(content.question);

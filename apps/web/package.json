@@ -7,8 +7,15 @@
     "dev": "vite --host localhost --port 5173 --strictPort",
     "dev:demand": "vite --host localhost --port 5174 --strictPort --mode demand",
     "build": "vite build",
-    "build:demand": "vite build --mode demand"
+    "build:demand": "node scripts/build-demand.ts"
   },
-  "dependencies": { "react": "19.2.8", "react-dom": "19.2.8" },
-  "devDependencies": { "@vitejs/plugin-react": "6.1.1", "vite": "8.2.4" }
+  "dependencies": {
+    "@fontsource-variable/manrope": "5.3.0",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "6.1.1",
+    "vite": "8.2.4"
+  }
 }

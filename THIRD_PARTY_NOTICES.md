@@ -15,3 +15,7 @@ The AGPL-3.0-only adapter in `tools/native/share_verify.ml` links the unchanged 
 The installed application/build dependency license inventory is in `artifacts/dependencies/licenses.json`: MIT, Apache-2.0, BSD-3-Clause, ISC, BlueOak-1.0.0 and MPL-2.0. MPL-2.0 applies to the unmodified Lightning CSS build tool, whose source is linked in that inventory. Preserve package license notices in distributions. `release:verify` generates the release CycloneDX SBOM and executable provenance. This inventory is not an external legal opinion.
 
 CI invokes Aqua Security setup-trivy v0.2.6 from commit `3fb12ec12f41e471780db15c232d5dd185dcb514` to install Trivy v0.70.0 under Apache-2.0 and scan the three runtime images. The action and scanner are fetched by GitHub Actions and are not distributed as OpenVote application code.
+
+## Manrope Variable 5.3.0
+
+The demand landing self-hosts Manrope Variable through `@fontsource-variable/manrope` 5.3.0. Manrope is Copyright 2018 The Manrope Project Authors and is licensed under the SIL Open Font License 1.1. The package's license notice and font files must remain available in distributed dependency material. The full synthetic application continues to use its existing Inter typography.

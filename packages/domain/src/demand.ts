@@ -4,6 +4,8 @@ import { Answers, Question } from './index.ts';
 export const demandPollId = 'platform-demand-v1';
 export const demandQuestion = 'Чи потрібна вам незалежна відкрита платформа голосувань?';
 export const demandAnswers = Answers;
+export const DemandGtmContainerId = z.string().regex(/^GTM-[A-Z0-9]+$/);
+export const demandGtmContainerId = DemandGtmContainerId.parse('GTM-K2V4DRSD');
 
 export const DemandAnswer = z.enum(demandAnswers);
 export const DemandResponse = z.strictObject({ answer: DemandAnswer });
@@ -77,3 +79,4 @@ export type DemandPollStatusType = z.infer<typeof DemandPollStatus>;
 export type DemandResponseReceiptType = z.infer<typeof DemandResponseReceipt>;
 export type DemandChatRequestType = z.infer<typeof DemandChatRequest>;
 export type DemandChatResponseType = z.infer<typeof DemandChatResponse>;
+export type DemandGtmContainerIdType = z.infer<typeof DemandGtmContainerId>;

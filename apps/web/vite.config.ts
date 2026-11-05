@@ -18,7 +18,8 @@ function demandIndex(): Plugin {
 }
 
 export default defineConfig(({ mode }) => {
-  if (mode !== 'demand') {
+  const demandMode = mode === 'demand' || mode === 'demand-ssr';
+  if (!demandMode) {
     const env = loadEnv(mode, process.cwd(), 'VITE_');
     for (const name of names) {
       const value = env[name];
@@ -30,9 +31,18 @@ export default defineConfig(({ mode }) => {
   }
   return {
     plugins: [react(), ...(mode === 'demand' ? [demandIndex()] : [])],
+    publicDir: mode === 'demand' ? resolve(import.meta.dirname, 'demand-public') : false,
     build: mode === 'demand'
       ? { sourcemap: false, target: 'es2023', outDir: 'dist-demand', rollupOptions: { input: resolve(import.meta.dirname, 'demand.html') } }
-      : { sourcemap: false, target: 'es2023' },
+      : mode === 'demand-ssr'
+        ? {
+            sourcemap: false,
+            target: 'es2023',
+            outDir: 'dist-demand-ssr',
+            ssr: resolve(import.meta.dirname, 'src/demand-ssr.tsx'),
+            rollupOptions: { output: { entryFileNames: 'demand-ssr.js' } },
+          }
+        : { sourcemap: false, target: 'es2023' },
     server: {
       headers: { 'Referrer-Policy': 'no-referrer', 'Cache-Control': 'no-store' },
       ...(mode === 'demand' ? { proxy: { '/api': { target: 'http://127.0.0.1:4304' } } } : {}),

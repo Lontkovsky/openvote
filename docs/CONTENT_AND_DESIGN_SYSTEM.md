@@ -64,12 +64,14 @@ The catalogue prioritizes discovery and creation. A poll prioritizes understandi
 | Surface | `#FFFFFF` | Cards and forms |
 | Soft violet | `#EFEEFF` | Brand mark and quiet emphasis |
 | Line | `#DCE2EC` | Structural borders |
-| Font | `Inter`, system fallback | All product text |
+| Font | `Manrope Variable` on the demand landing; `Inter`, system fallback in the full synthetic application | Product text within each existing surface |
 | Control radius | `8–12px` | Buttons and fields |
 | Card radius | `18px` | Primary surfaces |
 | Focus | `3px #AEA7EF` | Keyboard-visible focus |
 
 Layout uses a 1180 px maximum content width, generous whitespace, 76 px product header, 18–30 px card gaps and one-column mobile flow. Shadows are soft and only separate interactive or primary surfaces.
+
+The demand landing is the marketing expression of this system. It uses self-hosted Manrope Variable, a warm off-white canvas, `#4B3FC3` actions, `#2D2B62` to `#201F49` high-emphasis surfaces, pill actions and 24 px primary-card radii. Its success acknowledgement centers the check and message with a 30 px gap and uses one 780 ms eight-particle confetti burst. The demand landing does not suppress this one-shot effect through a reduced-motion override. The full synthetic application keeps its current Inter-based controls until a separately reviewed migration.
 
 ## Components
 
@@ -78,6 +80,7 @@ Layout uses a 1180 px maximum content width, generous whitespace, 76 px product 
 - Card: white, 18 px radius, subtle line or shadow, no nested decoration without purpose.
 - Principle card: dark surface for one important rule, never a list of unrelated warnings.
 - Notice: neutral for integrity/methodology, red only for actionable errors.
+- Analytics consent: compact, non-blocking, generic cookie-permission wording and demand-landing-only; it never appears in the full platform.
 - Status: short human label; technical state remains available in evidence.
 - Disclosure: a visible human summary with optional technical detail.
 

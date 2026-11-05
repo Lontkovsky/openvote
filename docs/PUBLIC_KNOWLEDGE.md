@@ -1,6 +1,6 @@
 # OpenVote public knowledge
 
-Snapshot: V045, 2026-11-04. This file is the public, read-only knowledge source for the Taras assistant. It contains no secrets, credentials, private keys, personal data or private review material. A deployed assistant knows only this snapshot and the validated current public demand aggregate supplied with each question; the visible FAQ is separate presentation copy and does not change the assistant context. Taras cannot browse GitHub, read arbitrary files, call tools, run commands or change the repository.
+Snapshot: V046, 2026-11-05. This is a local candidate and is not live until the owner separately approves production deployment. This file is the public, read-only knowledge source for the Taras assistant. It contains no secrets, credentials, private keys, personal data or private review material. A deployed assistant knows only this snapshot and the validated current public demand aggregate supplied with each question; the visible FAQ is separate presentation copy and does not change the assistant context. Taras cannot browse GitHub, read arbitrary files, call tools, run commands or change the repository.
 
 Status labels are part of the meaning of every statement:
 
@@ -58,6 +58,8 @@ OpenVote завжди буде безкоштовною та відкритою 
 - Text-only comments, nested replies, likes and dislikes are planned. No files or attachments are planned. Anonymous participation on the demand landing and the exact delete/ownership rules are not implemented yet.
 - The simplified first public version does not promise external auditors, separate real-world key holders or an organization outside the platform that controls publication. The production tally/key-custody design is still open. The synthetic Belenios threshold path remains engineering evidence, not a promise about the first public operating model.
 - V044 removed stronger trust wording from the demand landing because the public service currently has no external auditors or separate real-world operators to substantiate it. The change affected presentation only: it did not relabel the immutable demand question, change its version, migrate data or alter existing responses. Current copy promises openness and public verification material without claiming unavailable organizational guarantees.
+- The owner approved a local V046 candidate that carefully refreshes only the demand landing's narrative, typography, logo treatment, icons, footer and search metadata. It preserves the immutable demand poll and its responses, the exact twenty FAQ entries, and Taras's knowledge and answer limit. This candidate is not live until the owner separately approves production deployment.
+- The owner selected consent-gated Google Analytics measurement only for the marketing demand landing. The landing emits stable page and interaction identifiers without the selected poll answer, vote payload, chat question or chat answer. The full voting platform is to remain analytics-free. Heatmaps and session replay are not part of this integration.
 - Product and engineering decisions are intended to remain public through repository documents, issues, pull requests, test evidence and this knowledge snapshot. Each deployed change that affects public behavior or a product decision must update the snapshot in the same reviewed change.
 
 ## Open / Відкриті питання та межі

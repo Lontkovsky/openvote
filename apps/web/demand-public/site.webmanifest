@@ -1,0 +1,13 @@
+{
+  "name": "OpenVote",
+  "short_name": "OpenVote",
+  "lang": "uk",
+  "start_url": "/",
+  "display": "browser",
+  "background_color": "#FBFAF7",
+  "theme_color": "#4B3FC3",
+  "icons": [
+    { "src": "/openvote-icon.svg", "sizes": "any", "type": "image/svg+xml" },
+    { "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" }
+  ]
+}

@@ -1,54 +1,48 @@
-# Landing design QA
+# Demand landing design QA
 
 ## Evidence
 
-- Source visual truth: `/Users/slontkovskyi/Developer/PERSONAL/openVote/.runtime/design-qa/source-hero.jpg`, `source-about.jpg`, and `source-privacy.jpg`, captured from deployed-layout commit `33042ef83209a290cc1df6ee450ee15405a0eb94`.
-- Implementation: `http://localhost:5174/#top` on branch `feature/landing-hero-poll`.
-- Implementation screenshots: `/Users/slontkovskyi/Developer/PERSONAL/openVote/.runtime/design-qa/implementation-hero-goal.jpg`, `implementation-about.jpg`, and `implementation-demo-privacy.jpg`.
-- Combined comparison: `/Users/slontkovskyi/Developer/PERSONAL/openVote/.runtime/design-qa/comparison-desktop-goal.jpg` (source on the left, implementation on the right).
-- Responsive evidence: `/Users/slontkovskyi/Developer/PERSONAL/openVote/.runtime/design-qa/implementation-hero-1280x720.jpg` and `implementation-hero-goal-mobile.jpg`.
-- Comparison viewport: `1121 × 954` CSS px. Source and implementation captures are both `1106 × 941` px from the same in-app Browser transport. No density normalization was required.
-- State: page top, initial poll, no selected answer, zero local responses.
+- Source visual truth: `/var/folders/bz/j9jvl7sj32b_h21ddmgwp9xc0000gn/T/TemporaryItems/NSIRD_screencaptureui_RchVF5/Screenshot 2026-11-05 at 14.15.20.png` for the Taras greeting, `/var/folders/bz/j9jvl7sj32b_h21ddmgwp9xc0000gn/T/TemporaryItems/NSIRD_screencaptureui_mIHc1J/Screenshot 2026-11-05 at 13.57.28.png` for FAQ/chat and `/var/folders/bz/j9jvl7sj32b_h21ddmgwp9xc0000gn/T/TemporaryItems/NSIRD_screencaptureui_GkxCwP/Screenshot 2026-11-05 at 13.56.38.png` for the accepted-response state.
+- Local implementation: `http://localhost:5174/` on branch `v046-demand-landing-refresh`.
+- Final desktop screenshot: `/tmp/openvote-v046-final-desktop.png`.
+- Final mobile screenshot: `/tmp/openvote-v046-final-mobile.png`.
+- Final Taras greeting desktop screenshot: `/tmp/openvote-v046-taras-greeting-desktop.png`.
+- Final Taras greeting mobile screenshot: `/tmp/openvote-v046-taras-greeting-mobile.png`.
+- Final active-confetti desktop screenshot: `/tmp/openvote-v046-confetti-desktop.png`.
+- Final active-confetti mobile screenshot: `/tmp/openvote-v046-confetti-mobile.png`.
+- Focused source/implementation comparison: `/tmp/openvote-v046-confetti-comparison.png`, source on the left and implementation on the right.
+- Poll-state source visuals: `/var/folders/bz/j9jvl7sj32b_h21ddmgwp9xc0000gn/T/TemporaryItems/NSIRD_screencaptureui_Ie5Mh5/Screenshot 2026-11-05 at 14.17.31.png` before voting and `/var/folders/bz/j9jvl7sj32b_h21ddmgwp9xc0000gn/T/TemporaryItems/NSIRD_screencaptureui_jj2FpW/Screenshot 2026-11-05 at 14.22.27.png` after voting.
+- Final poll screenshots: `/tmp/openvote-v046-poll-fresh-final.png`, `/tmp/openvote-v046-poll-final-desktop.png`, `/tmp/openvote-v046-poll-fresh-mobile.png` and `/tmp/openvote-v046-poll-post-vote-mobile.png`.
+- Poll-state source/implementation comparison: `/tmp/openvote-v046-poll-comparison.png`; source visuals are on the left and the corresponding local implementation is on the right.
+- Comparison viewports: desktop `1280 × 720` and mobile `390 × 844` CSS px.
 
-## Full-view comparison
+## Confirmed target
 
-The current page preserves the first deployed version's pale hero, large human-language headline, dark right-hand card, three-card purpose section, and privacy treatment. The following differences are intentional and explicitly requested: the service strip and multi-link navigation are removed; OpenVote branding and the existing logo are used; the tagline is `Чесно. Прозоро. Анонімно.`; the real poll replaces the descriptive launch card; the compact 10,000-support launch goal sits below the lead; the header is fixed; the desktop hero fills one viewport; and the existing walkthrough video sits between the purpose and privacy sections.
+The FAQ answer must use the full FAQ container width. Taras's avatar must appear in the one-time greeting and chat header, never beside individual messages. The established round violet launcher must remain visible for ten seconds, then change into the single greeting; neither launcher form may remain while the chat is open, and closing must restore only the round launcher. The composer must not render an outer focus ring. The success state must play one confetti burst after voting, never an infinite loop, must not be disabled by reduced-motion preference, and must leave more space between the confirmation mark and heading. The exact twenty FAQ items and Taras's knowledge and answer contract must remain unchanged.
 
-Typography retains the established display/body hierarchy without clipping. Spacing keeps the two-column desktop composition and responsive single-column mobile flow. Colors continue the existing indigo, white, and cool-gray palette. The repository SVG logo, video, and poster are reused without substitutes. Copy is coherent in the standalone page and contains none of the removed service labels.
+Before voting, the poll card must expose exactly three answers and the disabled `Проголосувати` action without totals or answer counts. After a recorded response, the card must show the acknowledgement, total and all three aggregate rows without the visible `Поточні результати` heading. The desktop card must retain the approved hero alignment and the mobile card must remain in bounds.
 
-## Focused-region comparison
+## Visual and interaction verification
 
-- `comparison-hero-goal.jpg`: confirms brand, headline, launch-goal callout, poll card, first-screen balance, disabled state, radii, contrast, and shadow treatment.
-- `comparison-about.jpg`: confirms the original heading hierarchy, three equal cards, numbering, spacing, and copy density.
-- `comparison-lower.jpg`: confirms the existing video/poster, three walkthrough steps, and restored privacy block.
-
-No additional crop was required because these three focused comparisons keep the relevant typography, logo, controls, and media readable at native resolution.
+- The expanded `Як OpenVote підтверджуватиме особу?` disclosure and its answer each measured `1,138.5` px on desktop. The answer computed `max-width` was `none`, so the width delta was `0`.
+- The page still rendered exactly twenty FAQ disclosures and had no horizontal overflow.
+- Before ten seconds, the page contained one round SVG launcher and no greeting. After ten seconds, it contained one greeting with one Taras avatar and no round launcher.
+- Opening the greeting produced one dialog, no greeting or launcher, exactly one image in the chat header and no image in any assistant message. Closing restored the focused round launcher and the greeting did not recur. Opening the round launcher before the timer also prevented a later greeting.
+- The composer received focus when the chat opened. Its computed outline style and box shadow were both `none`.
+- On mobile, the greeting measured `355 × 84.625` px from `x = 10` to `x = 365`, and the dialog measured `355 × 520` px over the same horizontal bounds. The document reported `clientWidth = scrollWidth = 375`.
+- With `prefers-reduced-motion: reduce` active, all eight particles used `demand-confetti-burst`, `0.78s` duration and iteration count `1`. During the burst they occupied eight distinct transforms; afterward all eight reached opacity `0`.
+- The settled gap between the 64 px confirmation mark and `Дякуємо за ваш голос.` measured exactly `30` px on desktop and mobile.
+- At `390 × 844`, the active burst remained inside the accepted-response card and the document retained `clientWidth = scrollWidth = 375`.
+- The focused comparison confirms that the final card preserves the established color, centered hierarchy and restrained particle palette while creating visibly more separation between the mark and heading.
+- In the fresh desktop state the card exposed three radios, no `.demand-results` region, no total and a disabled `Проголосувати` action. Selecting an answer exposed the existing confirmation control; confirming it enabled the action while results remained absent.
+- In the recorded desktop state the card exposed one accessible `Результати голосування` region, `Всього відповідей: 1` and the exact `1/0/0` rows. The visible `Поточні результати` heading and editable form controls were absent after reload.
+- The desktop card measured exactly `457` px in both states. Its bottom was `639` px while the adjacent copy ended at `643.98` px, preserving the approved two-column alignment.
+- At `390 × 844`, the fresh card measured `337.5 × 389.06` px and the recorded card measured `337.5 × 443.63` px. In both states `clientWidth = scrollWidth = 375`, so no horizontal overflow was introduced.
+- The existing local synthetic response was restored after the fresh-state check. Reload returned the same recorded `1 = 1/0/0` state, and the Browser console contained no warning or error.
+- Desktop and mobile Browser consoles contained no warning or error.
 
 ## Findings
 
-No actionable P0, P1, or P2 visual or interaction findings remain.
-
-## Comparison history
-
-1. P2 layout: at `1280 × 720`, the first implementation measured `741.89` px high instead of one viewport. The desktop hero rule was tightened while preserving the complete poll. Post-fix measurement is exactly `720` px; the poll remains fully visible from `107.05` to `687.94` px.
-2. P2 content: the first privacy draft contained a technical claim about IP address and response-time storage that exceeded the verified page contract. It was replaced with direct human-language copy limited to the information the form does not request or associate with the answer.
-3. P2 information order: the first draft placed privacy before the walkthrough. The final order is hero and poll, platform purpose, walkthrough, then privacy, matching the agreed marketing flow.
-4. Launch-goal iteration: the new textual goal was placed in the left hero column instead of the already dense poll card. At `1280 × 720` the hero remains exactly `720` px and both columns remain fully visible. At `390 × 844` the callout is `337.5` px wide with no horizontal overflow.
-
-## Interaction and responsive verification
-
-- The fixed header and single CTA remain visible; the CTA lands the poll below the header (`poll top 91.94` px, header bottom `72` px on mobile).
-- The form starts with three radios and a disabled submit button. Selecting an answer reveals confirmation; confirmation enables submit; changing the answer clears confirmation and disables submit again.
-- One synthetic local response produced the receipt and `1/0/0` counts, persisted after reload, and was then removed with an exact local-row cleanup. The final state is `0/0/0` with the form available.
-- The launch goal uses only the authoritative `Підтримую` count. Browser states `0`, `37` with four unrelated answers, `9,999`, `10,000`, and `10,001` confirmed the remaining count, exact threshold, reached message, and absence of negative values. The `1/0/0` submission updated the goal to `1` and `9,999` remaining and persisted after reload.
-- The video starts paused, is muted, has native controls and no autoplay, advances on play, and pauses successfully.
-- At `390 × 844`, the fixed header, tagline, CTA, form, and video remain usable with no horizontal overflow.
-- The FAQ follows the privacy section with nine native disclosures, all closed on initial load. Mouse activation opened the first answer; keyboard `Space` closed it and `Enter` opened the final answer. The answer about result integrity was left open for review.
-- At the default desktop viewport the FAQ rendered within `clientWidth = scrollWidth = 1265`. At the explicit `390 × 844` mobile viewport the long database-access question wrapped cleanly, the answer remained readable, the fixed header and CTA stayed visible, and `clientWidth = scrollWidth = 375` after accounting for the vertical scrollbar.
-- The unchanged poll still exposed one header CTA and three radio answers; submit remained disabled before a choice and confirmation. The CTA reached `#poll` with the poll at `92.05` px, below the `76.25` px fixed header. No response was submitted during the FAQ verification.
-- The rejected inline AI form is absent. The page starts with one floating chat launcher and no open panel; opening it renders the focused compact dialog with the title `Тарас` and a short greeting, without a subtitle or service note.
-- A real question appeared as a user bubble immediately, followed by `Тарас друкує…` and the actual grounded answer. The composer cleared and re-enabled after success. Closing returned focus to the launcher; reopening preserved the conversation.
-- At `390 × 844`, the open panel measured `355 × 520` px, the composer remained visible, the 54 px launcher stayed within the viewport, and `clientWidth = scrollWidth = 375`. The public page contained no provider brand or service note.
-- In-app Browser console errors and warnings checked: none.
+No actionable P0, P1 or P2 visual or interaction finding remains for this refinement.
 
 final result: passed
