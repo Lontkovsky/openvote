@@ -36,7 +36,6 @@ function StepIcon({ step }: { step: 1 | 2 | 3 }) {
 export function DemandApp() {
   const [poll, setPoll] = useState<DemandPollStatusType | null>(null);
   const [selected, setSelected] = useState<DemandAnswerType | null>(null);
-  const [confirmed, setConfirmed] = useState(false);
   const [recorded, setRecorded] = useState<DemandAnswerType | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -130,13 +129,13 @@ export function DemandApp() {
   }, []);
 
   async function submit() {
-    if (selected === null || !confirmed || poll === null) return;
+    if (selected === null || poll === null) return;
     setBusy(true); setError(null);
     try {
       const result = await recordDemandResponse(selected);
       setRecorded(result.answer);
       setPoll({ ...poll, response: { answer: result.answer }, results: result.results });
-      setSelected(null); setConfirmed(false);
+      setSelected(null);
     } catch (reason) { setError(errorText(reason)); }
     finally { setBusy(false); }
   }
@@ -199,7 +198,7 @@ export function DemandApp() {
         </div>
         <section className="demand-poll-card demand-hero-poll" id="poll" aria-label="Опитування">
           {loading ? <p role="status">Завантаження опитування…</p> : poll === null ? <div className="notice error" role="alert">{error}</div> : <>
-            {recorded !== null ? <div className="demand-success" role="status"><div className="demand-success-confetti" aria-hidden="true"><i /><i /><i /><i /><i /><i /><i /><i /></div><span className="demand-success-mark" aria-hidden="true">✓</span><h2>Дякуємо за ваш голос.</h2></div> : <form onSubmit={event => { event.preventDefault(); void submit(); }}><fieldset disabled={busy}><legend>{poll.question}</legend><div className="demand-answers">{poll.answers.map(answer => <label className="choice" key={answer}><input type="radio" name="demand-answer" checked={selected === answer} onChange={() => { setSelected(answer); setConfirmed(false); }} />{answer}</label>)}</div></fieldset>{selected !== null && <label className="choice demand-confirm"><input type="checkbox" checked={confirmed} disabled={busy} onChange={event => setConfirmed(event.target.checked)} />Підтверджую вибір: «{selected}».</label>}{error !== null && <p className="notice error" role="alert">{error}</p>}<button className="primary" type="submit" disabled={selected === null || !confirmed || busy}>{busy ? 'Надсилання…' : 'Проголосувати'}</button></form>}
+            {recorded !== null ? <div className="demand-success" role="status"><div className="demand-success-confetti" aria-hidden="true"><i /><i /><i /><i /><i /><i /><i /><i /></div><span className="demand-success-mark" aria-hidden="true">✓</span><h2>Дякуємо за ваш голос.</h2></div> : <form onSubmit={event => { event.preventDefault(); void submit(); }}><fieldset disabled={busy}><legend>{poll.question}</legend><div className="demand-answers">{poll.answers.map(answer => <label className="choice" key={answer}><input type="radio" name="demand-answer" checked={selected === answer} onChange={() => setSelected(answer)} />{answer}</label>)}</div></fieldset>{error !== null && <p className="notice error" role="alert">{error}</p>}<button className="primary" type="submit" disabled={selected === null || busy}>{busy ? 'Надсилання…' : 'Проголосувати'}</button></form>}
             {recorded !== null && <section className="demand-results" aria-label="Результати голосування">
               <p className="demand-results-total">Всього відповідей: <strong>{poll.results.totalResponses}</strong></p>
               <dl>{poll.answers.map((answer, index) => <div key={answer}><dt>{answer}</dt><dd>{poll.results.counts[index]}</dd></div>)}</dl>

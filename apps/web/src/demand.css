@@ -156,13 +156,33 @@
   box-shadow: 0 34px 80px rgba(39, 35, 94, .25);
 }
 
+.demand-hero-poll form {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+.demand-hero-poll form fieldset {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  margin: 0 0 20px;
+}
+
+.demand-hero-poll form legend {
+  margin-bottom: 0;
+}
+
+.demand-hero-poll form .demand-answers {
+  margin: auto 0;
+}
+
 .demand-poll-card legend {
   font-size: 1.32rem;
   line-height: 1.38;
 }
 
-.demand-answers .choice,
-.demand-confirm {
+.demand-answers .choice {
   border-radius: 12px;
 }
 
@@ -179,6 +199,7 @@
 }
 
 .demand-hero-poll button[type="submit"] {
+  margin-top: 0;
   border-radius: 999px;
 }
 
@@ -754,6 +775,10 @@
 @media (min-width: 901px) {
   .demand-hero-poll {
     min-height: 457px;
+  }
+
+  .demand-hero-poll form .demand-answers {
+    transform: translateY(26px);
   }
 
   .demand-success {
