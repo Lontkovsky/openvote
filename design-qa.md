@@ -15,12 +15,17 @@
 - Final poll screenshots: `/tmp/openvote-v046-poll-fresh-final.png`, `/tmp/openvote-v046-poll-final-desktop.png`, `/tmp/openvote-v046-poll-fresh-mobile.png` and `/tmp/openvote-v046-poll-post-vote-mobile.png`.
 - Poll-state source/implementation comparison: `/tmp/openvote-v046-poll-comparison.png`; source visuals are on the left and the corresponding local implementation is on the right.
 - Comparison viewports: desktop `1280 × 720` and mobile `390 × 844` CSS px.
+- Palette source visuals: `/var/folders/bz/j9jvl7sj32b_h21ddmgwp9xc0000gn/T/TemporaryItems/NSIRD_screencaptureui_l3m8SI/Screenshot 2026-11-05 at 16.06.07.png` for the poll surface and `/var/folders/bz/j9jvl7sj32b_h21ddmgwp9xc0000gn/T/TemporaryItems/NSIRD_screencaptureui_OrqYEV/Screenshot 2026-11-05 at 16.06.21.png` for the dark privacy surface.
+- Palette baseline and final evidence: `/tmp/openvote-v046-palette-before.png`, `/tmp/openvote-v046-palette-after-desktop.png`, `/tmp/openvote-v046-palette-after-mobile.png`, `/tmp/openvote-v046-palette-how-desktop.png`, `/tmp/openvote-v046-palette-privacy-desktop.png`, `/tmp/openvote-v046-palette-goal-desktop.png` and `/tmp/openvote-v046-palette-privacy-mobile.png`.
+- Focused palette comparison: `/tmp/openvote-v046-palette-comparison.png`; supplied source captures are on the left and the local implementation is on the right. Palette verification used desktop `1280 × 900` and mobile `390 × 844` CSS px at device pixel ratio `1`.
 
 ## Confirmed target
 
 The FAQ answer must use the full FAQ container width. Taras's avatar must appear in the one-time greeting and chat header, never beside individual messages. The established round violet launcher must remain visible for ten seconds, then change into the single greeting; neither launcher form may remain while the chat is open, and closing must restore only the round launcher. The composer must not render an outer focus ring. The success state must play one confetti burst after voting, never an infinite loop, must not be disabled by reduced-motion preference, and must leave more space between the confirmation mark and heading. The original twenty FAQ items must remain unchanged, three approved CAWI/Lemur comparison entries must be appended, and the same confirmed facts must be available to Taras without changing his 250-character or OpenVote-only answer boundaries.
 
 Before voting, the poll card must expose exactly three answers and the disabled `Проголосувати` action without totals or answer counts. Positive, negative and neutral choices must be visually distinct in green, red and gray. After a recorded response, the card must show the acknowledgement, total and all three aggregate rows without the visible `Поточні результати` heading. The desktop card must retain the approved hero alignment with more space between the question, choices and action, and the mobile card must remain in bounds.
+
+The landing must use exactly three section-surface roles: the established hero light gradient, pure white and one dark indigo treatment. The hero, how, goal and FAQ sections share the light gradient; problem, open-source, demo and footer surfaces are white; privacy, final CTA and poll card share the dark treatment. The established violet remains the single brand action color, while green, red and gray remain limited to the three semantic poll choices.
 
 ## Visual and interaction verification
 
@@ -41,6 +46,10 @@ Before voting, the poll card must expose exactly three answers and the disabled 
 - After the local demand process reloaded the reviewed knowledge snapshot, Taras answered the CAWI/Lemur comparison in 224 characters and still returned the exact 61-character scope boundary for an unrelated weather question.
 - The existing local synthetic response was restored after the fresh-state check. Reload returned the same recorded `1 = 1/0/0` state, and the Browser console contained no warning or error.
 - Desktop and mobile Browser consoles contained no warning or error.
+- The baseline reproduced six distinct section-background recipes: the hero gradient, plain lavender, warm off-white, two different dark recipes and pure white. The final CSS exposes three shared surface tokens and introduces no additional color literal.
+- Computed desktop backgrounds matched exactly within each role: hero/how/goal/FAQ used one light gradient; problem/open-source/demo/footer used white; privacy/final/poll used one dark indigo background. Primary actions retained the established `#4b3fc3` violet.
+- At `390 × 844`, the document retained `clientWidth = scrollWidth = 375`, twenty-three FAQ disclosures, three radios and zero checkboxes. Selecting each answer still produced distinct green, red and gray backgrounds and borders without submitting a response.
+- Desktop and mobile visual inspection confirmed readable dark-on-light and white-on-dark text, clean transitions between the three surface roles and no new overlap or overflow.
 
 ## Findings
 
