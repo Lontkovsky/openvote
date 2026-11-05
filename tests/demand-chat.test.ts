@@ -161,11 +161,14 @@ describe('demand AI chat API', () => {
 });
 
 describe('OpenAI demand chat provider', () => {
-  it('publishes exactly twenty agreed user-facing FAQ answers independently from the assistant snapshot', () => {
-    expect(demandFaqItems).toHaveLength(20);
-    expect(new Set(demandFaqItems.map(item => item.question)).size).toBe(20);
+  it('publishes exactly twenty-three agreed FAQ answers and mirrors approved comparison facts into the assistant snapshot', () => {
+    expect(demandFaqItems).toHaveLength(23);
+    expect(new Set(demandFaqItems.map(item => item.question)).size).toBe(23);
     const visibleFaqCopy = [demandFaqIntro, ...demandFaqItems.flatMap(item => [item.question, item.answer])].join('\n');
     expect(visibleFaqCopy).toContain('Що таке OpenVote?');
+    expect(visibleFaqCopy).toContain('Чим OpenVote відрізняється від CAWI та Lemur?');
+    expect(visibleFaqCopy).toContain('Чи показуватиме OpenVote думку всіх українців?');
+    expect(visibleFaqCopy).toContain('Чому OpenVote краще підходить для громадських питань?');
     expect(visibleFaqCopy).toContain('Як OpenVote захищатиме дані у разі витоку?');
     expect(visibleFaqCopy).not.toContain('Чому OpenVote спростив формулювання на головній сторінці?');
     expect(visibleFaqCopy).not.toContain('—');
@@ -175,6 +178,10 @@ describe('OpenAI demand chat provider', () => {
     expect(publicKnowledge).toContain('OpenVote завжди буде безкоштовною та відкритою платформою.');
     expect(publicKnowledge).toContain('V044 removed stronger trust wording');
     expect(publicKnowledge).toContain('For every Taras request, the OpenVote server supplies the same validated public poll');
+    expect(publicKnowledge).toContain('CAWI means computer-assisted web interviewing.');
+    expect(publicKnowledge).toContain('Lemur presents itself as professional software for sociological and marketing research.');
+    expect(publicKnowledge).toContain('OpenVote is intended as a public civic space');
+    expect(publicKnowledge).toContain('OpenVote does not claim that participants in a poll automatically represent all Ukrainians.');
   });
 
   it('sends only the approved context and question through a stateless bounded Responses request', async () => {
@@ -215,6 +222,9 @@ describe('OpenAI demand chat provider', () => {
     expect(instructions).toContain('не більше ніж 250 символів разом із пробілами');
     expect(instructions).not.toContain('ВИДИМИЙ FAQ');
     expect(instructions).not.toContain(demandFaqItems[0].answer);
+    expect(instructions).toContain('CAWI means computer-assisted web interviewing.');
+    expect(instructions).toContain('Lemur presents itself as professional software for sociological and marketing research.');
+    expect(instructions).toContain('OpenVote is intended as a public civic space');
     expect(instructions).toContain('openvote.com.ua` serves a demand-validation landing');
     expect(instructions).toContain('The production tally/key-custody design is still open.');
     expect(instructions).toContain('V044 removed stronger trust wording');
