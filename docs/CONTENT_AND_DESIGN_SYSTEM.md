@@ -56,28 +56,32 @@ The catalogue prioritizes discovery and creation. A poll prioritizes understandi
 
 | Token | Value | Use |
 |---|---|---|
-| Accent | `#423BB4` | Primary action, links, focus accents |
-| Dark surface | `#242454` | High-emphasis action or principle card |
-| Ink | `#202B3D` | Primary text |
-| Muted | `#5E6B7D` | Supporting text |
-| Field | `#F6F7FB` | Page background |
+| Accent | `#4B3FC3` | Primary action, links, focus accents |
+| Dark surface | `#25234F` | High-emphasis action or principle card |
+| Ink | `#18192F` | Primary text |
+| Muted | `#5D6078` | Supporting text |
+| Field | `#F8F8FC` | Page background |
 | Surface | `#FFFFFF` | Cards and forms |
-| Soft violet | `#EFEEFF` | Brand mark and quiet emphasis |
-| Line | `#DCE2EC` | Structural borders |
-| Font | `Inter`, system fallback | All product text |
-| Control radius | `8–12px` | Buttons and fields |
-| Card radius | `18px` | Primary surfaces |
-| Focus | `3px #AEA7EF` | Keyboard-visible focus |
+| Soft violet | `#EEECFF` | Brand mark and quiet emphasis |
+| Line | `#DEDFEB` | Structural borders |
+| Font | `Manrope Variable`, then system sans-serif fallback | All OpenVote interfaces |
+| Control radius | `12px`; `999px` for primary actions | Fields and buttons |
+| Card radius | `24px` | Primary surfaces |
+| Focus | `3px #BCB7F2` | Keyboard-visible focus |
 
-Layout uses a 1180 px maximum content width, generous whitespace, 76 px product header, 18–30 px card gaps and one-column mobile flow. Shadows are soft and only separate interactive or primary surfaces.
+Layout uses a 1180 px maximum content width, generous whitespace, a 76 px landing header, an 80 px application header, 18–30 px card gaps and one-column mobile flow. Shadows are soft and only separate interactive or primary surfaces.
+
+The demand landing is the visual reference for the complete application. Both surfaces use self-hosted Manrope Variable, the same light radial gradient, `#4B3FC3` actions, the shared `#25234F` dark surface, pill actions and 24 px primary-card radii. The landing success acknowledgement centers the check and message with a 30 px gap and uses one 780 ms eight-particle confetti burst. The landing does not suppress this one-shot effect through a reduced-motion override.
 
 ## Components
 
 - Header: OpenVote mark, descriptor, three stable destinations and one contextual action.
 - Primary button: violet on light surfaces, white on the dark surface.
-- Card: white, 18 px radius, subtle line or shadow, no nested decoration without purpose.
+- Card: white, 24 px radius, subtle line or shadow, no nested decoration without purpose.
 - Principle card: dark surface for one important rule, never a list of unrelated warnings.
 - Notice: neutral for integrity/methodology, red only for actionable errors.
+- Analytics consent: compact, non-blocking, generic cookie-permission wording and demand-landing-only; it never appears in the full platform.
+- Local demo link: visible in the landing header only during local development and opens the full platform without changing the public landing.
 - Status: short human label; technical state remains available in evidence.
 - Disclosure: a visible human summary with optional technical detail.
 

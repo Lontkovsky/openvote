@@ -2,7 +2,7 @@
   "verifiedBy": "Belenios 3.3.0 reference + final-vote guard",
   "election": {
     "version": 1,
-    "description": "{\"environment\":\"test\",\"question\":\"Чи підтримуєте ви тестову пропозицію відкритих бібліотечних даних?\",\"version\":1,\"policy\":{\"id\":\"verified-rnokpp-owner\",\"version\":1},\"publicationThreshold\":3,\"context\":\"Синтетичний тест. Жодних реальних учасників.\",\"opensAt\":\"2026-01-01T00:00:00Z\",\"closesAt\":\"2026-01-02T00:00:00Z\"}",
+    "description": "{\"environment\":\"test\",\"question\":\"Чи підтримуєте ви тестову пропозицію відкритих бібліотечних даних?\",\"version\":1,\"policy\":{\"id\":\"verified-rnokpp-owner\",\"version\":1},\"publicationThreshold\":3,\"context\":\"Тестовий тест. Жодних реальних учасників.\",\"opensAt\":\"2026-01-01T00:00:00Z\",\"closesAt\":\"2026-01-02T00:00:00Z\"}",
     "name": "Чи підтримуєте ви тестову пропозицію відкритих бібліотечних даних?",
     "group": "Ed25519",
     "public_key": "e4fb49c5ddd775ae66013491ce6b8a1ac56fa3a8df84cabdec7b7836aba273bc",

@@ -184,7 +184,7 @@ export async function startRenderService(configuration: RenderConfiguration): Pr
     ]), unexpectedExit]);
     add('nginx', '/usr/sbin/nginx', ['-c', nginxConfig, '-g', 'daemon off;'], { PATH: internalPath });
     await Promise.race([waitForHealth(configuration.port, 'gateway'), unexpectedExit]);
-    console.log(`Synthetic demo gateway is healthy on port ${configuration.port}.`);
+    console.log(`Test demo gateway is healthy on port ${configuration.port}.`);
     await Promise.race([
       unexpectedExit,
       new Promise<void>(resolvePromise => {

@@ -1,6 +1,6 @@
-# Full Render synthetic demo environment
+# Full Render test demo environment
 
-Issue [#51](https://github.com/Lontkovsky/openvote/issues/51) owns this future cutover. The single repository Blueprint at [`render.yaml`](../render.yaml) currently runs the smaller demand-validation launch from [#53](https://github.com/Lontkovsky/openvote/issues/53) on one `openvote` service and keeps the three full-platform databases declared but suspended. Switching that same service to the full **synthetic demo** requires a later Blueprint change and does not complete the Production Readiness epic.
+Issue [#51](https://github.com/Lontkovsky/openvote/issues/51) owns this future cutover. The single repository Blueprint at [`render.yaml`](../render.yaml) currently runs the smaller demand-validation launch from [#53](https://github.com/Lontkovsky/openvote/issues/53) on one `openvote` service and keeps the three full-platform databases declared but suspended. Switching that same service to the full **test demo** requires a later Blueprint change and does not complete the Production Readiness epic.
 
 ## Declared resources
 
@@ -60,6 +60,6 @@ Do not guess the service or verification hostnames. Replacing the existing apex/
 
 ## Verification and rollback boundary
 
-Before the future cutover merge, verify the focused origin/runtime tests, final image build, Nginx host-routing fixture, affected service/native tests, the complete retained in-app Browser flow and exact-head CI. After deployment, repeat the synthetic Browser flow through HTTPS and verify an accepted ballot and runtime/key hashes survive an actual Render service restart. None of that full-runtime hosted evidence is claimed by the current demand configuration with an uninitialized reserved disk.
+Before the future cutover merge, verify the focused origin/runtime tests, final image build, Nginx host-routing fixture, affected service/native tests, the complete retained in-app Browser flow and exact-head CI. After deployment, repeat the test Browser flow through HTTPS and verify an accepted ballot and runtime/key hashes survive an actual Render service restart. None of that full-runtime hosted evidence is claimed by the current demand configuration with an uninitialized reserved disk.
 
-Render can redeploy a prior application image, but database migrations and persistent runtime state are not automatically rolled back. Never delete or replace the disk to roll back code. The local fail-closed recovery gate is documented in [RECOVERY.md](RECOVERY.md): restore into an isolated no-write environment and compare every poll with separately retained observation/receipt evidence before opening traffic. The stale synthetic restore is detected, but the complete private Render backup set and an actual hosted restore have not been exercised, so production backup/restore acceptance remains pending.
+Render can redeploy a prior application image, but database migrations and persistent runtime state are not automatically rolled back. Never delete or replace the disk to roll back code. The local fail-closed recovery gate is documented in [RECOVERY.md](RECOVERY.md): restore into an isolated no-write environment and compare every poll with separately retained observation/receipt evidence before opening traffic. The stale test restore is detected, but the complete private Render backup set and an actual hosted restore have not been exercised, so production backup/restore acceptance remains pending.

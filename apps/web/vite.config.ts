@@ -11,6 +11,7 @@ function demandIndex(): Plugin {
     configureServer(server) {
       server.middlewares.use((request, _response, next) => {
         if (request.url === '/') request.url = '/demand.html';
+        if (request.url === '/demo' || request.url?.startsWith('/demo/')) request.url = '/demo.html';
         next();
       });
     },
@@ -18,7 +19,8 @@ function demandIndex(): Plugin {
 }
 
 export default defineConfig(({ mode }) => {
-  if (mode !== 'demand') {
+  const demandMode = mode === 'demand' || mode === 'demand-ssr';
+  if (!demandMode) {
     const env = loadEnv(mode, process.cwd(), 'VITE_');
     for (const name of names) {
       const value = env[name];
@@ -30,12 +32,21 @@ export default defineConfig(({ mode }) => {
   }
   return {
     plugins: [react(), ...(mode === 'demand' ? [demandIndex()] : [])],
+    publicDir: mode === 'demand' ? resolve(import.meta.dirname, 'demand-public') : mode === 'demand-ssr' ? false : resolve(import.meta.dirname, 'public'),
     build: mode === 'demand'
-      ? { sourcemap: false, target: 'es2023', outDir: 'dist-demand', rollupOptions: { input: resolve(import.meta.dirname, 'demand.html') } }
-      : { sourcemap: false, target: 'es2023' },
+      ? { sourcemap: false, target: 'es2023', outDir: 'dist-demand', rollupOptions: { input: { demand: resolve(import.meta.dirname, 'demand.html'), demo: resolve(import.meta.dirname, 'demo.html') } } }
+      : mode === 'demand-ssr'
+        ? {
+            sourcemap: false,
+            target: 'es2023',
+            outDir: 'dist-demand-ssr',
+            ssr: resolve(import.meta.dirname, 'src/demand-ssr.tsx'),
+            rollupOptions: { output: { entryFileNames: 'demand-ssr.js' } },
+          }
+        : { sourcemap: false, target: 'es2023' },
     server: {
       headers: { 'Referrer-Policy': 'no-referrer', 'Cache-Control': 'no-store' },
-      ...(mode === 'demand' ? { proxy: { '/api': { target: 'http://127.0.0.1:4304' } } } : {}),
+      proxy: { '/api': { target: 'http://127.0.0.1:4304' } },
     },
   };
 });

@@ -125,7 +125,7 @@ def setup(directory, request):
         raise ValueError('DUPLICATE_PERSON')
     if any(not isinstance(p, str) or not p.startswith('TEST-PERSON-') or
            len(p) != 16 or not p[-4:].isdigit() for p in persons):
-        raise ValueError('SYNTHETIC_IDENTITIES_ONLY')
+        raise ValueError('TEST_IDENTITIES_ONLY')
     uuid = command(directory, 'setup', 'generate-token')
     write(directory, 'voters.txt', '\n'.join(persons) + '\n')
     command(directory, 'setup', 'generate-credentials', '--uuid', uuid,

@@ -19,7 +19,7 @@
         "Traceability points to actual PRs and test evidence."
       ],
       "verification": "Run each linked issue verification; negative scenarios must have the stated observed outcome.",
-      "privacy": "Synthetic data only; preserve role and data boundaries.",
+      "privacy": "Test data only; preserve role and data boundaries.",
       "fixtures": "TEST-PERSON identities and test-only keys generated locally.",
       "howToVerify": "Follow linked implementation issue instructions and recorded evidence.",
       "requirements": [
@@ -44,7 +44,7 @@
         "Traceability points to actual PRs and test evidence."
       ],
       "verification": "Run each linked issue verification; negative scenarios must have the stated observed outcome.",
-      "privacy": "Synthetic data only; preserve role and data boundaries.",
+      "privacy": "Test data only; preserve role and data boundaries.",
       "fixtures": "TEST-PERSON identities and test-only keys generated locally.",
       "howToVerify": "Follow linked implementation issue instructions and recorded evidence.",
       "requirements": [
@@ -60,7 +60,7 @@
       "id": "E02",
       "epic": "E02",
       "title": "Identity, eligibility and deduplication",
-      "goal": "One synthetic person has one right per poll across providers.",
+      "goal": "One test person has one right per poll across providers.",
       "scope": "Identity, eligibility and deduplication",
       "outOfScope": "Unrelated features and claims beyond available evidence.",
       "dependencies": [],
@@ -69,7 +69,7 @@
         "Traceability points to actual PRs and test evidence."
       ],
       "verification": "Run each linked issue verification; negative scenarios must have the stated observed outcome.",
-      "privacy": "Synthetic data only; preserve role and data boundaries.",
+      "privacy": "Test data only; preserve role and data boundaries.",
       "fixtures": "TEST-PERSON identities and test-only keys generated locally.",
       "howToVerify": "Follow linked implementation issue instructions and recorded evidence.",
       "requirements": [
@@ -94,7 +94,7 @@
         "Traceability points to actual PRs and test evidence."
       ],
       "verification": "Run each linked issue verification; negative scenarios must have the stated observed outcome.",
-      "privacy": "Synthetic data only; preserve role and data boundaries.",
+      "privacy": "Test data only; preserve role and data boundaries.",
       "fixtures": "TEST-PERSON identities and test-only keys generated locally.",
       "howToVerify": "Follow linked implementation issue instructions and recorded evidence.",
       "requirements": [
@@ -119,7 +119,7 @@
         "Traceability points to actual PRs and test evidence."
       ],
       "verification": "Run each linked issue verification; negative scenarios must have the stated observed outcome.",
-      "privacy": "Synthetic data only; preserve role and data boundaries.",
+      "privacy": "Test data only; preserve role and data boundaries.",
       "fixtures": "TEST-PERSON identities and test-only keys generated locally.",
       "howToVerify": "Follow linked implementation issue instructions and recorded evidence.",
       "requirements": [
@@ -144,7 +144,7 @@
         "Traceability points to actual PRs and test evidence."
       ],
       "verification": "Run each linked issue verification; negative scenarios must have the stated observed outcome.",
-      "privacy": "Synthetic data only; preserve role and data boundaries.",
+      "privacy": "Test data only; preserve role and data boundaries.",
       "fixtures": "TEST-PERSON identities and test-only keys generated locally.",
       "howToVerify": "Follow linked implementation issue instructions and recorded evidence.",
       "requirements": [
@@ -169,7 +169,7 @@
         "Traceability points to actual PRs and test evidence."
       ],
       "verification": "Run each linked issue verification; negative scenarios must have the stated observed outcome.",
-      "privacy": "Synthetic data only; preserve role and data boundaries.",
+      "privacy": "Test data only; preserve role and data boundaries.",
       "fixtures": "TEST-PERSON identities and test-only keys generated locally.",
       "howToVerify": "Follow linked implementation issue instructions and recorded evidence.",
       "requirements": [
@@ -194,7 +194,7 @@
         "Traceability points to actual PRs and test evidence."
       ],
       "verification": "Run each linked issue verification; negative scenarios must have the stated observed outcome.",
-      "privacy": "Synthetic data only; preserve role and data boundaries.",
+      "privacy": "Test data only; preserve role and data boundaries.",
       "fixtures": "TEST-PERSON identities and test-only keys generated locally.",
       "howToVerify": "Follow linked implementation issue instructions and recorded evidence.",
       "requirements": [
@@ -219,7 +219,7 @@
         "Traceability points to actual PRs and test evidence."
       ],
       "verification": "Run each linked issue verification; negative scenarios must have the stated observed outcome.",
-      "privacy": "Synthetic data only; preserve role and data boundaries.",
+      "privacy": "Test data only; preserve role and data boundaries.",
       "fixtures": "TEST-PERSON identities and test-only keys generated locally.",
       "howToVerify": "Follow linked implementation issue instructions and recorded evidence.",
       "requirements": [
@@ -244,7 +244,7 @@
         "Traceability points to actual PRs and test evidence."
       ],
       "verification": "Run each linked issue verification; negative scenarios must have the stated observed outcome.",
-      "privacy": "Synthetic data only; preserve role and data boundaries.",
+      "privacy": "Test data only; preserve role and data boundaries.",
       "fixtures": "TEST-PERSON identities and test-only keys generated locally.",
       "howToVerify": "Follow linked implementation issue instructions and recorded evidence.",
       "requirements": [
@@ -260,7 +260,7 @@
       "id": "E10",
       "epic": "E10",
       "title": "Production Readiness",
-      "goal": "External readiness is distinct from synthetic development.",
+      "goal": "External readiness is distinct from test development.",
       "scope": "Production Readiness",
       "outOfScope": "Unrelated features and claims beyond available evidence.",
       "dependencies": [],
@@ -269,7 +269,7 @@
         "Traceability points to actual PRs and test evidence."
       ],
       "verification": "Run each linked issue verification; negative scenarios must have the stated observed outcome.",
-      "privacy": "Synthetic data only; preserve role and data boundaries.",
+      "privacy": "Test data only; preserve role and data boundaries.",
       "fixtures": "TEST-PERSON identities and test-only keys generated locally.",
       "howToVerify": "Follow linked implementation issue instructions and recorded evidence.",
       "requirements": [
@@ -378,7 +378,7 @@
         "E03"
       ],
       "acceptance": [
-        "Official vectors and synthetic ballots execute",
+        "Official vectors and test ballots execute",
         "tampered proof and result fail",
         "quorum shortage blocks"
       ],
@@ -401,7 +401,7 @@
       "id": "V005",
       "epic": "E02",
       "title": "Versioned eligibility and two-provider deduplication",
-      "goal": "One synthetic person has one right per poll across providers.",
+      "goal": "One test person has one right per poll across providers.",
       "scope": "Versioned eligibility and two-provider deduplication",
       "outOfScope": "Production certification, unrelated changes, or undocumented protocol composition.",
       "dependencies": [
@@ -432,7 +432,7 @@
       "id": "V006",
       "epic": "E02",
       "title": "Provider outage, return replay and recovery",
-      "goal": "One synthetic person has one right per poll across providers.",
+      "goal": "One test person has one right per poll across providers.",
       "scope": "Provider outage, return replay and recovery",
       "outOfScope": "Production certification, unrelated changes, or undocumented protocol composition.",
       "dependencies": [
@@ -460,7 +460,7 @@
       "id": "V007",
       "epic": "E02",
       "title": "Provider capability and disabled integration contracts",
-      "goal": "One synthetic person has one right per poll across providers.",
+      "goal": "One test person has one right per poll across providers.",
       "scope": "Provider capability and disabled integration contracts",
       "outOfScope": "Production certification, unrelated changes, or undocumented protocol composition.",
       "dependencies": [
@@ -554,7 +554,7 @@
       ],
       "acceptance": [
         "Verified pseudonymous author creates/edits",
-        "sources and arguments required",
+        "question required, description optional, consequences, arguments and sources not required",
         "chronological sort stated"
       ],
       "verification": "Positive: complete the declared flow. Negative: exercise every rejected or detected case in the acceptance criteria and preserve the report.",
@@ -873,7 +873,7 @@
         "injection, XSS, CSRF, SSRF, IDOR and privilege tests"
       ],
       "verification": "Positive: complete the declared flow. Negative: exercise every rejected or detected case in the acceptance criteria and preserve the report.",
-      "privacy": "Use only local synthetic fixtures",
+      "privacy": "Use only local test fixtures",
       "fixtures": "TEST-PERSON-0001..0012; isolated mock A and B; separately generated test trustee keys.",
       "howToVerify": "Implementation PR must provide exact runnable commands and evidence paths before this issue can close.",
       "requirements": [
@@ -1007,7 +1007,7 @@
       "id": "V026",
       "epic": "E10",
       "title": "Production provider contracts and verified attributes",
-      "goal": "External readiness is distinct from synthetic development.",
+      "goal": "External readiness is distinct from test development.",
       "scope": "Production provider contracts and verified attributes",
       "outOfScope": "Production certification, unrelated changes, or undocumented protocol composition.",
       "dependencies": [
@@ -1035,7 +1035,7 @@
       "id": "V027",
       "epic": "E10",
       "title": "Legal operator, participation and data policies",
-      "goal": "External readiness is distinct from synthetic development.",
+      "goal": "External readiness is distinct from test development.",
       "scope": "Legal operator, participation and data policies",
       "outOfScope": "Production certification, unrelated changes, or undocumented protocol composition.",
       "dependencies": [
@@ -1061,7 +1061,7 @@
       "id": "V028",
       "epic": "E10",
       "title": "Independent cryptographic, security and privacy review",
-      "goal": "External readiness is distinct from synthetic development.",
+      "goal": "External readiness is distinct from test development.",
       "scope": "Independent cryptographic, security and privacy review",
       "outOfScope": "Production certification, unrelated changes, or undocumented protocol composition.",
       "dependencies": [
@@ -1089,7 +1089,7 @@
       "id": "V029",
       "epic": "E10",
       "title": "Independent trustees, governance and incident readiness",
-      "goal": "External readiness is distinct from synthetic development.",
+      "goal": "External readiness is distinct from test development.",
       "scope": "Independent trustees, governance and incident readiness",
       "outOfScope": "Production certification, unrelated changes, or undocumented protocol composition.",
       "dependencies": [
@@ -1143,8 +1143,8 @@
     {
       "id": "V031",
       "epic": "E10",
-      "title": "Deploy public synthetic Render demo at openvote.com.ua",
-      "goal": "Publish the existing platform as a clearly labeled synthetic demo from a repository-owned Blueprint.",
+      "title": "Deploy public test Render demo at openvote.com.ua",
+      "goal": "Publish the existing platform as a clearly labeled test demo from a repository-owned Blueprint.",
       "scope": "Render Blueprint, isolated role databases, persistent runtime state, separate browser origins, custom domain and hosted verification",
       "outOfScope": "Real identity providers, production certification, independent operators, legal readiness or external audit.",
       "dependencies": [
@@ -1153,11 +1153,11 @@
       "acceptance": [
         "Blueprint and deployment integration merge after exact-head CI",
         "Owner confirms the Dashboard charge before paid resources are created",
-        "Synthetic Browser flow and persistent state survive an actual Render restart",
+        "Test Browser flow and persistent state survive an actual Render restart",
         "Apex, API subdomains, redirects and TLS are verified after exact DNS changes"
       ],
       "verification": "Run focused origin/runtime tests, final-image host routing, affected service/native tests, the retained in-app Browser flow and post-deploy restart verification.",
-      "privacy": "Synthetic TEST-PERSON identities only; preserve role stores, origins, credentials and fail-closed runtime state.",
+      "privacy": "Test TEST-PERSON identities only; preserve role stores, origins, credentials and fail-closed runtime state.",
       "fixtures": "TEST-PERSON identities, test-only keys and isolated disposable PostgreSQL databases.",
       "howToVerify": "Follow docs/DEPLOYMENT.md and the issue checklist; keep hosted demo evidence separate from production readiness.",
       "requirements": [
@@ -1175,7 +1175,7 @@
       "id": "V032",
       "epic": "E10",
       "title": "Publish minimal demand-validation landing and anonymous poll at openvote.com.ua",
-      "goal": "Validate demand for the planned platform before deploying the full synthetic-demo infrastructure.",
+      "goal": "Validate demand for the planned platform before deploying the full test-demo infrastructure.",
       "scope": "One Ukrainian landing page, one immutable demand poll, one web service, one PostgreSQL database, custom apex domain and honest methodology disclosures",
       "outOfScope": "Full platform, identity providers, Belenios, user-created polls, representative or one-person-one-vote claims, paid deployment before approval.",
       "dependencies": [
@@ -1189,7 +1189,7 @@
       ],
       "verification": "Run the demand contract, concurrency, origin, privacy, migration, build, image and retained in-app Browser checks; keep hosted evidence separate.",
       "privacy": "No identity/contact fields, IP or User-Agent storage. Browser credentials limit accidental repeats only and cannot prove a unique person or citizenship.",
-      "fixtures": "Random synthetic browser credentials and isolated demand-response rows only.",
+      "fixtures": "Random test browser credentials and isolated demand-response rows only.",
       "howToVerify": "Follow docs/DEMAND_DEPLOYMENT.md and issue #53; do not create Render resources or replace DNS before action-time approval.",
       "requirements": [
         "1",
@@ -1205,9 +1205,9 @@
     {
       "id": "V033",
       "epic": "E10",
-      "title": "Simplify demand landing and add synthetic platform walkthrough",
+      "title": "Simplify demand landing and add test platform walkthrough",
       "goal": "Make the public demand poll immediately understandable and demonstrate the existing platform prototype without exposing real data.",
-      "scope": "Action-first demand landing, one silent same-origin walkthrough assembled from real synthetic UI screens, concise methodology limits and hosted verification",
+      "scope": "Action-first demand landing, one silent same-origin walkthrough assembled from real test UI screens, concise methodology limits and hosted verification",
       "outOfScope": "Backend or database changes, the full-platform cutover, real identity data, third-party video hosting, autoplay, narration or production-readiness claims.",
       "dependencies": [
         "E10",
@@ -1216,13 +1216,13 @@
       "acceptance": [
         "The exact question and primary vote action are clear in the first viewport, with the existing demand poll immediately after the hero",
         "The three-answer confirmation, final receipt, server-authoritative counts and reload persistence remain unchanged",
-        "One accessible self-hosted silent video shows synthetic question creation, voting and a published result",
+        "One accessible self-hosted silent video shows test question creation, voting and a published result",
         "Concise visible copy retains voluntary self-selection, no identity or citizenship verification, another-browser repeatability and non-representativeness",
         "Desktop, keyboard, 390x844, exact-head CI and hosted HTTPS checks pass without submitting a production response"
       ],
       "verification": "Run the focused demand test, types, both web builds, lint/public scan, media metadata and packaging checks, then verify local and hosted behavior in the retained in-app Browser.",
-      "privacy": "Only synthetic local UI is captured. No identity selection, credential, key, production respondent, browser storage, console, local path or third-party media appears in the asset.",
-      "fixtures": "Existing synthetic create form, open-poll choice and published 1/1/1 result from the local full-platform UI.",
+      "privacy": "Only test local UI is captured. No identity selection, credential, key, production respondent, browser storage, console, local path or third-party media appears in the asset.",
+      "fixtures": "Existing test create form, open-poll choice and published 1/1/1 result from the local full-platform UI.",
       "howToVerify": "Follow issue #59 and docs/DEMAND_DEPLOYMENT.md; keep local, CI and hosted evidence distinct.",
       "requirements": [
         "1",
@@ -1242,23 +1242,23 @@
       "epic": "E10",
       "title": "Adopt OpenVote brand and persistent poll action",
       "goal": "Give the public launch one recognizable brand and one continuously available path to the demand poll.",
-      "scope": "Shared OpenVote mark and wordmark, one sticky demand CTA, direct poll anchor, concise nontechnical poll states and a re-captured synthetic walkthrough",
+      "scope": "Shared OpenVote mark and wordmark, one sticky demand CTA, direct poll anchor, concise nontechnical poll states and a re-captured test walkthrough",
       "outOfScope": "Demand API, database, cookie behavior, confirmation/finality contract, full-platform voting behavior, Blueprint or Render-resource changes.",
       "dependencies": [
         "E10",
         "V033"
       ],
       "acceptance": [
-        "Demand and full synthetic interfaces use the exact OpenVote name and one reusable accessible vector mark without the retired display name or badge",
+        "Demand and full test interfaces use the exact OpenVote name and one reusable accessible vector mark without the retired display name or badge",
         "The demand landing has exactly one persistent Проголосувати CTA and its #poll target is not obscured by the sticky header",
         "Normal and recorded demand states contain no browser/storage service messages while retaining a concise no-identity, no-citizenship, no-uniqueness and non-representativeness notice",
         "The three answers, explicit confirmation, immutable server response, authoritative result sum and reload persistence remain unchanged",
-        "The updated silent walkthrough contains only established synthetic create, selected-choice and Published 1/1/1 states under the OpenVote brand",
+        "The updated silent walkthrough contains only established test create, selected-choice and Published 1/1/1 states under the OpenVote brand",
         "Desktop, keyboard, 390x844, exact-head CI and hosted HTTPS checks pass without submitting a production response"
       ],
       "verification": "Run focused demand tests, types, both web builds, lint/public scan, media metadata and Docker packaging; verify local and hosted behavior in the retained in-app Browser.",
-      "privacy": "Only established synthetic local UI is captured. No identity selection, credential, key, production respondent, browser-storage message, console, local path or third-party media appears in the asset.",
-      "fixtures": "Existing synthetic create form, open-poll choice without submission and Published 1/1/1 result.",
+      "privacy": "Only established test local UI is captured. No identity selection, credential, key, production respondent, browser-storage message, console, local path or third-party media appears in the asset.",
+      "fixtures": "Existing test create form, open-poll choice without submission and Published 1/1/1 result.",
       "howToVerify": "Follow issue #62 and docs/DEMAND_DEPLOYMENT.md; keep local, CI and hosted evidence distinct.",
       "requirements": [
         "1",
@@ -1353,7 +1353,7 @@
       ],
       "verification": "Reproduce the affected routes under their actual authorization and storage conditions, run focused positive and adversarial tests, and inspect the subsequent CodeQL result.",
       "privacy": "Do not key request controls on ballot choice, identity attributes or cross-service correlation identifiers.",
-      "fixtures": "Synthetic TEST-PERSON identities, isolated databases and the existing service authorization contracts.",
+      "fixtures": "Test TEST-PERSON identities, isolated databases and the existing service authorization contracts.",
       "howToVerify": "Follow issue #76 and code-scanning alerts 1–28; no finding may be dismissed to satisfy the gate.",
       "requirements": [
         "7",
@@ -1384,7 +1384,7 @@
       ],
       "verification": "Exercise the exact runtime configuration operation, confirm the causal file-state change, run focused tests and inspect the subsequent CodeQL result.",
       "privacy": "Never expose generated runtime secrets or private key material in tests, logs, artifacts or issue evidence.",
-      "fixtures": "Synthetic temporary runtime state with no production credentials or trustee material.",
+      "fixtures": "Test temporary runtime state with no production credentials or trustee material.",
       "howToVerify": "Follow issue #77 and code-scanning alert 36; no finding may be dismissed to satisfy the gate.",
       "requirements": [
         "7",
@@ -1415,7 +1415,7 @@
       ],
       "verification": "Trace each file input and outbound destination, reproduce the production and test-only paths separately, run focused adversarial tests and inspect the subsequent CodeQL result.",
       "privacy": "No credential, private key, identity payload, ballot choice or unrestricted local file may cross an outbound request boundary.",
-      "fixtures": "Synthetic public artifacts and explicit temporary test files only; no real identity data or private trustee material.",
+      "fixtures": "Test public artifacts and explicit temporary test files only; no real identity data or private trustee material.",
       "howToVerify": "Follow issue #78 and code-scanning alerts 29–35; no finding may be dismissed to satisfy the gate.",
       "requirements": [
         "7",

@@ -13,7 +13,7 @@ import { demandPublicKnowledgePath, loadDemandPublicKnowledge } from '../scripts
 import { migrateDirectory } from '../scripts/migrate.ts';
 
 const origin = 'http://localhost:5174';
-const testApiKey = 'synthetic-openai-key-for-tests-only';
+const testApiKey = 'test-openai-key-for-tests-only';
 let pool: pg.Pool;
 let app: Awaited<ReturnType<typeof demandApp>>;
 let receivedRequests: Array<{ question: string; results: DemandPollResultsType }>;
@@ -49,7 +49,7 @@ async function ask(target: typeof app, cookie: string, question: unknown, reques
   });
 }
 
-function syntheticCookie(index: number): string {
+function testCookie(index: number): string {
   return `${demandCredentialCookie}=${index.toString().padStart(43, 'A')}`;
 }
 
@@ -125,9 +125,9 @@ describe('demand AI chat API', () => {
     const globalApp = await demandApp(globalPool, 'test', origin, chatProvider);
     try {
       for (let index = 0; index < demandChatLimits.global; index += 1) {
-        expect((await ask(globalApp, syntheticCookie(index + 1), `Глобальне питання ${index + 1}`)).statusCode).toBe(200);
+        expect((await ask(globalApp, testCookie(index + 1), `Глобальне питання ${index + 1}`)).statusCode).toBe(200);
       }
-      const limited = await ask(globalApp, syntheticCookie(demandChatLimits.global + 1), 'Понад глобальний ліміт');
+      const limited = await ask(globalApp, testCookie(demandChatLimits.global + 1), 'Понад глобальний ліміт');
       expect(limited.statusCode).toBe(429);
       expect(limited.json()).toEqual({ error: 'AI_RATE_LIMITED' });
     } finally { await globalApp.close(); }
@@ -148,10 +148,10 @@ describe('demand AI chat API', () => {
     const concurrentPool = database(await readConfig('management'));
     const concurrentApp = await demandApp(concurrentPool, 'test', origin, pendingProvider);
     try {
-      const first = ask(concurrentApp, syntheticCookie(201), 'Перше паралельне питання');
-      const second = ask(concurrentApp, syntheticCookie(202), 'Друге паралельне питання');
+      const first = ask(concurrentApp, testCookie(201), 'Перше паралельне питання');
+      const second = ask(concurrentApp, testCookie(202), 'Друге паралельне питання');
       await enteredPromise;
-      const busy = await ask(concurrentApp, syntheticCookie(203), 'Третє паралельне питання');
+      const busy = await ask(concurrentApp, testCookie(203), 'Третє паралельне питання');
       expect(busy.statusCode).toBe(503);
       expect(busy.json()).toEqual({ error: 'AI_BUSY' });
       for (const resolve of resolvers) resolve('Підтверджена паралельна відповідь.');
@@ -161,11 +161,14 @@ describe('demand AI chat API', () => {
 });
 
 describe('OpenAI demand chat provider', () => {
-  it('publishes exactly twenty agreed user-facing FAQ answers independently from the assistant snapshot', () => {
-    expect(demandFaqItems).toHaveLength(20);
-    expect(new Set(demandFaqItems.map(item => item.question)).size).toBe(20);
+  it('publishes exactly twenty-three agreed FAQ answers and mirrors approved comparison facts into the assistant snapshot', () => {
+    expect(demandFaqItems).toHaveLength(23);
+    expect(new Set(demandFaqItems.map(item => item.question)).size).toBe(23);
     const visibleFaqCopy = [demandFaqIntro, ...demandFaqItems.flatMap(item => [item.question, item.answer])].join('\n');
     expect(visibleFaqCopy).toContain('Що таке OpenVote?');
+    expect(visibleFaqCopy).toContain('Чим OpenVote відрізняється від CAWI та Lemur?');
+    expect(visibleFaqCopy).toContain('Чи показуватиме OpenVote думку всіх українців?');
+    expect(visibleFaqCopy).toContain('Чому OpenVote краще підходить для громадських питань?');
     expect(visibleFaqCopy).toContain('Як OpenVote захищатиме дані у разі витоку?');
     expect(visibleFaqCopy).not.toContain('Чому OpenVote спростив формулювання на головній сторінці?');
     expect(visibleFaqCopy).not.toContain('—');
@@ -175,6 +178,10 @@ describe('OpenAI demand chat provider', () => {
     expect(publicKnowledge).toContain('OpenVote завжди буде безкоштовною та відкритою платформою.');
     expect(publicKnowledge).toContain('V044 removed stronger trust wording');
     expect(publicKnowledge).toContain('For every Taras request, the OpenVote server supplies the same validated public poll');
+    expect(publicKnowledge).toContain('CAWI means computer-assisted web interviewing.');
+    expect(publicKnowledge).toContain('Lemur presents itself as professional software for sociological and marketing research.');
+    expect(publicKnowledge).toContain('OpenVote is intended as a public civic space');
+    expect(publicKnowledge).toContain('OpenVote does not claim that participants in a poll automatically represent all Ukrainians.');
   });
 
   it('sends only the approved context and question through a stateless bounded Responses request', async () => {
@@ -215,6 +222,9 @@ describe('OpenAI demand chat provider', () => {
     expect(instructions).toContain('не більше ніж 250 символів разом із пробілами');
     expect(instructions).not.toContain('ВИДИМИЙ FAQ');
     expect(instructions).not.toContain(demandFaqItems[0].answer);
+    expect(instructions).toContain('CAWI means computer-assisted web interviewing.');
+    expect(instructions).toContain('Lemur presents itself as professional software for sociological and marketing research.');
+    expect(instructions).toContain('OpenVote is intended as a public civic space');
     expect(instructions).toContain('openvote.com.ua` serves a demand-validation landing');
     expect(instructions).toContain('The production tally/key-custody design is still open.');
     expect(instructions).toContain('V044 removed stronger trust wording');

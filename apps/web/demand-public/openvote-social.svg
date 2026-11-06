@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="background" x1="80" y1="20" x2="1120" y2="610" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FBFAF7"/>
+      <stop offset="1" stop-color="#E9E7FA"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#background)"/>
+  <circle cx="1100" cy="90" r="250" fill="none" stroke="#4B3FC3" stroke-opacity=".1" stroke-width="2"/>
+  <rect x="82" y="74" width="88" height="88" rx="22" fill="#EEECFF" stroke="#D6D1FA" stroke-width="2"/>
+  <path d="M138 94a28 28 0 1 0 3 44" fill="none" stroke="#4B3FC3" stroke-width="9" stroke-linecap="round"/>
+  <path d="m111 117 12 12 30-32" fill="none" stroke="#4B3FC3" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="192" y="132" fill="#18192F" font-family="Manrope, Arial, sans-serif" font-size="44" font-weight="750">OpenVote</text>
+  <text x="82" y="270" fill="#18192F" font-family="Manrope, Arial, sans-serif" font-size="64" font-weight="750">Важливі питання не мають</text>
+  <text x="82" y="348" fill="#18192F" font-family="Manrope, Arial, sans-serif" font-size="64" font-weight="750">вирішуватися навмання.</text>
+  <text x="82" y="445" fill="#5D6078" font-family="Manrope, Arial, sans-serif" font-size="30" font-weight="500">Відкрита платформа громадських голосувань</text>
+  <rect x="82" y="510" width="292" height="64" rx="32" fill="#4B3FC3"/>
+  <text x="228" y="551" fill="#FFFFFF" text-anchor="middle" font-family="Manrope, Arial, sans-serif" font-size="24" font-weight="700">Проголосувати</text>
+</svg>

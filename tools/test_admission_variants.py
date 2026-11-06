@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build synthetic admission fixtures with original Belenios commands only.
+"""Build test admission fixtures with original Belenios commands only.
 
 Output contains public archives and one encrypted ballot. The temporary foreign
 credential is never returned, logged or written to public evidence.
@@ -62,7 +62,7 @@ def variants(encoded):
                 raise ValueError('TEST_ENVIRONMENT_REQUIRED')
             manifest['environment'] = 'demo'
         else:
-            manifest['context'] += ' Змінений контекст синтетичної перевірки.'
+            manifest['context'] += ' Змінений контекст у тестовому режимії перевірки.'
         election['description'] = json.dumps(manifest, ensure_ascii=False, separators=(',', ':'))
         changed[name] = assemble(json.dumps(election, ensure_ascii=False, separators=(',', ':')), files['public_creds.json'], files['trustees.json'])
     other = process({'action': 'setup', 'manifest': json.loads(verified['election']['description']),

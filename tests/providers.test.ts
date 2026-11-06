@@ -8,8 +8,8 @@ import { disabledProviders } from '../packages/domain/src/providers.ts';
 const keys = generateKeyPairSync('ed25519');
 const privateKey = keys.privateKey.export({ format: 'pem', type: 'pkcs8' }).toString();
 const publicKey = keys.publicKey.export({ format: 'pem', type: 'spki' }).toString();
-const input = { subject: 'TEST-PERSON-0002', challenge: 'synthetic-challenge-for-contract-verification' };
-const client = () => new MockIdentityProvider({ environment: 'test', provider: 'A', authorization: 'synthetic-provider-service-authorization', publicKey });
+const input = { subject: 'TEST-PERSON-0002', challenge: 'test-challenge-for-contract-verification' };
+const client = () => new MockIdentityProvider({ environment: 'test', provider: 'A', authorization: 'test-provider-service-authorization', publicKey });
 const assertion = () => {
   const now = Date.now();
   return Attestation.parse({ ...input, provider: 'A', attributes: { verifiedOwner: true, age: 25, citizenship: 'UA' },
@@ -50,26 +50,26 @@ describe('identity provider contract boundary', () => {
     const transport = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify({ error: 'PROVIDER_UNAVAILABLE' }), { status: 503 }));
     await expect(client().authenticate(input)).rejects.toMatchObject({ message: 'PROVIDER_UNAVAILABLE', statusCode: 503 });
     expect(transport).toHaveBeenCalledTimes(1);
-    transport.mockRejectedValueOnce(new TypeError('Synthetic transport interruption'));
+    transport.mockRejectedValueOnce(new TypeError('Test transport interruption'));
     expect(await client().status()).toMatchObject({ provider: 'A', available: false, observation: 'TransportUnavailable' });
   });
   it('does not invent availability from malformed or mismatched status data', async () => {
-    const transport = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(new Response(JSON.stringify({ provider: 'B', available: true, synthetic: true, upstream: 'independent-local-mock-B' })));
+    const transport = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(new Response(JSON.stringify({ provider: 'B', available: true, testOnly: true, upstream: 'independent-local-mock-B' })));
     await expect(client().status()).rejects.toThrow('PROVIDER_STATUS_MISMATCH');
     transport.mockResolvedValueOnce(new Response(JSON.stringify({ available: true })));
     await expect(client().status()).rejects.toThrow();
   });
   it('rejects real identifiers and production configuration before contacting a provider', async () => {
     const transport = vi.spyOn(globalThis, 'fetch');
-    await expect(client().authenticate({ ...input, subject: 'NOT-A-SYNTHETIC-SUBJECT' })).rejects.toThrow();
-    expect(() => new MockIdentityProvider({ environment: 'production', provider: 'A', authorization: 'synthetic-only', publicKey })).toThrow();
+    await expect(client().authenticate({ ...input, subject: 'NOT-A-TEST-SUBJECT' })).rejects.toThrow();
+    expect(() => new MockIdentityProvider({ environment: 'production', provider: 'A', authorization: 'test-only', publicKey })).toThrow();
     expect(transport).not.toHaveBeenCalled();
   });
   it('keeps all three production boundaries explicitly disabled without any network call', async () => {
     const transport = vi.spyOn(globalThis, 'fetch');
     for (const descriptor of disabledProviders) {
       const adapter = new AwaitingProviderContract(descriptor.provider);
-      expect(await adapter.status()).toMatchObject({ available: false, synthetic: false, state: 'AwaitingProviderContract' });
+      expect(await adapter.status()).toMatchObject({ available: false, testOnly: false, state: 'AwaitingProviderContract' });
       await expect(adapter.authenticate({})).rejects.toMatchObject({ message: 'AWAITING_PROVIDER_CONTRACT', statusCode: 503 });
     }
     expect(transport).not.toHaveBeenCalled();

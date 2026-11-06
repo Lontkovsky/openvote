@@ -1,10 +1,10 @@
 # Development release candidate
 
-Status: no public OpenVote release exists yet. This document defines the single release path for the synthetic development candidate. It does not authorize a production launch or a deployment.
+Status: no public OpenVote release exists yet. This document defines the single release path for the test development candidate. It does not authorize a production launch or a deployment.
 
 ## Release boundary
 
-The candidate contains the full synthetic OpenVote application, the demand landing, the unmodified Belenios 3.3.0 reference cryptography, public verification tools and public test evidence. It supports only the declared `TEST-PERSON` fixtures and separately generated test trustee keys.
+The candidate contains the full test OpenVote application, the demand landing, the unmodified Belenios 3.3.0 reference cryptography, public verification tools and public test evidence. It supports only the declared `TEST-PERSON` fixtures and separately generated test trustee keys.
 
 The candidate is not approved for real politically sensitive participation. Production identity-provider contracts, the legal operator and policies, independent cryptographic/security/privacy review, and independent trustees/governance remain the separate open Production Readiness issues V026–V029. Their required evidence and the only permitted launch sequence are defined by the [launch readiness gate](LAUNCH_READINESS.md).
 
@@ -13,9 +13,9 @@ The candidate is not approved for real politically sensitive participation. Prod
 | Case | Prerequisite | Expected result | Current evidence |
 |---|---|---|---|
 | Clean checkout | Recursive clone, Node 24.20.0, pnpm 10.33.0, Docker and Python 3 | Locked install, bootstrap and migrations complete without private material in Git | Implementation PR #69 merge workflow `41207664468` passed every required job on merged commit `282ec0e4c4ef6502027b36f6483eb2a5cdeca934` |
-| Documented commands | Local synthetic services and the exact inputs documented below | `bootstrap`, `dev`, `seed`, `test`, `test:e2e`, `verify`, `audit:export` and `smoke` follow their documented contracts | Passed locally: 103/103 tests, 27/27 native checks, retained Browser 14/14 stages and 38/38 assertions, native archive verification and current-poll audit export; workflow `41207664468` passed every non-Browser contract on the merged implementation |
+| Documented commands | Local test services and the exact inputs documented below | `bootstrap`, `dev`, `seed`, `test`, `test:e2e`, `verify`, `audit:export` and `smoke` follow their documented contracts | Passed locally: 103/103 tests, 27/27 native checks, retained Browser 14/14 stages and 38/38 assertions, native archive verification and current-poll audit export; workflow `41207664468` passed every non-Browser contract on the merged implementation |
 | Full browser journey | Existing retained in-app Browser and healthy local services | Create, review, three choices, duplicate rejection, close, tally, exports and provider failure/recovery all pass | Retained exact-source run `6c9fa7afdf` passed with identical initial/final source hash; the single final run on the exact production candidate remains deferred until the full-platform cutover |
-| Negative and adversarial cases | Synthetic fixtures only | Declared rejections and detections in A01–A11 retain evidence | Complete local suite passed 103/103; workflow `41207664468` repeated the non-Browser contracts successfully |
+| Negative and adversarial cases | Test fixtures only | Declared rejections and detections in A01–A11 retain evidence | Complete local suite passed 103/103; workflow `41207664468` repeated the non-Browser contracts successfully |
 | Dependency and runtime-image hygiene | Locked production graph and the three built runtime images | Public secret scan and dependency gate pass; all high/critical image findings are reported and fixable findings fail the job | Public scan positive/negative cases and dependency gate passed locally; corrected crypto, full and demand images passed the exact local fixable gate and both CI image gates in workflow `41207664468` |
 | Reproducible clients | Clean committed source and pinned crypto image | Two fresh full and demand builds are byte-identical; manifests, checksums, SBOM and provenance are generated | Passed locally and generated again by workflow `41207664468` on merged implementation commit `282ec0e4c4ef6502027b36f6483eb2a5cdeca934` |
 | Public evidence hygiene | Candidate source and generated public artifacts | No known credential/private-key pattern, private trustee material or real identity is published | Local pre/post-evidence scans and both workflow `41207664468` hygiene steps passed; documentation reconciliation workflow `41209184691` also passed on merged commit `004289f5e9ba95c571e62869cc851247b35ab7e2` |
@@ -25,7 +25,7 @@ No row becomes complete from documentation alone. The issue, board and final rep
 
 ## Exact local verification path
 
-From a recursive clean checkout, build the pinned reference image, install the locked workspace and initialize the isolated synthetic services:
+From a recursive clean checkout, build the pinned reference image, install the locked workspace and initialize the isolated test services:
 
 ```sh
 docker build --platform linux/amd64 --target crypto-runtime -f infra/crypto.Dockerfile -t openvote-crypto:3.3.0 .
@@ -52,7 +52,7 @@ Run `pnpm test:e2e` once and complete every stage through the existing in-app Br
 pnpm verify artifacts/e2e/election.bel
 ```
 
-The `audit:export` command requires the exact pretrusted observer configuration described in [OBSERVER.md](OBSERVER.md). Its successful local contract is recorded there with the actual retained synthetic configuration and exclusive output path; the focused observer suite reproduces both successful export and rejected evidence cases.
+The `audit:export` command requires the exact pretrusted observer configuration described in [OBSERVER.md](OBSERVER.md). Its successful local contract is recorded there with the actual retained test configuration and exclusive output path; the focused observer suite reproduces both successful export and rejected evidence cases.
 
 Finally run the bounded public scan and inspect the diff:
 

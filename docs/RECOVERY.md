@@ -1,6 +1,6 @@
 # Backup, restore and acknowledgement recovery
 
-This is the single supported recovery procedure for the full synthetic platform. It is local development evidence, not proof that Render backups or production operators have completed the exercise.
+This is the single supported recovery procedure for the full test platform. It is local development evidence, not proof that Render backups or production operators have completed the exercise.
 
 ## Required private backup set
 

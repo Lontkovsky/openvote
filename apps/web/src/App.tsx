@@ -1,60 +1,99 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import { z } from 'zod';
-import { Categories, Poll, policyText } from '../../../packages/domain/src/index.ts';
+import { Poll } from '../../../packages/domain/src/index.ts';
 import type { PollType } from '../../../packages/domain/src/index.ts';
+import { demandFaqItems } from '../../../packages/domain/src/demand.ts';
 import { request } from './api.ts';
+import { loadDemandPoll } from './demand-api.ts';
 import { PollPage, stateNames } from './PollPage.tsx';
+import { PollCard } from './PollCard.tsx';
 import { Identity } from './Identity.tsx';
 import { DraftEditor, MyPolls, ReviewQueue } from './Workspace.tsx';
+import { CategorySelect } from './CategorySelect.tsx';
+import { TarasChat } from './TarasChat.tsx';
+import { VerificationPage } from './Verification.tsx';
+import { appHref, currentAppRoute, navigateApp } from './demo-mode.ts';
 import openVoteMark from './assets/openvote-mark.svg';
 
-export function App() {
-  const [route, setRoute] = useState(location.hash);
-  const [auth, setAuth] = useState<Auth | null>(null);
+function PollDrawer({ children, label, onDismiss }: { children: ReactNode; label: string; onDismiss: () => void }) {
+  const dialog = useRef<HTMLDialogElement>(null);
   useEffect(() => {
-    if (auth === null) return;
+    const current = dialog.current;
+    document.body.classList.add('drawer-open');
+    if (current !== null && !current.open) current.showModal();
+    return () => { document.body.classList.remove('drawer-open'); if (current?.open) current.close(); };
+  }, []);
+  return <dialog ref={dialog} className="poll-drawer" aria-label={label} onCancel={event => { event.preventDefault(); onDismiss(); }} onClick={event => { if (event.target === event.currentTarget) onDismiss(); }}>
+    <div className="poll-drawer-panel">
+      <button className="poll-drawer-close" type="button" aria-label="Закрити" onClick={onDismiss}><span aria-hidden="true">×</span></button>
+      {children}
+    </div>
+  </dialog>;
+}
+
+export function App({ demo = false }: { demo?: boolean }) {
+  const [route, setRoute] = useState(currentAppRoute);
+  const [auth, setAuth] = useState<Auth | null>(demo ? publicDemoAuth : null);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
+  useEffect(() => {
+    if (auth === null || demo) return;
     const timer = setTimeout(() => setAuth(null), Math.max(0, Date.parse(auth.expiresAt) - Date.now()));
     return () => clearTimeout(timer);
-  }, [auth]);
-  const [polls, setPolls] = useState<PollType[]>([]), [query, setQuery] = useState(''), [category, setCategory] = useState('');
+  }, [auth, demo]);
+  const [polls, setPolls] = useState<PollType[]>([]), [query, setQuery] = useState(''), [categories, setCategories] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null), [loading, setLoading] = useState(true);
-  useEffect(() => { const update = () => setRoute(location.hash); addEventListener('hashchange', update); return () => removeEventListener('hashchange', update); }, []);
+  const mineActive = route === '/mine' || route === '/mine/new';
+  const createActive = route === '/new' || route === '/mine/new';
+  useEffect(() => {
+    const update = () => { setRoute(currentAppRoute()); setMobileNavOpen(false); };
+    const event = demo ? 'popstate' : 'hashchange';
+    addEventListener(event, update);
+    return () => removeEventListener(event, update);
+  }, [demo]);
+  useEffect(() => { window.scrollTo(0, 0); }, [route]);
   useEffect(() => {
     let active = true;
     const params = new URLSearchParams();
     if (query) params.set('q', query);
-    if (category) params.set('category', category);
+    categories.forEach(category => params.append('category', category));
     setLoading(true); setError(null);
     request('management', '/v1/polls?' + params.toString()).then(value => {
       const result = z.object({ polls: z.array(Poll) }).parse(value);
       if (active) setPolls(result.polls);
     }).catch((e: unknown) => { if (active) setError(e instanceof Error ? e.message : 'Помилка запиту'); }).finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
-  }, [query, category, route]);
+  }, [query, categories, route]);
   return <>
     <a className="skip" href="#main">До основного вмісту</a>
-    <div className="environment"><span className="status-dot" /> Синтетична demo-версія <span>Лише тестові особи · справжні документи не приймаються</span></div>
-    <header className="site-header"><a className="brand" href="#/" aria-label="OpenVote — на початок сторінки"><span className="brand-mark" aria-hidden="true"><img src={openVoteMark} alt="" /></span><span>OpenVote<small>Чесно. Прозоро. Анонімно.</small></span></a>
-      <nav aria-label="Основна навігація"><a href="#/" aria-current={!route || route === '#/' ? 'page' : undefined}>Голосування</a><a href="#/trust">Центр довіри</a><a href="#/help">Довідка</a></nav>
-      {auth === null ? <a className="button secondary" href="#/identity">Підтвердити участь</a> : <div className="account-actions"><a href="#/mine">Мої питання</a>{auth.role === 'moderator' && <a href="#/moderation">Модерація</a>}<button className="secondary" onClick={() => { void request('identity', '/v1/session', 'DELETE', undefined, auth.token).then(() => { setAuth(null); location.hash = '#/'; }).catch((e: Error) => setError(e.message)); }}>Вийти</button></div>}</header>
+    <header className={`site-header${mobileNavOpen ? ' mobile-nav-open' : ''}`}><a className="brand" href={appHref('/')} aria-label="OpenVote — на початок сторінки"><span className="brand-mark" aria-hidden="true"><img src={openVoteMark} alt="" /></span><span>OpenVote 🇺🇦<small>Чесно. Прозоро. Анонімно.</small></span></a>
+      <nav id="platform-navigation" aria-label="Основна навігація" onClick={() => setMobileNavOpen(false)}><a href={appHref('/')} aria-current={route === '/' || mineActive || createActive ? 'page' : undefined}>Опитування</a><a href={appHref('/trust')} aria-current={route === '/trust' ? 'page' : undefined}>Перевірка</a><a href={appHref('/help')} aria-current={route === '/help' ? 'page' : undefined}>FAQ</a></nav>
+      <div className="header-actions"><a className="button primary header-create" href={appHref(mineActive ? '/mine/new' : '/new')}><span className="header-create-full">Створити опитування</span><span className="header-create-short">Створити</span></a><button className="mobile-menu-toggle" type="button" aria-controls="platform-navigation" aria-expanded={mobileNavOpen} aria-label={mobileNavOpen ? 'Закрити меню' : 'Відкрити меню'} onClick={() => setMobileNavOpen(open => !open)}><span /><span /><span /></button></div></header>
+    {demo && <div className="public-demo-notice"><strong>Демо OpenVote.</strong> Тут можна переглядати й створювати опитування. Усі ваші дії залишаються лише у цьому браузері.</div>}
     <main id="main" tabIndex={-1}>
-      {route === '#/trust' ? <section className="reading"><p className="eyebrow">ВІДКРИТІ ПРАВИЛА</p><h1>Довіра починається з перевірки</h1><p className="lead">OpenVote відкриває правила, код і матеріали для перевірки — та чесно показує межі системи.</p><div className="reading-grid"><article className="reading-card"><span>01</span><h2>Що можна перевірити</h2><p>Публічний архів дозволяє перевірити криптографічні докази й підрахунок. Tracker підтверджує включення бюлетеня, але не розкриває відповідь.</p></article>
-        <article className="reading-card"><span>02</span><h2>Зовнішні спостерігачі</h2><p>Окрема програма зберігає підписану історію та звіряє опублікований підрахунок без доступу до ідентифікації.</p></article>
-        <article className="reading-card"><span>03</span><h2>Від кого залежить приватність</h2><p>Сторона, яка видає право участі, бачить особу. Достатня змова власників ключів може розшифрувати бюлетені.</p></article>
-        <article className="reading-card"><span>04</span><h2>Чого ми не обіцяємо</h2><p>Ця версія не захищає від примусу, зараженого пристрою чи підміни клієнтського коду. Незалежний аудит ще не виконано.</p></article></div>
-        <details className="technical-disclosure"><summary>Технічні відомості</summary><p>Demo-версія використовує Belenios 3.3.0 і лише синтетичні особи. Спостерігач потребує заздалегідь перевіреного ключа та manifest. Суперечливі історії виявляються після обміну свідченнями. Повністю ізольовані спостерігачі не гарантують виявлення split-view.</p></details><p><a href="https://github.com/Lontkovsky/openvote">Код, рішення й перевірки на GitHub ↗</a></p></section>
-      : route === '#/help' ? <section className="reading"><p className="eyebrow">ЧОТИРИ КРОКИ</p><h1>Як працює участь</h1><p className="lead">Від питання до перевіреного підсумку — без прихованих кроків.</p><ol className="steps"><li><h2>Прочитайте питання й правила</h2><p>Одразу перевірте, хто може брати участь і коли завершиться голосування.</p></li><li><h2>Підтвердьте право участі</h2><p>У demo-версії використовуйте лише тестову особу. Зміна провайдера не дає другого голосу.</p></li><li><h2>Зробіть остаточний вибір</h2><p>Відповідь шифрується на вашому пристрої. Після прийняття змінити її не можна.</p></li><li><h2>Перевірте підсумок</h2><p>Збережіть tracker для перевірки включення. Розподіл відповідей відкривається лише після закриття й за достатньої кількості учасників.</p></li></ol></section>
-      : route.startsWith('#/identity') ? <Identity onSignedIn={signedIn => { setAuth(signedIn); const destination = new URLSearchParams(route.split('?')[1]).get('return'); location.hash = destination !== null && destination.startsWith('#/poll/') ? destination : '#/'; }} />
-      : route.startsWith('#/poll/') ? <PollPage key={route} id={route.slice(7)} auth={auth} />
-      : route === '#/new' || route.startsWith('#/edit/') ? auth === null ? <Identity onSignedIn={setAuth} /> : <DraftEditor auth={auth} id={route.startsWith('#/edit/') ? route.slice(7) : null} />
-      : route === '#/mine' ? auth === null ? <Identity onSignedIn={setAuth} /> : <MyPolls auth={auth} />
-      : route === '#/moderation' ? auth === null ? <Identity onSignedIn={setAuth} /> : <ReviewQueue auth={auth} />
-      : <><section className="page-heading"><div><p className="eyebrow">ВІДКРИТІ ГОЛОСУВАННЯ</p><h1>Голосування</h1><p className="lead">Ставте важливі питання, робіть приватний вибір і перевіряйте оприлюднений результат.</p></div><a className="button primary" href="#/new">+ Створити питання</a></section>
-        <div className="catalog-tools"><label className="search">Пошук питань<input type="search" value={query} onChange={e => setQuery(e.target.value)} /></label><label>Категорія<select value={category} onChange={e => setCategory(e.target.value)}><option value="">Усі категорії</option>{Categories.map(c => <option key={c}>{c}</option>)}</select></label></div>
-        <div className="catalog-layout"><section aria-label="Каталог голосувань"><div className="section-line"><h2>Каталог</h2><span>Новіші спочатку</span></div>{loading ? <p role="status">Завантаження голосувань…</p> : error ? <div className="notice error" role="alert">Не вдалося завантажити каталог: {error}</div> : polls.length === 0 ? <div className="empty"><span className="empty-symbol">+</span><h2>Питань ще немає</h2><p>{query || category ? 'За цими умовами голосувань не знайдено.' : 'Створіть першу пропозицію після підтвердження тестової особи.'}</p></div> : <div className="poll-list">{polls.map(poll => <article className="poll-card" key={poll.id}><div className="card-top"><span className="category">{poll.content.category}</span><span className="state">{stateNames[poll.state]}</span></div><h2><a href={`#/poll/${poll.id}`}>{poll.content.question}</a></h2><p>{poll.content.context}</p><div className="card-bottom"><span>{poll.content.authorAlias}</span><span>{policyText(poll.content.policy)}</span></div></article>)}</div>}</section>
-          <aside className="principles"><span className="eyebrow">ВАЖЛИВЕ ПРАВИЛО</span><h2>Одна людина — один голос.</h2><p>Зміна пристрою чи способу підтвердження не додає ще одного голосу.</p><div className="rule" /><h3>Результат — про учасників</h3><p>OpenVote показує позицію учасників конкретного голосування, а не думку всього населення.</p><a href="#/trust">Межі гарантій <span aria-hidden="true">↗</span></a></aside></div></>}
-    </main><footer><span>OpenVote · Чесно. Прозоро. Анонімно.</span><span>Не державний сервіс. Не офіційні вибори.</span><a href="https://github.com/Lontkovsky/openvote">Відкритий код ↗</a></footer>
+      {route === '/trust' ? <VerificationPage demo={demo} />
+      : route === '/help' ? <section className="platform-faq" aria-labelledby="platform-faq-title">
+        <header className="platform-faq-heading"><h1 id="platform-faq-title">Поширені питання і відповіді.</h1></header>
+        <div className="platform-faq-list">
+          {demandFaqItems.map(item => <details key={item.question}><summary>{item.question}</summary><p>{item.answer}</p></details>)}
+        </div>
+        <section className="faq-support" aria-labelledby="faq-support-title"><div><h2 id="faq-support-title">Зв’язок із підтримкою</h2><p>Привіт! Я Тарас. Ви можете запитати мене про все, що стосується OpenVote.</p></div><button className="secondary" type="button" aria-controls="demand-chat" onClick={() => setChatOpen(true)}>Запитати Тараса</button></section>
+      </section>
+      : route.startsWith('/identity') ? <Identity onSignedIn={signedIn => { setAuth(signedIn); const destination = new URLSearchParams(route.split('?')[1]).get('return'); navigateApp(destination !== null && destination.startsWith('/poll/') ? destination : '/'); }} />
+      : route.startsWith('/poll/') ? <PollPage key={route} id={route.slice(6)} auth={auth} demo={demo} />
+      : route.startsWith('/edit/') ? auth === null ? <Identity onSignedIn={setAuth} /> : <DraftEditor auth={auth} id={route.slice(6)} />
+      : route === '/moderation' ? auth === null ? <Identity onSignedIn={setAuth} /> : <ReviewQueue auth={auth} />
+      : <section className="poll-workspace">
+        <nav className="poll-workspace-tabs" aria-label="Перегляд опитувань"><a href={appHref('/')} aria-current={mineActive ? undefined : 'page'}>Усі</a><a href={appHref('/mine')} aria-current={mineActive ? 'page' : undefined}>Мої</a></nav>
+        {mineActive ? auth === null ? <Identity onSignedIn={setAuth} /> : <MyPolls auth={auth} /> : <section className="catalog-home"><h1 className="visually-hidden">Усі опитування</h1><div className="catalog-tools"><label className="search"><span className="visually-hidden">Пошук опитувань</span><input type="search" value={query} placeholder="Знайти опитування" aria-label="Пошук опитувань" onChange={e => setQuery(e.target.value)} /></label><CategorySelect multiple selected={categories} onChange={setCategories} />{categories.length > 0 && <div className="category-chips" aria-label="Обрані категорії">{categories.map(category => <button type="button" key={category} aria-label={`Прибрати категорію ${category}`} onClick={() => setCategories(current => current.filter(item => item !== category))}><span>{category}</span><span aria-hidden="true">×</span></button>)}</div>}</div>
+          <section className="catalog-results" aria-label="Усі опитування"><h2>Усі опитування</h2>{loading ? <p role="status">Завантаження опитувань…</p> : error ? <div className="notice error" role="alert">Не вдалося завантажити опитування: {error}</div> : polls.length === 0 ? <div className="empty"><span className="empty-symbol">+</span><h2>Опитувань ще немає</h2><p>{query || categories.length > 0 ? 'За цими умовами опитувань не знайдено.' : 'Створіть перше опитування.'}</p></div> : <div className="poll-list">{polls.map(poll => <PollCard key={poll.id} id={poll.id} question={poll.content.question} context={poll.content.context} category={poll.content.category} stateLabel={stateNames[poll.state]} opensAt={poll.content.opensAt} closesAt={poll.content.closesAt} />)}</div>}</section></section>}
+        {createActive && <PollDrawer label={auth === null ? 'Підтвердження участі для створення опитування' : 'Створити опитування'} onDismiss={() => navigateApp(mineActive ? '/mine' : '/')}>{auth === null ? <Identity onSignedIn={setAuth} drawer /> : <DraftEditor auth={auth} id={null} drawer />}</PollDrawer>}
+      </section>}
+    </main><TarasChat open={chatOpen} onOpenChange={setChatOpen} prepare={loadDemandPoll} /><footer className="platform-footer"><div className="platform-footer-inner"><a className="brand" href={appHref('/')}><span className="brand-mark" aria-hidden="true"><img src={openVoteMark} alt="" /></span><span>OpenVote<small>Чесно. Прозоро. Анонімно.</small></span></a><nav aria-label="Навігація в підвалі"><a href={appHref('/')}>Опитування</a><a href={appHref('/trust')}>Перевірка</a><a href={appHref('/help')}>FAQ</a><a href="https://github.com/Lontkovsky/openvote">GitHub ↗</a></nav><div className="platform-footer-notes"><span>Відкритий код AGPL-3.0</span><span>Не державний сервіс. Не офіційне голосування.</span></div></div></footer>
   </>;
 }
 
 export type Auth = { token: string; role: string; expiresAt: string };
+
+const publicDemoAuth: Auth = { token: 'public-demo', role: 'participant', expiresAt: '2099-12-31T23:59:59.000Z' };

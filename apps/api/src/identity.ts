@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { Attributes, Policy, Session, eligible } from '../../../packages/domain/src/index.ts';
-import { MockProviderId, SyntheticSubject, ProviderCatalogue } from '../../../packages/domain/src/providers.ts';
-import { syntheticPersons } from '../../../packages/domain/src/fixtures.ts';
+import { MockProviderId, TestSubject, ProviderCatalogue } from '../../../packages/domain/src/providers.ts';
+import { testPersons } from '../../../packages/domain/src/fixtures.ts';
 import { application, authorize, database, Failure, pseudonym, required, sealed, sha, token, transaction, unseal } from './common.ts';
 import type { ConfigType } from './common.ts';
 import { MockIdentityProvider, AwaitingProviderContract } from './identity-provider.ts';
@@ -9,7 +9,7 @@ import { MockIdentityProvider, AwaitingProviderContract } from './identity-provi
 export async function identityApp(config: ConfigType, publicOrigin: string) {
   const app = await application(config, publicOrigin), pool = database(config);
   app.addHook('onClose', () => pool.end());
-  const Subject = SyntheticSubject;
+  const Subject = TestSubject;
   const providerTokens = required(config.providerTokens), providerKeys = required(config.providerKeys);
   const providers = new Map(MockProviderId.options.map(provider => [provider, new MockIdentityProvider({ environment: config.environment, provider,
     authorization: required(providerTokens[provider]), publicKey: required(providerKeys[provider]) })]));
@@ -23,12 +23,12 @@ export async function identityApp(config: ConfigType, publicOrigin: string) {
     return Session.parse({ person: row.person, role: row.role, verifiedOwner: Attributes.parse(row.attributes).verifiedOwner, expiresAt: row.expires_at.toISOString() });
   }
   app.get('/v1/providers', async () => {
-    return ProviderCatalogue.parse({ environment: config.environment, syntheticPersons: syntheticPersons.map(p => p.subject),
+    return ProviderCatalogue.parse({ environment: config.environment, testPersons: testPersons.map(p => p.subject),
       providers: await Promise.all([...providers.values()].map(p => p.status())), production: await Promise.all(production.map(p => p.status())) });
   });
   app.post('/v1/auth/start', async request => {
     const input = z.strictObject({ provider: MockProviderId, subject: Subject }).parse(request.body);
-    if (!syntheticPersons.some(p => p.subject === input.subject)) throw new Failure('UNKNOWN_SYNTHETIC_PERSON', 400);
+    if (!testPersons.some(p => p.subject === input.subject)) throw new Failure('UNKNOWN_TEST_PERSON', 400);
     const id = token(), challenge = token();
     await pool.query('DELETE FROM attempts WHERE expires_at<now()');
     await pool.query('INSERT INTO attempts(id,provider,subject,challenge,expires_at) VALUES($1,$2,$3,$4,$5)',
@@ -44,12 +44,12 @@ export async function identityApp(config: ConfigType, publicOrigin: string) {
     if (row.completed && row.session_token_sealed !== null) {
       const replayed = unseal(row.session_token_sealed, required(config.sealingKey));
       const identity = await session('Bearer ' + replayed);
-      return { token: replayed, role: identity.role, expiresAt: identity.expiresAt, synthetic: true };
+      return { token: replayed, role: identity.role, expiresAt: identity.expiresAt, testOnly: true };
     }
     const attestation = await required(providers.get(MockProviderId.parse(row.provider))).authenticate({ subject: Subject.parse(row.subject), challenge: row.challenge });
     const person = pseudonym(attestation.subject, required(config.dedupKey));
-    const fixture = syntheticPersons.find(p => p.subject === attestation.subject);
-    if (!fixture) throw new Failure('UNKNOWN_SYNTHETIC_PERSON', 422);
+    const fixture = testPersons.find(p => p.subject === attestation.subject);
+    if (!fixture) throw new Failure('UNKNOWN_TEST_PERSON', 422);
     const outcome = await transaction(pool, async client => {
       await client.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))', [person]);
       const locked = await client.query<{ completed: boolean; session_token_sealed: string | null; active: boolean }>('SELECT completed,session_token_sealed,expires_at>clock_timestamp() AS active FROM attempts WHERE id=$1 FOR UPDATE', [attempt]);
@@ -75,7 +75,7 @@ export async function identityApp(config: ConfigType, publicOrigin: string) {
     });
     if (outcome.token === null) throw new Failure('PROVIDER_ATTRIBUTES_CONFLICT', 409);
     const identity = await session('Bearer ' + outcome.token);
-    return { token: outcome.token, role: identity.role, expiresAt: identity.expiresAt, synthetic: true };
+    return { token: outcome.token, role: identity.role, expiresAt: identity.expiresAt, testOnly: true };
   });
   app.get('/v1/session', async request => { const identity = await session(request.headers.authorization); return { role: identity.role, expiresAt: identity.expiresAt }; });
   app.delete('/v1/session', async request => {
@@ -93,7 +93,7 @@ export async function identityApp(config: ConfigType, publicOrigin: string) {
     const { policy } = z.strictObject({ policy: Policy }).parse(request.body);
     const revoked = await pool.query<{ person: string }>('SELECT person FROM persons WHERE revoked');
     const excluded = new Set(revoked.rows.map(row => row.person));
-    return { persons: syntheticPersons.filter(p => eligible(p.attributes, policy) && !excluded.has(pseudonym(p.subject, required(config.dedupKey)))).map(p => p.subject) };
+    return { persons: testPersons.filter(p => eligible(p.attributes, policy) && !excluded.has(pseudonym(p.subject, required(config.dedupKey)))).map(p => p.subject) };
   });
   app.post('/internal/register-roster', async request => {
     authorize(request.headers.authorization, config.serviceToken);
@@ -109,7 +109,7 @@ export async function identityApp(config: ConfigType, publicOrigin: string) {
       }
       await client.query('INSERT INTO roster_locks(poll_id,manifest_hash,credential_count,request_hash) VALUES($1,$2,$3,$4)', [input.pollId, input.manifestHash, Object.keys(input.privateCredentials).length, requestHash]);
       for (const [subject, credential] of Object.entries(input.privateCredentials)) {
-        const fixture = syntheticPersons.find(p => p.subject === subject);
+        const fixture = testPersons.find(p => p.subject === subject);
         if (!fixture || !eligible(fixture.attributes, input.policy)) throw new Failure('INELIGIBLE_ROSTER_MEMBER', 422);
         const person = pseudonym(subject, required(config.dedupKey));
         await client.query('INSERT INTO persons(person,attributes,role) VALUES($1,$2,$3) ON CONFLICT(person) DO NOTHING', [person, fixture.attributes, fixture.role]);

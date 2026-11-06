@@ -2,7 +2,7 @@
 
 Read `docs/REQUIREMENTS.md`, `docs/REQUIREMENTS-A15.md`, `docs/PROGRESS.md`, and the linked GitHub issue before implementation. The user supplied requirements are authoritative. Use `rtk` for every shell command.
 
-Build only synthetic development scenarios. Never accept real identity data in development. No custom voting cryptography, fabricated guarantees, hidden fallback, credential reset, revoting, or client plaintext sent to the ballot box. Preserve reference cryptographic formats. Keep identity and ballot storage, origins, sessions and keys separate. Production must fail closed until readiness work is completed.
+Build only test development scenarios. Never accept real identity data in development. No custom voting cryptography, fabricated guarantees, hidden fallback, credential reset, revoting, or client plaintext sent to the ballot box. Preserve reference cryptographic formats. Keep identity and ballot storage, origins, sessions and keys separate. Production must fail closed until readiness work is completed.
 
 Reproduce current behavior, audit the complete flow, implement a small vertical change, run its positive and adversarial tests, inspect browser behavior, review the diff, and wait for actual CI success before merging. Use small PRs after bootstrap. Do not fabricate review approvals. Use the existing in-app Browser and its tab.playwright API only; never launch another browser. Do not close the tab automatically.
 

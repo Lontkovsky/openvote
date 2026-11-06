@@ -1,6 +1,6 @@
 import { spawn } from 'node:child_process';
 
-// Synthetic test/operator IPC, isolated from network and other operator files.
+// Test test/operator IPC, isolated from network and other operator files.
 export async function localCore(input: unknown): Promise<unknown> {
   return new Promise((resolve, reject) => {
     const child = spawn('docker', ['run', '--rm', '-i', '--network', 'none', '--platform', 'linux/amd64',

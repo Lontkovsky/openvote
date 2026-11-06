@@ -6,7 +6,7 @@ Status: development self-verification for [V024](https://github.com/Lontkovsky/o
 
 The reproducibility boundary contains both browser clients:
 
-- `full/`: every HTML, JavaScript, CSS, WebAssembly, cryptographic client asset and license delivered by the full synthetic platform;
+- `full/`: every HTML, JavaScript, CSS, WebAssembly, cryptographic client asset and license delivered by the full test platform;
 - `demand/`: every HTML, JavaScript, CSS, media, cryptographic client asset and license delivered by the demand landing.
 
 No executable file inside those directories is excluded from byte comparison. Docker filesystem metadata, the server runtime image and native Belenios binaries are not claimed reproducible by this client check. The pinned crypto image is an input: its exact image ID and the hashes of the four injected client files are recorded in provenance.

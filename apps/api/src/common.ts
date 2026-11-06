@@ -191,7 +191,18 @@ export async function application<T extends Pick<ConfigType, 'environment' | 'ro
     connectionTimeout: serviceResourceLimits.connectionTimeoutMs, routerOptions: { maxParamLength: serviceResourceLimits.parameterLength },
     logController: new LogController({ disableRequestLogging: true }) });
   await app.register(cors, { origin, credentials: false, methods: ['GET', 'POST', 'PATCH', 'DELETE'] });
-  await app.register(helmet, { referrerPolicy: { policy: 'no-referrer' } });
+  await app.register(helmet, config.role === 'demand'
+    ? {
+        referrerPolicy: { policy: 'no-referrer' },
+        contentSecurityPolicy: {
+          directives: {
+            scriptSrc: ["'self'", 'https://www.googletagmanager.com'],
+            connectSrc: ["'self'", 'https://www.google-analytics.com', 'https://region1.google-analytics.com'],
+            imgSrc: ["'self'", 'data:', 'https://www.google-analytics.com'],
+          },
+        },
+      }
+    : { referrerPolicy: { policy: 'no-referrer' } });
   await app.register(rateLimit, {
     global: true,
     max: serviceResourceLimits.requestsPerWindow,

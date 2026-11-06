@@ -30,10 +30,10 @@ Execute each stage with `await suite.step(name)` in this order:
 
 | Case | Prerequisite | Expected result | Baseline run `92387c0df2` | Verified run `6c9fa7afdf` |
 |---|---|---|---|---|
-| Create | Healthy local services and synthetic providers | Structured versioned draft enters Review | Passed | Passed |
-| Review start | Moderator synthetic identity | Complete rubric and reason are submitted | Passed | Passed |
+| Create | Healthy local services and test providers | Structured versioned draft enters Review | Passed | Passed |
+| Review start | Moderator test identity | Complete rubric and reason are submitted | Passed | Passed |
 | Review completion | Finished provisioning ceremony | Immutable poll opens | Passed | Passed after the visible completion status appeared |
-| First vote | Committed synthetic person | Browser ciphertext, signed receipt and inclusion succeed | Passed | Passed |
+| First vote | Committed test person | Browser ciphertext, signed receipt and inclusion succeed | Passed | Passed |
 | Second vote | Different person through provider B | Opposing ciphertext is accepted once | Passed | Passed |
 | Third vote | Third committed person | Abstention is accepted and included in N | Passed | Passed |
 | Duplicate | First person through the other provider | Different final vote is rejected | Passed | Passed |
@@ -51,7 +51,7 @@ Run `7df6bc507c` first exposed a real completion-state race: the success notice 
 
 Asynchronous review/tally start and completion are separate stages. Wait for real completion; do not change the fixed deadline or insert fabricated outcomes. Every browser action uses the supplied tab.playwright API. Public UI state is inspected after actions; no browser secrets or hidden application state are read. The native cryptographic tract is exercised, not mocked.
 
-The four provider stages additionally use the private local coordinator to set A/B mock availability and count active attempts for the one fixed synthetic fixture. They do not authenticate through that control channel: login, error, retry, switching, capability disclosure and result navigation all execute through the UI. The attempt-count check returns only a count and proves that repeated failed deliveries did not create new attempts. Both mock processes are reset at setup and completion/interruption. Run live service tests before this suite, not concurrently, because they deliberately control the same synthetic providers.
+The four provider stages additionally use the private local coordinator to set A/B mock availability and count active attempts for the one fixed test fixture. They do not authenticate through that control channel: login, error, retry, switching, capability disclosure and result navigation all execute through the UI. The attempt-count check returns only a count and proves that repeated failed deliveries did not create new attempts. Both mock processes are reset at setup and completion/interruption. Run live service tests before this suite, not concurrently, because they deliberately control the same test providers.
 
 The coordinator returns a nonzero exit code if a stage fails, sources change during the run, the run is interrupted, or it remains incomplete for 15 minutes. Safe outcomes are written to `artifacts/e2e/report.json` with run ID and initial/final source digests. The report starts as incomplete; an older successful report cannot survive a new failed attempt. A successful CLI/API test is not browser evidence. The regular GitHub workflow does not claim to run this suite because it does not have the existing in-app Browser session.
 

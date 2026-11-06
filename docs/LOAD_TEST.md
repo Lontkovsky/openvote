@@ -4,13 +4,13 @@ Status: local development evidence for [V023](https://github.com/Lontkovsky/open
 
 ## Baseline reproduction
 
-Before the shared request gate was added, forty concurrent `auth/finish` requests for one synthetic attempt were held for three seconds by mock provider A. All forty reached the provider concurrently and all returned HTTP 200 in 3.091 seconds (`maxProviderPending: 40`). The test then restored the provider to zero delay, removed the temporary attempt and deleted the one resulting session. A JSON request above 1 MiB already returned HTTP 413 `INVALID_INPUT`; request-body size was not the missing boundary.
+Before the shared request gate was added, forty concurrent `auth/finish` requests for one test attempt were held for three seconds by mock provider A. All forty reached the provider concurrently and all returned HTTP 200 in 3.091 seconds (`maxProviderPending: 40`). The test then restored the provider to zero delay, removed the temporary attempt and deleted the one resulting session. A JSON request above 1 MiB already returned HTTP 413 `INVALID_INPUT`; request-body size was not the missing boundary.
 
 The same forty-request burst after the change returned eight HTTP 200 responses and thirty-two explicit HTTP 503 `SERVER_BUSY` responses in 3.093 seconds. The focused transport test independently measures a maximum of eight active handlers, sixteen queued requests, immediate rejection of the next request and expiration of a queued request after two seconds. The provider finished with `delayMs: 0` and `pending: 0`.
 
 ## Temporal request-rate reproduction
 
-On exact `main` commit `4845f5519120e129acbb14d4e495eebae924163c`, one synthetic provider-A login created a real PostgreSQL-backed identity session. All 1,100 sequential authorized `GET /v1/session` requests returned HTTP 200 in 972.526 ms, and the session cleanup returned 200. The existing gate released every completed request and therefore bounded concurrency and queueing but not the number of short operations in a time window.
+On exact `main` commit `4845f5519120e129acbb14d4e495eebae924163c`, one test provider-A login created a real PostgreSQL-backed identity session. All 1,100 sequential authorized `GET /v1/session` requests returned HTTP 200 in 972.526 ms, and the session cleanup returned 200. The existing gate released every completed request and therefore bounded concurrency and queueing but not the number of short operations in a time window.
 
 The shared application factory now registers the official Fastify rate-limit middleware before any service route is added. Each service process has one aggregate key based on its fixed service role, not a client IP or person. This avoids treating an Nginx loopback address as an identity and keeps the author publication quotas separate. The fixed window admits 1,024 application requests in 5,000 ms; the next request returns HTTP 429 `RATE_LIMITED`. `/health` is excluded so application traffic cannot consume liveness checks. The existing active/queue gate remains unchanged.
 
@@ -24,7 +24,7 @@ CodeQL alerts 1–28 map to the following established routes and expensive opera
 | 2 | provider `GET /control` | Service authorization and provider process state read |
 | 3 | provider `POST /control` | Service authorization and provider process state update |
 | 4 | identity `POST /v1/auth/start` | Expired-attempt cleanup and attempt insert |
-| 5 | provider `POST /attest` | Service authorization and signed synthetic attestation |
+| 5 | provider `POST /attest` | Service authorization and signed test attestation |
 | 6 | identity `POST /v1/auth/finish` | Attempt/person/session DB access, provider call and transaction |
 | 7 | ballot `GET /v1/elections/:id/tracker` | Receipt DB lookup |
 | 8 | ballot `POST /internal/close/:id` | Service authorization, locked DB transition and reference close |
@@ -66,11 +66,11 @@ CodeQL alerts 1–28 map to the following established routes and expensive opera
 | Gateway connect / read | 5,000 / 105,000 ms | Nginx proxy configuration |
 | Native tally child | 120,000 ms | Child-process timeout |
 
-The gate and temporal counter are process-local. The full synthetic runtime has separate identity, ballot, management and mock-provider processes, so these figures are not a deployment-wide admission quota and do not replace upstream DDoS protection. A request that receives `SERVER_BUSY` or `RATE_LIMITED` is not processed in the background.
+The gate and temporal counter are process-local. The full test runtime has separate identity, ballot, management and mock-provider processes, so these figures are not a deployment-wide admission quota and do not replace upstream DDoS protection. A request that receives `SERVER_BUSY` or `RATE_LIMITED` is not processed in the background.
 
 ## Measured read profile
 
-The committed [report](../artifacts/load/report.json) was produced on 2026-10-31 with Node 24.20.0 on Darwin arm64, Apple M3 Pro (12 logical CPUs) and 38,654,705,664 bytes of RAM. The local PostgreSQL catalogue contained two public synthetic polls (one Open, one Closed); the response body was 8,590 bytes.
+The committed [report](../artifacts/load/report.json) was produced on 2026-10-31 with Node 24.20.0 on Darwin arm64, Apple M3 Pro (12 logical CPUs) and 38,654,705,664 bytes of RAM. The local PostgreSQL catalogue contained two public test polls (one Open, one Closed); the response body was 8,590 bytes.
 
 The fixed profile warmed the route with 16 requests, then sent 1,000 `GET /v1/polls` requests at concurrency 8. All 1,000 succeeded in 284.339 ms: 3,516.926 requests/second measured at the client, mean 2.268 ms, p50 2.043 ms, p95 3.432 ms, p99 4.473 ms and maximum 16.611 ms.
 

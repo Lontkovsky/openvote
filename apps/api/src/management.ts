@@ -2,13 +2,26 @@ import { randomUUID } from 'node:crypto';
 import { mkdir, readFile, rm } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
 import { z } from 'zod';
-import { Content, Manifest, Poll, Policy, RemovedPoll, Review, Session, validateSchedule } from '../../../packages/domain/src/index.ts';
+import { Categories, CommentReactionKind, CommentReactionToken, CommentResponse, CommentsResponse, CommentText, DiscussionComment, Content, Manifest, Poll, Policy, RemovedPoll, Review, Session, validateSchedule } from '../../../packages/domain/src/index.ts';
 import type { PollType } from '../../../packages/domain/src/index.ts';
 import { application, core, database, Failure, jsonRequest, required, sha, transaction } from './common.ts';
 import type { ConfigType } from './common.ts';
 import { provision, writeOnce } from './provisioning.ts';
+import { developmentCatalogue } from './development-polls.ts';
 
 const Params = z.strictObject({ id: z.string().uuid() });
+const CommentParams = z.strictObject({ id: z.string().uuid(), commentId: z.string().uuid() });
+type CommentRow = {
+  id: string; poll_id: string; parent_id: string | null; body: string | null;
+  created_at: Date; deleted_at: Date | null; likes: number; dislikes: number;
+};
+function discussionComment(row: CommentRow) {
+  return DiscussionComment.parse({
+    id: row.id, pollId: row.poll_id, parentId: row.parent_id, text: row.body,
+    createdAt: row.created_at.toISOString(), deleted: row.deleted_at !== null,
+    likes: row.likes, dislikes: row.dislikes,
+  });
+}
 function currentPoll(value: unknown): PollType {
   const poll = Poll.parse(value), now = Date.now();
   if (poll.state === 'Scheduled' && Date.parse(poll.content.opensAt) <= now) poll.state = 'Open';
@@ -44,17 +57,32 @@ export async function managementApp(config: ConfigType, publicOrigin: string) {
     if (RemovedPoll.safeParse(row.doc).success) throw new Failure('POLL_CONTENT_REMOVED', 410);
     return { poll: currentPoll(row.doc), author: row.author_person };
   }
+  async function publicPoll(id: string) {
+    const developmentPoll = config.environment === 'development' ? developmentCatalogue.find(poll => poll.id === id) : undefined;
+    if (developmentPoll !== undefined) return currentPoll(developmentPoll);
+    const { poll } = await find(id);
+    if (['Draft', 'Review', 'Rejected'].includes(poll.state)) throw new Failure('POLL_NOT_FOUND', 404);
+    return poll;
+  }
   app.get('/v1/polls', async request => {
-    const input = z.strictObject({ q: z.string().max(150).optional(), category: z.string().max(60).optional(), state: z.string().max(30).optional() }).parse(request.query);
+    const input = z.strictObject({ q: z.string().max(150).optional(), category: z.union([z.string().max(60), z.array(z.string().max(60)).min(1).max(Categories.length)]).optional(), state: z.string().max(30).optional() }).parse(request.query);
+    const selectedCategories = input.category === undefined ? [] : Array.isArray(input.category) ? input.category : [input.category];
     const result = await pool.query<{ doc: unknown }>("SELECT doc FROM polls WHERE doc->>'contentStatus'='Visible' ORDER BY created_at DESC,id DESC");
-    const polls = result.rows.map(r => currentPoll(r.doc)).filter(p => !['Draft', 'Review', 'Rejected'].includes(p.state))
+    const storedPolls = result.rows.map(r => currentPoll(r.doc)).filter(p => !['Draft', 'Review', 'Rejected'].includes(p.state));
+    const visiblePolls = config.environment === 'development'
+      ? [...storedPolls.filter(p => p.content.question !== 'Чи підтримуєте відкриту публікацію коду тестового проєкту?'), ...developmentCatalogue]
+      : storedPolls;
+    const polls = visiblePolls
       .filter(p => input.q === undefined || p.content.question.toLocaleLowerCase('uk').includes(input.q.toLocaleLowerCase('uk')))
-      .filter(p => input.category === undefined || p.content.category === input.category)
+      .filter(p => selectedCategories.length === 0 || selectedCategories.includes(p.content.category))
       .filter(p => input.state === undefined || p.state === input.state);
     return { polls, sort: 'Час створення: новіші спочатку; за однакового часу — ідентифікатор. Без персоналізації.', environment: config.environment };
   });
   app.get('/v1/polls/:id', async request => {
-    const { id } = Params.parse(request.params), row = await stored(id), removed = RemovedPoll.safeParse(row.doc);
+    const { id } = Params.parse(request.params);
+    const developmentPoll = config.environment === 'development' ? developmentCatalogue.find(poll => poll.id === id) : undefined;
+    if (developmentPoll !== undefined) return { poll: currentPoll(developmentPoll), events: [] };
+    const row = await stored(id), removed = RemovedPoll.safeParse(row.doc);
     if (removed.success) return removed.data;
     const poll = currentPoll(row.doc), author = row.author_person;
     if (['Draft', 'Review', 'Rejected'].includes(poll.state)) {
@@ -63,6 +91,56 @@ export async function managementApp(config: ConfigType, publicOrigin: string) {
     }
     const events = await pool.query<{ kind: string; reason: string; actor_role: string; payload: unknown }>('SELECT kind,reason,actor_role,payload FROM events WHERE poll_id=$1 ORDER BY id', [id]);
     return { poll, events: events.rows };
+  });
+  app.get('/v1/polls/:id/comments', async request => {
+    const { id } = Params.parse(request.params);
+    await publicPoll(id);
+    const result = await pool.query<CommentRow>(`SELECT c.id,c.poll_id,c.parent_id,c.body,c.created_at,c.deleted_at,
+      count(*) FILTER (WHERE r.kind='like')::int AS likes,
+      count(*) FILTER (WHERE r.kind='dislike')::int AS dislikes
+      FROM comments c LEFT JOIN comment_reactions r ON r.comment_id=c.id
+      WHERE c.poll_id=$1 GROUP BY c.id ORDER BY c.created_at,c.id`, [id]);
+    return CommentsResponse.parse({ comments: result.rows.map(discussionComment) });
+  });
+  app.post('/v1/polls/:id/comments', async request => {
+    const { id } = Params.parse(request.params);
+    const input = z.strictObject({ text: CommentText, parentId: z.string().uuid().nullable().optional() }).parse(request.body);
+    await publicPoll(id);
+    const commentId = randomUUID(), createdAt = new Date();
+    const comment = await transaction(pool, async client => {
+      if (input.parentId !== undefined && input.parentId !== null) {
+        const parent = await client.query<{ deleted_at: Date | null }>('SELECT deleted_at FROM comments WHERE id=$1 AND poll_id=$2 FOR SHARE', [input.parentId, id]);
+        if (parent.rows[0] === undefined) throw new Failure('PARENT_COMMENT_NOT_FOUND', 404);
+        if (parent.rows[0].deleted_at !== null) throw new Failure('PARENT_COMMENT_DELETED', 409);
+      }
+      await client.query('INSERT INTO comments(id,poll_id,parent_id,body,created_at,deleted_at) VALUES($1,$2,$3,$4,$5,NULL)',
+        [commentId, id, input.parentId ?? null, input.text, createdAt]);
+      return DiscussionComment.parse({ id: commentId, pollId: id, parentId: input.parentId ?? null, text: input.text,
+        createdAt: createdAt.toISOString(), deleted: false, likes: 0, dislikes: 0 });
+    });
+    return CommentResponse.parse({ comment });
+  });
+  app.post('/v1/polls/:id/comments/:commentId/reaction', async request => {
+    const { id, commentId } = CommentParams.parse(request.params);
+    const input = z.strictObject({ actorToken: CommentReactionToken, kind: CommentReactionKind.nullable() }).parse(request.body);
+    await publicPoll(id);
+    const comment = await transaction(pool, async client => {
+      const found = await client.query<{ deleted_at: Date | null }>('SELECT deleted_at FROM comments WHERE id=$1 AND poll_id=$2 FOR UPDATE', [commentId, id]);
+      const row = found.rows[0];
+      if (row === undefined) throw new Failure('COMMENT_NOT_FOUND', 404);
+      if (row.deleted_at !== null) throw new Failure('COMMENT_DELETED', 409);
+      const actorTokenHash = sha(input.actorToken);
+      if (input.kind === null) await client.query('DELETE FROM comment_reactions WHERE comment_id=$1 AND actor_token_hash=$2', [commentId, actorTokenHash]);
+      else await client.query(`INSERT INTO comment_reactions(comment_id,actor_token_hash,kind) VALUES($1,$2,$3)
+        ON CONFLICT(comment_id,actor_token_hash) DO UPDATE SET kind=EXCLUDED.kind`, [commentId, actorTokenHash, input.kind]);
+      const updated = await client.query<CommentRow>(`SELECT c.id,c.poll_id,c.parent_id,c.body,c.created_at,c.deleted_at,
+        count(*) FILTER (WHERE r.kind='like')::int AS likes,
+        count(*) FILTER (WHERE r.kind='dislike')::int AS dislikes
+        FROM comments c LEFT JOIN comment_reactions r ON r.comment_id=c.id
+        WHERE c.id=$1 AND c.poll_id=$2 GROUP BY c.id`, [commentId, id]);
+      return discussionComment(required(updated.rows[0]));
+    });
+    return CommentResponse.parse({ comment });
   });
   app.get('/v1/similar', async request => {
     const { q } = z.strictObject({ q: z.string().min(5).max(240) }).parse(request.query);

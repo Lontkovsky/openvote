@@ -20,6 +20,8 @@ export async function cleanupBrowserFixtures(input: unknown) {
         await ballot.query('DELETE FROM elections WHERE id=$1', [poll.cryptoId]);
         for (const trustee of [1, 2, 3, 4]) await rm(`.runtime/trustees/${trustee}/${poll.cryptoId}`, { recursive: true, force: true });
       }
+      await management.query('DELETE FROM comment_reactions WHERE comment_id IN (SELECT id FROM comments WHERE poll_id=$1)', [id]);
+      await management.query('DELETE FROM comments WHERE poll_id=$1', [id]);
       await management.query('DELETE FROM events WHERE poll_id=$1', [id]);
       await management.query('DELETE FROM appeals WHERE poll_id=$1', [id]);
       await management.query('DELETE FROM polls WHERE id=$1', [id]);

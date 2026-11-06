@@ -16,7 +16,7 @@ const execute = promisify(execFile);
 const fixture = AuditPackage.parse(JSON.parse(await readFile('tests/fixtures/published-audit.json', 'utf8')));
 const manifest = Manifest.parse(JSON.parse(z.object({ description: z.string() }).parse(JSON.parse(fixture.electionRaw)).description));
 // The archive is the real browser-downloaded native fixture. Only the observer
-// operator's envelope signatures are replaced by a fresh synthetic test signer.
+// operator's envelope signatures are replaced by a fresh test test signer.
 const keys = generateKeyPairSync('ed25519');
 const publicKey = z.string().parse(keys.publicKey.export({ type: 'spki', format: 'pem' }));
 const trusted = { pollId: fixture.result.pollId, manifestHash: digest(fixture.electionRaw), publicKey };

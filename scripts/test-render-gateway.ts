@@ -55,10 +55,10 @@ try {
   const page = await gateway('openvote.com.ua', '/');
   if (page.status !== 200 || !page.body.includes('OpenVote')) throw new Error('GATEWAY_SPA_FAILED');
   for (const upstream of upstreams) {
-    const response = await gateway(`${upstream.role}.openvote.com.ua`, '/v1/synthetic-check');
+    const response = await gateway(`${upstream.role}.openvote.com.ua`, '/v1/test-check');
     const body: unknown = JSON.parse(response.body);
     if (response.status !== 200 || typeof body !== 'object' || body === null ||
-        Reflect.get(body, 'role') !== upstream.role || Reflect.get(body, 'path') !== '/v1/synthetic-check') {
+        Reflect.get(body, 'role') !== upstream.role || Reflect.get(body, 'path') !== '/v1/test-check') {
       throw new Error('GATEWAY_API_ROUTING_FAILED');
     }
   }

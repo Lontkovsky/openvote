@@ -55,6 +55,14 @@ afterAll(async () => {
 });
 
 describe('minimal demand poll', () => {
+  it('allows only the demand analytics endpoints in the demand content security policy', async () => {
+    const response = await app.inject({ method: 'GET', url: '/health' });
+    expect(response.statusCode).toBe(200);
+    expect(response.headers['content-security-policy']).toContain('https://www.googletagmanager.com');
+    expect(response.headers['content-security-policy']).toContain('https://www.google-analytics.com');
+    expect(response.headers['content-security-policy']).toContain('https://region1.google-analytics.com');
+  });
+
   it('bootstraps one private browser credential and returns the zero-result public contract', async () => {
     const { response, cookie } = await bootstrap();
     expect(cookie).toMatch(new RegExp(`^${demandCredentialCookie}=[A-Za-z0-9_-]{43}$`));
@@ -239,8 +247,8 @@ describe('demand Render configuration', () => {
     OPENVOTE_ENVIRONMENT: 'demand',
     OPENVOTE_PUBLIC_ORIGIN: 'https://openvote.com.ua',
     PORT: '10000',
-    DEMAND_DATABASE_URL: 'postgresql://openvote_demand:synthetic-password@internal.example:5432/openvote_demand',
-    OPENAI_API_KEY: 'synthetic-openai-key-for-tests-only',
+    DEMAND_DATABASE_URL: 'postgresql://openvote_demand:test-password@internal.example:5432/openvote_demand',
+    OPENAI_API_KEY: 'test-openai-key-for-tests-only',
   };
 
   it('accepts only the exact minimal launch configuration', () => {
@@ -248,7 +256,7 @@ describe('demand Render configuration', () => {
   });
 
   it('accepts the Render internal URL with the default PostgreSQL port', () => {
-    const environment = { ...valid, DEMAND_DATABASE_URL: 'postgresql://openvote_demand:synthetic-password@internal.example/openvote_demand' };
+    const environment = { ...valid, DEMAND_DATABASE_URL: 'postgresql://openvote_demand:test-password@internal.example/openvote_demand' };
     expect(parseDemandConfiguration(environment)).toEqual({ port: 10000, publicOrigin: 'https://openvote.com.ua', databaseUrl: environment.DEMAND_DATABASE_URL, openAiApiKey: valid.OPENAI_API_KEY });
   });
 

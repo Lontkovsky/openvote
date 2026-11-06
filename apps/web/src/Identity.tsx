@@ -6,16 +6,17 @@ import type { Auth } from './App.tsx';
 import { ApiFailure, request } from './api.ts';
 
 const capabilityLabels = { subject: 'Унікальна особа', rnokppOwner: 'Власник РНОКПП', age: 'Вік', citizenship: 'Громадянство', freshness: 'Свіжість', signatureValidation: 'Перевірка доказу', prerequisites: 'Необхідні доступи' };
+const developmentProvider: MockProviderIdType = 'A';
 const identityErrors: Record<string, string> = {
-  PROVIDER_UNAVAILABLE: 'Провайдер недоступний. Можна повторити цю саму спробу або явно вибрати іншого доступного провайдера.',
+  PROVIDER_UNAVAILABLE: 'Підтвердження тимчасово недоступне. Повторіть цю саму спробу пізніше.',
   PROVIDER_ATTRIBUTES_CONFLICT: 'Провайдери повернули суперечливі атрибути. Допуск і попередні сесії заблоковано; нове право голосу не створюється.',
   IDENTITY_RETURN_EXPIRED: 'Строк повернення від провайдера минув. Почніть нову ідентифікацію; це не створить додаткового права голосу.',
   ATTESTATION_REJECTED: 'Підтвердження не відповідає цій спробі або вимогам свіжості. Допуск не надано.',
   INVALID_SIGNATURE: 'Підпис провайдера не пройшов перевірку. Допуск не надано.',
 };
-export function Identity({ onSignedIn }: { onSignedIn: (auth: Auth) => void }) {
+export function Identity({ onSignedIn, drawer = false }: { onSignedIn: (auth: Auth) => void; drawer?: boolean }) {
   const [catalogue, setCatalogue] = useState<ProviderCatalogueType | null>(null), [subject, setSubject] = useState<string | null>(null);
-  const [provider, setProvider] = useState<MockProviderIdType>('A'), [busy, setBusy] = useState(false), [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false), [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null), [attempt, setAttempt] = useState<string | null>(null), [tries, setTries] = useState(0), [terminal, setTerminal] = useState(false);
   const mounted = useRef(false);
   async function refresh() {
@@ -32,7 +33,7 @@ export function Identity({ onSignedIn }: { onSignedIn: (auth: Auth) => void }) {
     try {
       let currentAttempt = attempt;
       if (currentAttempt === null) {
-        const start = z.object({ attempt: z.string() }).parse(await request('identity', '/v1/auth/start', 'POST', { provider, subject }));
+        const start = z.object({ attempt: z.string() }).parse(await request('identity', '/v1/auth/start', 'POST', { provider: developmentProvider, subject }));
         if (!mounted.current) return;
         currentAttempt = start.attempt; setAttempt(currentAttempt);
       }
@@ -45,27 +46,22 @@ export function Identity({ onSignedIn }: { onSignedIn: (auth: Auth) => void }) {
       }
     } finally { if (mounted.current) setBusy(false); }
   }
-  const selected = catalogue?.providers.find(p => p.provider === provider);
-  return <section className="identity-panel"><p className="eyebrow">ДОПУСК ДО УЧАСТІ</p><h1>Підтвердьте право участі</h1><p className="lead">Оберіть тестову особу. Не вводьте справжній РНОКПП або дані документів.</p>
-    {loading && <p role="status">Перевірка доступності провайдерів…</p>}
-    <button className="secondary" disabled={busy || loading} onClick={() => void refresh()}>Оновити стан провайдерів</button>
-    <p className="muted">Доступність показано на момент останньої перевірки. Стан може змінитися до підтвердження особи.</p>
-    {catalogue !== null && <>
-      <fieldset disabled={busy}><legend>Провайдер</legend><div className="inline-options">{catalogue.providers.map(p => <div key={p.provider}><label><input type="radio" name="provider" checked={provider === p.provider} onChange={() => { setProvider(p.provider); restart(); }} />{p.name}</label><p>{p.name}: {p.available ? 'доступний' : 'недоступний'}{p.observation === 'TransportUnavailable' ? ' — відповідь не отримано' : ''}</p></div>)}</div></fieldset>
-      {catalogue.providers.every(p => !p.available) && <p className="notice" role="status">Обидва тестові провайдери недоступні. Нове підтвердження участі зараз неможливе. Дедлайни голосувань не переносяться.</p>}
-      <fieldset disabled={busy}><legend>Синтетична особа</legend><div className="person-grid">{catalogue.syntheticPersons.map(p => <label key={p}><input type="radio" name="person" checked={subject === p} onChange={() => { setSubject(p); restart(); }} />{p}</label>)}</div></fieldset>
-    </>}
-    <div className="notice"><strong>Вибір не захищений від примусу.</strong> Передавання credential, демонстрація екрана та шкідливий пристрій можуть порушити приватність.</div>
+  const selected = catalogue?.providers.find(p => p.provider === developmentProvider);
+  const content = <>
+    <p className="lead identity-instruction">Оберіть особу зі списку поки що.</p>
+    <p className="identity-demo-note">Усі особи нижче наведені тут лише для демонстрації функціоналу.</p>
+    {loading && <p role="status">Завантаження списку осіб…</p>}
+    {catalogue !== null && <fieldset disabled={busy}><legend>Особа</legend><div className="person-grid">{catalogue.testPersons.map(p => <label key={p}><input type="radio" name="person" checked={subject === p} onChange={() => { setSubject(p); restart(); }} />{p}</label>)}</div></fieldset>}
     {error !== null && <p className="notice error" role="alert">{error}</p>}
-    {attempt !== null && !terminal && <p>Незавершена спроба зберігається лише на цій сторінці. Повтор повернення не створює нової особи чи другого права голосу.</p>}
-    <button className="primary" disabled={subject === null || busy || loading || selected?.available !== true || tries >= 3 || terminal} onClick={() => void confirm()}>{busy ? 'Підтвердження…' : attempt === null ? 'Підтвердити тестову особу' : `Повторити цю спробу (${tries}/3)`}</button>
     {tries >= 3 && <p role="status">Ліміт трьох спроб вичерпано. Автоматичних повторів немає.</p>}
     {terminal && <button className="secondary" disabled={busy} onClick={restart}>Розпочати нову ідентифікацію</button>}
-    <p className="muted">Повторне підтвердження або зміна провайдера не створює нового права голосу.</p>
-    <details className="technical-disclosure"><summary>Що відбувається після збою</summary><p>Вже видане право чинне до зафіксованого закриття за політикою голосування. Збій провайдера сам по собі його не відкликає. Після перезавантаження потрібно підтвердити особу знову, але право голосу не змінюється.</p></details>
-    {catalogue !== null && <section className="provider-contracts"><h2>Межі інтеграцій</h2><p>Непідключений провайдер не є резервним каналом. Реальна незалежність залежить від конкретних контрактів і спільних зовнішніх систем.</p>
-      {[...catalogue.providers, ...catalogue.production].map(p => <details key={p.provider}><summary>{p.name} — {p.state === 'SyntheticImplemented' ? 'тестова інтеграція' : 'Очікує контракту інтеграції (AwaitingProviderContract)'}</summary><dl>{Object.entries(capabilityLabels).map(([key, label]) => <div key={key}><dt>{label}</dt><dd>{Reflect.get(p.capabilities, key)}</dd></div>)}</dl></details>)}
-      <p><a href="https://github.com/Lontkovsky/openvote/blob/main/docs/IDENTITY_PROVIDERS.md" target="_blank" rel="noreferrer">Матриця й офіційні джерела ↗</a></p>
+    {catalogue !== null && <section className="provider-contracts identity-faq">
+      <div className="identity-faq-list">{[...catalogue.providers.filter(p => p.provider === developmentProvider), ...catalogue.production].map(p => <details key={p.provider}><summary>{p.provider === developmentProvider ? 'Тестова інтеграція' : `${p.name} — Очікує контракту інтеграції (AwaitingProviderContract)`}</summary><dl>{Object.entries(capabilityLabels).map(([key, label]) => <div key={key}><dt>{label}</dt><dd>{Reflect.get(p.capabilities, key)}</dd></div>)}</dl></details>)}</div>
+      <p className="identity-faq-source"><a href="https://github.com/Lontkovsky/openvote/blob/main/docs/IDENTITY_PROVIDERS.md" target="_blank" rel="noreferrer">Матриця й офіційні джерела ↗</a></p>
     </section>}
+  </>;
+  const action = <button className="primary" disabled={subject === null || busy || loading || selected?.available !== true || tries >= 3 || terminal} onClick={() => void confirm()}>{busy ? 'Підтвердження…' : attempt === null ? 'Підтвердити особу' : `Повторити цю спробу (${tries}/3)`}</button>;
+  return <section className={drawer ? 'identity-panel identity-drawer' : 'identity-panel'}>
+    {drawer ? <><div className="identity-drawer-header"><h1>Підтвердьте право участі</h1></div><div className="identity-drawer-body">{content}</div><div className="identity-drawer-footer">{action}</div></> : <><h1>Підтвердьте право участі</h1>{content}{action}</>}
   </section>;
 }

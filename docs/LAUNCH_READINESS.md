@@ -1,8 +1,8 @@
 # Launch readiness gate
 
-Status at `62fd8a5dddb7a82f6fdf1457f53324e36463afb6`: **not approved for real identity-verified voting**. The public service at `https://openvote.com.ua` is the separate demand-validation landing. The full OpenVote platform remains synthetic, unavailable on the public domain and fail-closed for a `production` environment.
+Status at `62fd8a5dddb7a82f6fdf1457f53324e36463afb6`: **not approved for real identity-verified voting**. The public service at `https://openvote.com.ua` is the separate demand-validation landing. The full OpenVote platform remains test, unavailable on the public domain and fail-closed for a `production` environment.
 
-This gate is the authoritative boundary between the completed synthetic development work and a real launch. Documentation, self-review, local mock providers, one-owner hosting and test trustee keys cannot satisfy an external prerequisite.
+This gate is the authoritative boundary between the completed test development work and a real launch. Documentation, self-review, local mock providers, one-owner hosting and test trustee keys cannot satisfy an external prerequisite.
 
 ## Current technical boundary
 
@@ -32,7 +32,7 @@ This gate is the authoritative boundary between the completed synthetic developm
 | Legal operator and public policies | [V027](https://github.com/Lontkovsky/openvote/issues/38) | Owner-approved responsible operator; participation and minors policy; legal basis; privacy notice and terms; retention, deletion and backup policy; hosting and international-transfer decision; moderation and appeal policy | No operator or legal approval has been supplied |
 | Independent review | [V028](https://github.com/Lontkovsky/openvote/issues/39) | Named independent reviewers; explicit cryptographic, protocol-composition, application-security, privacy, infrastructure and client-delivery scope; actual reports; tracked findings; verified remediation or accepted residual risk | No external report exists; repository self-tests do not count |
 | Independent trustees and operations | [V029](https://github.com/Lontkovsky/openvote/issues/40) | Identified independent operators; approved quorum; real key ceremony; separate custody and recovery; repository/release/hosting authority map; incident roles; disclosure, funding and support decisions | No independent operators or real ceremony exist |
-| Hosted full-platform cutover | [#51](https://github.com/Lontkovsky/openvote/issues/51) | Owner-approved Blueprint diff and cost; resumed role databases; initialized persistent runtime; suspended demand database; actual wildcard DNS/TLS; exact-host API checks; hosted synthetic full flow; restart persistence; rollback and restore evidence | Explicitly deferred. The current domain must remain demand-only |
+| Hosted full-platform cutover | [#51](https://github.com/Lontkovsky/openvote/issues/51) | Owner-approved Blueprint diff and cost; resumed role databases; initialized persistent runtime; suspended demand database; actual wildcard DNS/TLS; exact-host API checks; hosted test full flow; restart persistence; rollback and restore evidence | Explicitly deferred. The current domain must remain demand-only |
 
 ## Owner decisions required before implementation can continue
 
@@ -82,4 +82,4 @@ Before a launch recommendation, each row must contain actual evidence rather tha
 - the public trust center matches the approved policies and reviewed guarantees;
 - E10 is closed only after every linked issue is Done.
 
-Until then, the correct public statement is: the demand poll is live, the full platform is a synthetic development system, and real production readiness remains open.
+Until then, the correct public statement is: the demand poll is live, the full platform is a test development system, and real production readiness remains open.

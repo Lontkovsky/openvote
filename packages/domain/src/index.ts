@@ -5,7 +5,7 @@ export const PollState = z.enum(['Draft', 'Review', 'Scheduled', 'Open', 'Closed
 export const Answers = ['Підтримую', 'Не підтримую', 'Утримуюсь'] as const;
 export const representativenessWarning = 'Добровільна участь із самовідбором. Результат описує учасників цього голосування й не є автоматично репрезентативною думкою населення.';
 export const Question = z.string().min(12).max(240).regex(/^[\u0009\u000A\u000D\u0020-\uD7FF\uE000-\uFFFD\u{10000}-\u{10FFFF}]*$/u, 'Питання містить неприпустимий керівний символ');
-export const Categories = ['Громада', 'Освіта', 'Культура', 'Технології', 'Економіка', 'Довкілля', 'Соціальні питання'];
+export const Categories = ['Громада', 'Освіта', 'Культура', 'Технології', 'Економіка', 'Довкілля', 'Соціальні питання', 'Політика'];
 export const Policy = z.strictObject({
   id: z.literal('verified-rnokpp-owner'), version: z.literal(1),
   minimumAge: z.number().int().min(0).max(120).optional(), citizenship: z.string().regex(/^[A-Z]{2}$/).optional(),
@@ -18,11 +18,11 @@ export const Source = z.strictObject({
   url: z.url().refine(value => new URL(value).protocol === 'https:', 'Потрібне HTTPS-посилання'),
 });
 export const Content = z.strictObject({
-  question: Question, context: z.string().min(20).max(8000), consequences: z.string().min(10).max(3000),
-  argumentsFor: z.array(Source).min(1).max(5), argumentsAgainst: z.array(Source).min(1).max(5),
-  category: z.string().refine(value => Categories.includes(value)), authorAlias: z.string().min(3).max(60),
+  question: Question, context: z.string().max(8000), consequences: z.string().max(3000),
+  argumentsFor: z.array(Source).max(5), argumentsAgainst: z.array(Source).max(5),
+  category: z.string().refine(value => Categories.includes(value)), authorAlias: z.string().min(3).max(60).nullable(),
   policy: Policy, opensAt: z.iso.datetime(), closesAt: z.iso.datetime(),
-  publicationThreshold: z.number().int().min(3).max(10000),
+  publicationThreshold: z.number().int().min(1).max(10000),
   relatedPolls: z.array(z.string().uuid()).max(10),
 });
 export const Manifest = Content.extend({
@@ -32,7 +32,7 @@ export const Manifest = Content.extend({
 });
 export const Rubric = z.strictObject({
   singleProposal: z.boolean(), noDoubleNegation: z.boolean(), clearTerms: z.boolean(),
-  explicitConsequences: z.boolean(), factsSeparated: z.boolean(),
+  explicitConsequences: z.boolean().optional(), factsSeparated: z.boolean(),
 });
 export const Review = z.strictObject({
   action: z.enum(['approve', 'reject', 'duplicate']), reason: z.string().min(12).max(2000), rubric: Rubric,
@@ -49,6 +49,16 @@ export const Poll = z.strictObject({
   review: Review.nullable(), methodologyStatus: z.enum(['Pending', 'Reviewed', 'Rejected']),
   contentStatus: z.enum(['Visible', 'Removed']),
 });
+export const CommentText = z.string().min(1).max(2000).refine(value => /\S/u.test(value), 'Коментар не може бути порожнім');
+export const CommentReactionKind = z.enum(['like', 'dislike']);
+export const CommentReactionToken = z.string().uuid();
+export const DiscussionComment = z.strictObject({
+  id: z.string().uuid(), pollId: z.string().uuid(), parentId: z.string().uuid().nullable(),
+  text: CommentText.nullable(), createdAt: z.iso.datetime(), deleted: z.boolean(),
+  likes: z.number().int().nonnegative(), dislikes: z.number().int().nonnegative(),
+});
+export const CommentsResponse = z.strictObject({ comments: z.array(DiscussionComment) });
+export const CommentResponse = z.strictObject({ comment: DiscussionComment });
 export const RemovedPoll = z.strictObject({
   id: z.string().uuid(), state: z.enum(['Cancelled', 'Invalidated']),
   contentStatus: z.literal('Removed'), reason: z.literal('LegalContentRemoval'),
@@ -73,6 +83,8 @@ export type AttributesType = z.infer<typeof Attributes>;
 export type ContentType = z.infer<typeof Content>;
 export type ManifestType = z.infer<typeof Manifest>;
 export type PollType = z.infer<typeof Poll>;
+export type DiscussionCommentType = z.infer<typeof DiscussionComment>;
+export type CommentReactionKindType = z.infer<typeof CommentReactionKind>;
 export type RemovedPollType = z.infer<typeof RemovedPoll>;
 export type SessionType = z.infer<typeof Session>;
 export type ResultType = z.infer<typeof ResultContract>;
