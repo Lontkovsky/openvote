@@ -941,12 +941,12 @@ Read the current GitHub issues/board and working tree before proceeding. Do not 
 ## Public browser-only demo
 
 - Baseline reproduction confirmed that the current public landing had no route into the locally approved platform interface. Publishing the existing full client would have required the suspended identity, ballot and management databases, Belenios runtime, provider processes and additional origins, so it did not satisfy the requested no-infrastructure demo boundary.
-- The approved candidate now builds a separate `demo.html` entry and serves it from the existing demand image at `/demo/`. The demand header links directly to `/demo/#/`. The demo reuses the approved platform components and forty established development questions but implements only the explicitly demonstrated browser-local actions. Visitor-created polls, votes, comments, replies, reactions and vote IDs remain in one versioned local store in that browser.
+- The approved candidate now builds a separate `demo.html` entry and serves it from the existing demand image at `/demo/`. The demand header links directly to `/demo/`. The demo reuses the approved platform components and forty established development questions but implements only the explicitly demonstrated browser-local actions. Visitor-created polls, votes, comments, replies, reactions and vote IDs remain in one versioned local store in that browser.
 - The demo starts no identity, ballot, management, provider or Belenios service, uses no platform database and accepts no real identity input. It shows a persistent plain-language demo notice, does not load the demand Google Tag Manager integration and does not claim that a browser-local vote is a production verified ballot. Taras remains the existing demand assistant.
 
 | Required case | Prerequisite | Expected result | Actual result and evidence |
 |---|---|---|---|
-| Landing entry | Local demand landing | A visible demo action opens the canonical demo route | Passed in the retained in-app Browser from `http://localhost:5175/` to `/demo/#/` |
+| Landing entry | Local demand landing | A visible demo action opens the canonical demo route | Passed in the retained in-app Browser from `http://localhost:5175/` to `/demo/` |
 | Explicit boundary | Demo route | The visitor sees that all actions stay only in this browser | Passed with the visible `Демо OpenVote` notice before interaction |
 | Catalogue scenarios | Fresh demo store | Completed, open and scheduled examples are immediately available | Passed with forty polls, including the published `100 = 57 / 28 / 15` result, one open poll and scheduled examples |
 | Create poll | Demo creation drawer | A visitor can create and then open a new poll without a service call | Passed with a community-category poll and hidden author; it appeared in `Мої` |
@@ -957,8 +957,27 @@ Read the current GitHub issues/board and working tree before proceeding. Do not 
 | Browser persistence | Reload and personal list | Created state remains in the same browser | Passed for the created poll, vote and comment after reload |
 | Mobile layout | 390×844 retained Browser viewport | Header, catalogue and controls remain in bounds | Passed with equal document client and scroll widths; the viewport was reset |
 | Runtime | Same retained Browser tab | No warning or error is introduced | Passed with an empty warning/error console log |
-| Focused contracts | Node 24.20.0 | Demo state and existing development result contracts pass | Passed: `tests/public-demo.test.ts` and `tests/development-published.test.ts`, 6/6 |
+| Focused contracts | Node 24.20.0 | Demo state and existing development result contracts pass | Passed: `tests/public-demo.test.ts` and `tests/development-published.test.ts`, 7/7 |
 | Client contracts | Node 24.20.0 | Updated entries and routes compile and package | Passed: `pnpm types` and `pnpm build:demand`; `dist-demand/demo.html` was produced |
 
 - First exact-head workflow `42265528207` stopped in the Render runtime build because `demo-api.ts` imported the shared development catalogue from `apps/api`, while the established web build stage intentionally contains only `apps/web` and `packages/domain`. The fixed catalogue was moved into the existing shared domain package and both API and demo imports now use that single source; the Dockerfile and runtime boundary were not widened. The exact local `render-runtime` image build then passed.
 - Exact-head CI retry, merge, Render deployment and hosted in-app Browser verification remain pending. No production demand response was submitted during local verification.
+
+## Public demo routes without URL fragments
+
+- The retained in-app Browser reproduced the approved public demo at `http://localhost:5175/demo/#/mine`. Its header, catalogue, personal collection, poll, verification, FAQ and creation links all used `/#/...` fragments, while the demand service and Vite development middleware served only `/demo/` itself.
+- The requested result is limited to the public browser-only demo: its routes must use ordinary paths such as `/demo/mine`, `/demo/poll/:id`, `/demo/trust` and `/demo/help`. The existing full development client keeps its established hash routing. Demo storage, supported actions, data contracts, backend calls, databases, cryptography and dependencies remain unchanged.
+- The affected integration points are the existing route selection in `App`, its established child links and post-create transition, the landing demo entry, and the demand production/development HTML handlers. A direct nested demo load must return the same `demo.html`; an unknown non-demo path must remain unavailable.
+
+| Required case | Prerequisite | Expected result | Actual result and evidence |
+|---|---|---|---|
+| Landing entry | Local demand landing | The demo action opens `/demo/` without a fragment | Passed in the retained in-app Browser; the landing action resolves exactly to `/demo/` |
+| Catalogue navigation | Public demo | Header, footer and tabs use ordinary `/demo/...` paths | Passed across the catalogue, personal collection, verification and FAQ routes |
+| Poll navigation | Public demo catalogue | Opening a poll uses `/demo/poll/:id` and scrolls to the top | Passed with the retained created poll at `/demo/poll/99f9167f-7ee5-4adb-bba6-48f642b75fbf` and `scrollY = 0` |
+| Creation flow | Public demo drawer | Create, close and post-create transitions use ordinary paths | Passed: creation opened at `/demo/new` and closing returned to `/demo/` |
+| Direct nested load | Demand development and production handlers | `/demo/mine`, `/demo/poll/:id`, `/demo/trust` and `/demo/help` return the demo application | Passed locally by direct navigation and reload of the personal collection, poll, verification and FAQ routes |
+| Browser-local continuity | Existing public demo store | Created poll, vote, ID and comment remain available after navigation and reload | Passed after direct poll reload with the success card, total `1`, counts `1 / 0 / 0`, the same vote ID and the existing comment preserved |
+| Full-client compatibility | Existing local full client | Its current hash routes remain unchanged | Passed in the retained full-client tab at `http://localhost:5174/#/`; its header, creation, personal collection and poll links still use `#/...` |
+| Runtime | Retained in-app Browser tab | No warning or error is introduced | Passed with empty warning/error console logs in both demo and full-client tabs |
+| Focused contracts | Node 24.20.0 | Route helpers and existing published development result contracts pass | Passed: `tests/public-demo.test.ts` and `tests/development-published.test.ts`, 7/7 |
+| Client contracts | Node 24.20.0 | Updated route consumers compile and the demand bundle contains `demo.html` | Passed: `pnpm types` and `pnpm build:demand` |

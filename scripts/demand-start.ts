@@ -52,6 +52,7 @@ export async function createDemandService(configuration: DemandConfiguration, st
     app.get('/', (_request, reply) => reply.sendFile('demand.html'));
     app.get('/demo', (_request, reply) => reply.redirect('/demo/', 308));
     app.get('/demo/', (_request, reply) => reply.sendFile('demo.html'));
+    app.get('/demo/*', (_request, reply) => reply.sendFile('demo.html'));
     return app;
   } catch (error) {
     await databasePool.end();

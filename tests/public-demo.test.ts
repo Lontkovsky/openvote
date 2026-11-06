@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { Poll } from '../packages/domain/src/index.ts';
 import { checkDemoVoteId, demoRequest, demoVoteResult, submitDemoVote } from '../apps/web/src/demo-api.ts';
+import { isPublicDemoPath, publicDemoHref, publicDemoRoute } from '../apps/web/src/demo-mode.ts';
 
 class MemoryStorage implements Storage {
   private readonly values = new Map<string, string>();
@@ -16,6 +17,15 @@ class MemoryStorage implements Storage {
 const openPollId = '10000000-0000-4000-8000-000000000002';
 
 describe('public browser-only demo', () => {
+  it('uses ordinary paths for every nested demo route', () => {
+    expect(isPublicDemoPath('/demo/')).toBe(true);
+    expect(isPublicDemoPath('/demo/mine')).toBe(true);
+    expect(isPublicDemoPath('/other')).toBe(false);
+    expect(publicDemoHref('/poll/example')).toBe('/demo/poll/example');
+    expect(publicDemoRoute('/demo/mine', '')).toBe('/mine');
+    expect(publicDemoRoute('/demo/identity', '?return=%2Fpoll%2Fexample')).toBe('/identity?return=%2Fpoll%2Fexample');
+  });
+
   it('serves the approved catalogue without platform services', async () => {
     const storage = new MemoryStorage();
     const result = z.object({ polls: z.array(Poll) }).parse(await demoRequest('management', '/v1/polls?', 'GET', undefined, undefined, storage));

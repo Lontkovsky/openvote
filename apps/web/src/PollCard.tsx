@@ -1,3 +1,5 @@
+import { appHref } from './demo-mode.ts';
+
 type PollCardProps = {
   id: string;
   question: string;
@@ -20,6 +22,6 @@ export function PollCard({ id, question, context, category, stateLabel, opensAt,
     <h2>{question}</h2>
     {context !== '' && <p>{context}</p>}
     <div className="card-bottom"><span>Початок: {dateTime(opensAt)}</span><span>Дедлайн: {dateTime(closesAt)}</span></div>
-    <a className="poll-card-details" href={`#/poll/${id}`} aria-label={`Відкрити опитування: ${question}`}><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" /></svg></a>
+    <a className="poll-card-details" href={appHref(`/poll/${id}`)} aria-label={`Відкрити опитування: ${question}`}><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" /></svg></a>
   </article>;
 }

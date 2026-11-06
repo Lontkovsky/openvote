@@ -11,7 +11,7 @@ function demandIndex(): Plugin {
     configureServer(server) {
       server.middlewares.use((request, _response, next) => {
         if (request.url === '/') request.url = '/demand.html';
-        if (request.url === '/demo' || request.url === '/demo/') request.url = '/demo.html';
+        if (request.url === '/demo' || request.url?.startsWith('/demo/')) request.url = '/demo.html';
         next();
       });
     },

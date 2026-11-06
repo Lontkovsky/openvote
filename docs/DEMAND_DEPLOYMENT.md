@@ -127,7 +127,7 @@ The owner completed the local visual review and authorized review [PR #104](http
 
 ## Browser-only public demo candidate
 
-The owner expanded issue [#103](https://github.com/Lontkovsky/openvote/issues/103) and [PR #104](https://github.com/Lontkovsky/openvote/pull/104) to include the approved public demo and authorized its production deployment. The demand header links to `/demo/#/`; `/demo` redirects to the canonical trailing-slash document. `demo.html` is built into the same demand image and marked `noindex,nofollow`.
+The owner expanded issue [#103](https://github.com/Lontkovsky/openvote/issues/103) and [PR #104](https://github.com/Lontkovsky/openvote/pull/104) to include the approved public demo and authorized its production deployment. The demand header links to `/demo/`; `/demo` redirects to that canonical trailing-slash document. Nested routes such as `/demo/mine`, `/demo/poll/:id`, `/demo/trust` and `/demo/help` return the same static demo client without URL fragments. `demo.html` is built into the same demand image and marked `noindex,nofollow`.
 
 The demo reuses the approved full-platform React components and the forty established development questions. One completed example shows the verified development fixture's `100 = 57 / 28 / 15` result, one example is open and the remaining examples demonstrate scheduled state. Visitor-created polls, votes, comments, replies, reactions and vote IDs use one versioned browser-local store. Reloading the same browser preserves them; another browser does not receive them. Clearing site data removes them. They are never sent to identity, ballot or management services and are not copied into `openvote-demand`.
 

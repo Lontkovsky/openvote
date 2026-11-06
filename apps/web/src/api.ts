@@ -11,7 +11,7 @@ export class ApiFailure extends Error {
   constructor(code: string, status: number) { super(code); this.status = status; }
 }
 export async function request(area: keyof typeof endpoints, path: string, method = 'GET', body?: unknown, token?: string): Promise<unknown> {
-  if (publicDemoMode) return demoRequest(area, path, method, body, token);
+  if (publicDemoMode()) return demoRequest(area, path, method, body, token);
   if (area === 'ballot' && token !== undefined) throw new Error('Сесія особи не передається до сервісу бюлетенів.');
   const headers: Record<string, string> = {};
   if (body !== undefined) headers['content-type'] = 'application/json';

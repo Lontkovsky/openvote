@@ -195,7 +195,7 @@ export function DemandApp() {
     <header className="demand-header">
       <a className="brand" href="#top" aria-label="OpenVote, на початок сторінки"><span className="brand-mark" aria-hidden="true"><img src={openVoteMark} alt="" /></span><span>OpenVote 🇺🇦<small>Чесно. Прозоро. Анонімно.</small></span></a>
       <div className="demand-header-actions">
-        <a className="button secondary demand-demo-link" href="/demo/#/" target="_blank" rel="noreferrer">Демо платформи</a>
+        <a className="button secondary demand-demo-link" href="/demo/" target="_blank" rel="noreferrer">Демо платформи</a>
         <a className="button primary" href="#poll" onClick={() => { trackDemandAnalytics({ name: 'support_launch_click', location: 'header' }); }}>Проголосувати</a>
       </div>
     </header>
