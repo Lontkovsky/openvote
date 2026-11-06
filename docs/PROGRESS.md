@@ -996,3 +996,19 @@ Read the current GitHub issues/board and working tree before proceeding. Do not 
 | Runtime | Both retained local tabs | No warning or error is introduced | Passed with empty warning/error console logs |
 | Focused contract | Node 24.20.0 | Existing public-demo behavior remains valid | Passed: `tests/public-demo.test.ts`, 6/6 |
 | Type contract | Node 24.20.0 | The conditional header destination compiles | Passed: `pnpm types` |
+
+## Automatic demand landing analytics
+
+- A fresh local demand origin reproduced the previous behavior before implementation: the cookie-consent dialog was visible and the Google Tag Manager script was absent until acceptance. The requested behavior is to load the owner-supplied container `GTM-K2V4DRSD` automatically on the marketing landing and remove that dialog.
+- The existing demand-only analytics loader is now called when `DemandApp` mounts. Its established event names and parameters are unchanged. The public demo and full platform do not import or invoke that landing entrypoint, and no backend, API, database, migration, identity, ballot, cryptographic or dependency contract changed.
+
+| Required case | Prerequisite | Expected result | Actual result and evidence |
+|---|---|---|---|
+| Automatic landing load | Fresh local demand landing | The exact owner-supplied GTM script appears without interaction | Passed in the retained in-app Browser with exactly `https://www.googletagmanager.com/gtm.js?id=GTM-K2V4DRSD` |
+| Banner removal | Same landing | No analytics cookie dialog or consent actions are rendered | Passed with zero `.demand-consent` elements and zero matching dialogs |
+| Demo isolation | Local `/demo/` | No GTM script or analytics banner appears in the public demo | Passed in the retained in-app Browser with zero Google tag scripts and zero consent elements |
+| Browser runtime | Landing and demo tabs | No warning or error is introduced | Passed with empty warning/error logs in both tabs |
+| Focused contracts | Node 24.20.0 | Demand and demo contracts remain valid | Passed: `tests/demand.test.ts` and `tests/public-demo.test.ts`, 30/30 |
+| Client contracts | Node 24.20.0 | Updated client compiles and the demand bundle packages | Passed: `pnpm types` and `pnpm build:demand` |
+
+- A broader `tests/services.test.ts` attempt was not a valid prepared check for this landing-only change: all seventeen service cases failed to connect because the required local service ports `4301` and `4312` were not running. The self-contained demand and public-demo checks above passed; production deployment and hosted verification remain pending.
