@@ -983,3 +983,16 @@ Read the current GitHub issues/board and working tree before proceeding. Do not 
 | Client contracts | Node 24.20.0 | Updated route consumers compile and the demand bundle contains `demo.html` | Passed: `pnpm types` and `pnpm build:demand` |
 
 - Hosted verification repeated the clean-route flow after deploy `dep-dbn1mf5g1s2s73damvsg` reached `Live`: `/demo/`, `/demo/mine`, `/demo/poll/:id`, `/demo/trust` and `/demo/help` loaded and reloaded without a fragment. A new browser-local community poll was created at `/demo/poll/07e6b8f6-75ec-4832-bc6c-1e7aea54247a`; its `Підтримую` vote produced the shared success card with `1 / 0 / 0`, its ID resolved to the matching poll, and its comment plus personal-list entry survived direct reloads. The hosted FAQ contained twenty-three disclosures. At 390×844, `clientWidth = scrollWidth = 375`, the mobile menu was present and no horizontal overflow occurred. Warning/error logs were empty; no GTM script or identity, ballot or management API resource was loaded. The viewport was reset and the Browser remained on `https://openvote.com.ua/demo/mine`.
+
+## Demo logo return to the landing
+
+- The retained hosted Browser reproduced the missing return path on a nested public-demo page: the header logo resolved to `/demo/`, so clicking it reopened the demo catalogue instead of the demand landing.
+- The change is limited to the existing header brand link when `App` runs in demo mode. It now resolves to the same-origin root `/`; the full client keeps its established `#/` destination. No API, browser-local data, database, identity, ballot, cryptography, dependency or other route changed.
+
+| Required case | Prerequisite | Expected result | Actual result and evidence |
+|---|---|---|---|
+| Nested demo return | Local `/demo/help` | Header logo points to the landing root and opens it | Passed in the retained in-app Browser: the accessible link resolved to `/`, clicking it navigated to `http://localhost:5175/`, and the landing heading became visible |
+| Full-client compatibility | Local full client | Header logo keeps the existing internal destination | Passed in the retained in-app Browser: the full-client logo remained `#/` |
+| Runtime | Both retained local tabs | No warning or error is introduced | Passed with empty warning/error console logs |
+| Focused contract | Node 24.20.0 | Existing public-demo behavior remains valid | Passed: `tests/public-demo.test.ts`, 6/6 |
+| Type contract | Node 24.20.0 | The conditional header destination compiles | Passed: `pnpm types` |
