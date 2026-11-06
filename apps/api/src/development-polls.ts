@@ -1,6 +1,6 @@
 import { Poll } from '../../../packages/domain/src/index.ts';
 import type { PollType } from '../../../packages/domain/src/index.ts';
-import { developmentQuestions } from './development-catalogue.ts';
+import { developmentQuestions } from '../../../packages/domain/src/development-catalogue.ts';
 import { developmentPublished } from './development-published.ts';
 
 const review = {

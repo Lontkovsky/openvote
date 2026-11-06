@@ -4,7 +4,7 @@ import {
   representativenessWarning,
 } from '../../../packages/domain/src/index.ts';
 import type { ContentType, DiscussionCommentType, PollType, ResultType } from '../../../packages/domain/src/index.ts';
-import { developmentQuestions } from '../../api/src/development-catalogue.ts';
+import { developmentQuestions } from '../../../packages/domain/src/development-catalogue.ts';
 
 const storageKey = 'openvote:public-demo:v1';
 const DemoVote = z.strictObject({ pollId: z.string().uuid(), choice: z.number().int().min(0).max(2), voteId: z.string().regex(/^[A-Za-z0-9+/]{43}$/) });

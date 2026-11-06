@@ -960,4 +960,5 @@ Read the current GitHub issues/board and working tree before proceeding. Do not 
 | Focused contracts | Node 24.20.0 | Demo state and existing development result contracts pass | Passed: `tests/public-demo.test.ts` and `tests/development-published.test.ts`, 6/6 |
 | Client contracts | Node 24.20.0 | Updated entries and routes compile and package | Passed: `pnpm types` and `pnpm build:demand`; `dist-demand/demo.html` was produced |
 
-- Exact-head CI, merge, Render deployment and hosted in-app Browser verification remain pending. No production demand response was submitted during local verification.
+- First exact-head workflow `42265528207` stopped in the Render runtime build because `demo-api.ts` imported the shared development catalogue from `apps/api`, while the established web build stage intentionally contains only `apps/web` and `packages/domain`. The fixed catalogue was moved into the existing shared domain package and both API and demo imports now use that single source; the Dockerfile and runtime boundary were not widened. The exact local `render-runtime` image build then passed.
+- Exact-head CI retry, merge, Render deployment and hosted in-app Browser verification remain pending. No production demand response was submitted during local verification.
