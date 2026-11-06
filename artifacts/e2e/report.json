@@ -47,7 +47,7 @@
       "step": "voteTwo",
       "status": "Passed",
       "assertions": [
-        "Second synthetic person casts encrypted opposing vote through B"
+        "Second test person casts encrypted opposing vote through B"
       ]
     },
     {
@@ -118,7 +118,7 @@
       "status": "Passed",
       "assertions": [
         "Exactly three manual deliveries exhaust the retry limit without new attempts",
-        "An explicit switch to available B confirms the same synthetic person"
+        "An explicit switch to available B confirms the same test person"
       ]
     },
     {

@@ -18,4 +18,4 @@ CI invokes Aqua Security setup-trivy v0.2.6 from commit `3fb12ec12f41e471780db15
 
 ## Manrope Variable 5.3.0
 
-The demand landing self-hosts Manrope Variable through `@fontsource-variable/manrope` 5.3.0. Manrope is Copyright 2018 The Manrope Project Authors and is licensed under the SIL Open Font License 1.1. The package's license notice and font files must remain available in distributed dependency material. The full synthetic application continues to use its existing Inter typography.
+The demand landing self-hosts Manrope Variable through `@fontsource-variable/manrope` 5.3.0. Manrope is Copyright 2018 The Manrope Project Authors and is licensed under the SIL Open Font License 1.1. The package's license notice and font files must remain available in distributed dependency material. The full test application continues to use its existing Inter typography.

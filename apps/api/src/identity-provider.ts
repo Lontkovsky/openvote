@@ -25,15 +25,15 @@ export class MockIdentityProvider implements IdentityProvider<z.infer<typeof Moc
   }
   async status() {
     let response: Response;
-    const base = { provider: this.id, name: 'Mock ' + this.id, synthetic: true, upstream: 'independent-local-mock-' + this.id,
-      state: 'SyntheticImplemented', capabilities: mockCapabilities };
+    const base = { provider: this.id, name: 'Mock ' + this.id, testOnly: true, upstream: 'independent-local-mock-' + this.id,
+      state: 'TestImplemented', capabilities: mockCapabilities };
     try { response = await fetch(this.origin + '/status', { signal: AbortSignal.timeout(2000), redirect: 'error' }); }
     catch (error) {
       if (error instanceof TypeError || (error instanceof Error && error.name === 'TimeoutError')) return MockProviderStatus.parse({ ...base, available: false, observation: 'TransportUnavailable' });
       throw error;
     }
     if (!response.ok) throw new Failure('PROVIDER_STATUS_REJECTED', 502);
-    const status = z.strictObject({ provider: MockProviderId, available: z.boolean(), synthetic: z.literal(true), upstream: z.string() }).parse(await response.json());
+    const status = z.strictObject({ provider: MockProviderId, available: z.boolean(), testOnly: z.literal(true), upstream: z.string() }).parse(await response.json());
     if (status.provider !== this.id || status.upstream !== base.upstream) throw new Failure('PROVIDER_STATUS_MISMATCH', 502);
     return MockProviderStatus.parse({ ...base, available: status.available, observation: 'ProviderReported' });
   }

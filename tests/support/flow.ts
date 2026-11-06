@@ -23,7 +23,7 @@ export async function login(subject: string, provider = 'A') {
   return z.object({ token: z.string(), role: z.string() }).parse(await ok('identity', '/v1/auth/finish', 'POST', { attempt }));
 }
 export function fixtureContent(closesAt: Date, question = 'Чи підтримуєте відкриту публікацію коду тестового проєкту?') {
-  return Content.parse({ question, context: 'Синтетичний сценарій для перевірки платформи. Питання не стосується реального рішення громади чи організації.',
+  return Content.parse({ question, context: 'Тестовий сценарій для перевірки платформи. Питання не стосується реального рішення громади чи організації.',
     consequences: 'У тестовому сценарії код залишається доступним для ознайомлення та перевірки відповідно до ліцензії.',
     argumentsFor: [{ text: 'Відкритий код дає можливість дослідити правила програми. Це оцінка автора тестового сценарію.', url: 'https://www.gnu.org/licenses/agpl-3.0.html' }],
     argumentsAgainst: [{ text: 'Публікація коду сама по собі не доводить безпеку розгорнутого сервісу. Це обмеження сценарію.', url: 'https://www.belenios.org/faq.html' }],

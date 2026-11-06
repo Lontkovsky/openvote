@@ -2,19 +2,21 @@
 
 Незалежна відкрита платформа добровільних голосувань із підтвердженням права участі та можливістю незалежно перевірити результати.
 
-**The tracked synthetic development scope is implemented and reconciled; Production Readiness remains open.** Only explicitly synthetic identities and test ballots are in scope. It is not a state service, official election, binding referendum or representative survey. Real politically sensitive participation is not enabled.
+**The tracked test development scope is implemented and reconciled; Production Readiness remains open.** Only explicitly test identities and test ballots are in scope. It is not a state service, official election, binding referendum or representative survey. Real politically sensitive participation is not enabled.
 
 Requirements: [product and engineering contract](docs/REQUIREMENTS.md), [mandatory adversarial controls](docs/REQUIREMENTS-A15.md).
 
 Implementation and verification status: [progress](docs/PROGRESS.md). Architecture choices: [decisions](docs/DECISIONS.md).
 
-The implemented synthetic slice runs **unmodified Belenios 3.3.0 cryptography** with five synthetic participants, a 2-of-3 threshold **plus a mandatory trustee**, final-vote enforcement and offline public verification. The fixed roster does not support adding a genuinely new person after opening; see [protocol compatibility](docs/adr/0001-reference-core.md).
+The implemented test slice runs **unmodified Belenios 3.3.0 cryptography** with five test participants, a 2-of-3 threshold **plus a mandatory trustee**, final-vote enforcement and offline public verification. The fixed roster does not support adding a genuinely new person after opening; see [protocol compatibility](docs/adr/0001-reference-core.md).
 
-The application slice includes synthetic identity providers A/B, separate PostgreSQL stores, client encryption, final ballot acceptance, trustee finality checks, public results and a Ukrainian React interface. Completion of that development scope does not authorize real use: the provider, legal, independent-review, trustee and hosted-cutover prerequisites remain explicitly blocked by the [launch readiness gate](docs/LAUNCH_READINESS.md).
+The application slice includes test identity providers A/B, separate PostgreSQL stores, client encryption, final ballot acceptance, trustee finality checks, public results and a Ukrainian React interface. Completion of that development scope does not authorize real use: the provider, legal, independent-review, trustee and hosted-cutover prerequisites remain explicitly blocked by the [launch readiness gate](docs/LAUNCH_READINESS.md).
 
 ## Minimal demand-validation launch
 
-Issue [#53](https://github.com/Lontkovsky/openvote/issues/53) owns the first public surface at `openvote.com.ua`: one Ukrainian landing page and one voluntary demand poll. Follow-up issue [#59](https://github.com/Lontkovsky/openvote/issues/59) makes the poll the immediate primary action and adds one silent same-origin walkthrough assembled from the existing synthetic create, vote and published-result screens. Issue [#62](https://github.com/Lontkovsky/openvote/issues/62) adopts the single `OpenVote` brand, one persistent poll CTA and concise nontechnical poll messaging. The walkthrough contains no real identities or production response data and is not a production-readiness claim. The single [Render Blueprint](render.yaml) declares one `openvote` web service and four databases in one `production` environment. During demand collection the service uses only `openvote-demand`; the identity, ballot and management databases remain suspended. Each response row contains only the poll ID and version, a hash of a random browser credential, and the final selected answer; it does not contain identity, contact, network or response-time fields. The landing publishes only the total number of accepted responses and the exact count for each of the three answers.
+Issue [#53](https://github.com/Lontkovsky/openvote/issues/53) owns the first public surface at `openvote.com.ua`: one Ukrainian landing page and one voluntary demand poll. Follow-up issue [#59](https://github.com/Lontkovsky/openvote/issues/59) makes the poll the immediate primary action and adds one silent same-origin walkthrough assembled from the existing test create, vote and published-result screens. Issue [#62](https://github.com/Lontkovsky/openvote/issues/62) adopts the single `OpenVote` brand, one persistent poll CTA and concise nontechnical poll messaging. The walkthrough contains no real identities or production response data and is not a production-readiness claim. The single [Render Blueprint](render.yaml) declares one `openvote` web service and four databases in one `production` environment. During demand collection the service uses only `openvote-demand`; the identity, ballot and management databases remain suspended. Each response row contains only the poll ID and version, a hash of a random browser credential, and the final selected answer; it does not contain identity, contact, network or response-time fields. The landing publishes only the total number of accepted responses and the exact count for each of the three answers.
+
+The same demand service publishes an explicitly marked browser-only demo at `/demo/`. It reuses the approved platform interface and test catalogue without starting identity, ballot, management or Belenios services. Polls, votes, comments, reactions and vote IDs created in the demo remain only in that visitor's browser and are not real public platform records. The demo accepts no real identity data, does not load demand analytics and is replaced by the real authenticated platform only through the separate Production Readiness cutover.
 
 This poll is not identity-verified voting or a representative survey. Clearing site data or using another browser permits another response, so it cannot establish one-person-one-vote or the opinion of Ukrainians generally. The exact cost, privacy and approval boundaries are documented in [minimal deployment operations](docs/DEMAND_DEPLOYMENT.md).
 
@@ -38,7 +40,7 @@ pnpm types
 pnpm build
 ```
 
-Open [the local application](http://localhost:5173). `seed` creates one immutable seven-day synthetic poll and is idempotent. Select a predefined `TEST-PERSON` identity; never supply real documents. Person 0012 is the test moderator. Other fixtures include a non-owner, a minor and a non-UA citizen to exercise explicit eligibility rules. Session refresh requires re-identification; it never resets voting rights. Generated credentials and trustee files are private, ignored `.runtime/` data. Do not publish that directory.
+Open [the local application](http://localhost:5173). `seed` creates one immutable seven-day test poll and is idempotent. Select a predefined `TEST-PERSON` identity; never supply real documents. Person 0012 is the test moderator. Other fixtures include a non-owner, a minor and a non-UA citizen to exercise explicit eligibility rules. Session refresh requires re-identification; it never resets voting rights. Generated credentials and trustee files are private, ignored `.runtime/` data. Do not publish that directory.
 
 To inspect the separate demand landing locally while the full platform remains available, run `pnpm dev:demand` and open [http://localhost:5174](http://localhost:5174). It reuses the local management PostgreSQL instance only as a development database; the Render Blueprint provisions one dedicated `openvote_demand` database.
 
@@ -62,7 +64,7 @@ The separate [public observer](docs/OBSERVER.md) persists signed history, checks
 
 [Trustee verification](docs/TRUSTEE_VERIFICATION.md) documents native proof validation before share storage, final-set binding, real zero/one/two-ballot suppression tests and the limits of a first signed history or an unanimous result. The adapter calls the original Belenios library; it does not implement voting cryptographic primitives.
 
-[Admission verification](docs/ADMISSION_VERIFICATION.md) covers genuine foreign credentials, replay across polls/environments/context/keys, immutable API registration and the distinct limitation of a replaced trusted roster. All identities and key material in those scenarios are synthetic.
+[Admission verification](docs/ADMISSION_VERIFICATION.md) covers genuine foreign credentials, replay across polls/environments/context/keys, immutable API registration and the distinct limitation of a replaced trusted roster. All identities and key material in those scenarios are test.
 
 To reproduce the current slice with Git, Docker and Python 3:
 

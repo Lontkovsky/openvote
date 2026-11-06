@@ -1,7 +1,7 @@
 {
   "core": "Belenios 3.3.0",
   "source": "337887bd1862c7cd057080b530fd80941bfc3c69",
-  "scenario": "synthetic reference CLI tract; browser tract not covered by this command",
+  "scenario": "test reference CLI tract; browser tract not covered by this command",
   "seconds": 48.698,
   "checks": [
     {

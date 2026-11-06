@@ -3,7 +3,7 @@ import { setTimeout } from 'node:timers/promises';
 import { application, serviceResourceLimits } from '../apps/api/src/common.ts';
 
 it('rejects request bodies above the shared limit', async () => {
-  const app = await application({ environment: 'test', role: 'management', port: 0, serviceToken: 'synthetic-body-limit-token-not-a-real-secret' }, 'http://localhost:5173');
+  const app = await application({ environment: 'test', role: 'management', port: 0, serviceToken: 'test-body-limit-token-not-a-real-secret' }, 'http://localhost:5173');
   app.post('/bounded-body', async () => ({ accepted: true }));
   try {
     const response = await app.inject({ method: 'POST', url: '/bounded-body', headers: { 'content-type': 'application/json' },
@@ -17,7 +17,7 @@ it('bounds sequential requests in one window and recovers at the declared bounda
   vi.useFakeTimers({ toFake: ['Date'] });
   vi.setSystemTime(new Date('2026-10-31T00:00:00.000Z'));
   const app = await application({ environment: 'test', role: 'management', port: 0,
-    serviceToken: 'synthetic-rate-limit-token-not-a-real-secret' }, 'http://localhost:5173');
+    serviceToken: 'test-rate-limit-token-not-a-real-secret' }, 'http://localhost:5173');
   app.get('/bounded-rate', async () => ({ accepted: true }));
   try {
     let boundary;
@@ -45,7 +45,7 @@ it('bounds sequential requests in one window and recovers at the declared bounda
 });
 
 it('bounds active requests and the waiting queue', async () => {
-  const app = await application({ environment: 'test', role: 'management', port: 0, serviceToken: 'synthetic-queue-limit-token-not-a-real-secret' }, 'http://localhost:5173');
+  const app = await application({ environment: 'test', role: 'management', port: 0, serviceToken: 'test-queue-limit-token-not-a-real-secret' }, 'http://localhost:5173');
   let active = 0, maximum = 0, release!: () => void, activeLimitReached!: () => void;
   const held = new Promise<void>(resolve => { release = resolve; });
   const activeLimit = new Promise<void>(resolve => { activeLimitReached = resolve; });
@@ -76,7 +76,7 @@ it('bounds active requests and the waiting queue', async () => {
 });
 
 it('expires a queued request at the declared wait limit', async () => {
-  const app = await application({ environment: 'test', role: 'management', port: 0, serviceToken: 'synthetic-queue-timeout-token-not-a-real-secret' }, 'http://localhost:5173');
+  const app = await application({ environment: 'test', role: 'management', port: 0, serviceToken: 'test-queue-timeout-token-not-a-real-secret' }, 'http://localhost:5173');
   let active = 0, release!: () => void, activeLimitReached!: () => void;
   const held = new Promise<void>(resolve => { release = resolve; });
   const activeLimit = new Promise<void>(resolve => { activeLimitReached = resolve; });
@@ -103,13 +103,13 @@ it('expires a queued request at the declared wait limit', async () => {
 });
 
 it('keeps a bounded eleven-second native-processing response connected', async () => {
-  const app = await application({ environment: 'test', role: 'management', port: 0, serviceToken: 'synthetic-transport-test-token-not-a-real-secret' }, 'http://localhost:5173');
+  const app = await application({ environment: 'test', role: 'management', port: 0, serviceToken: 'test-transport-test-token-not-a-real-secret' }, 'http://localhost:5173');
   let responseCompleted = false;
-  app.post('/synthetic-processing', async () => { await setTimeout(11000); responseCompleted = true; return { state: 'Finished' }; });
+  app.post('/test-processing', async () => { await setTimeout(11000); responseCompleted = true; return { state: 'Finished' }; });
   const origin = await app.listen({ host: '127.0.0.1', port: 0 });
   const started = Date.now();
   try {
-    const response = await fetch(origin + '/synthetic-processing', { method: 'POST', signal: AbortSignal.timeout(15000) });
+    const response = await fetch(origin + '/test-processing', { method: 'POST', signal: AbortSignal.timeout(15000) });
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ state: 'Finished' });
     expect(responseCompleted).toBe(true);
@@ -118,7 +118,7 @@ it('keeps a bounded eleven-second native-processing response connected', async (
 }, 20000);
 
 describe('configured browser origin', () => {
-  const config = { environment: 'demo' as const, role: 'management' as const, port: 0, serviceToken: 'synthetic-origin-test-token-not-a-real-secret' };
+  const config = { environment: 'demo' as const, role: 'management' as const, port: 0, serviceToken: 'test-origin-test-token-not-a-real-secret' };
 
   it('accepts the local development origin only when it is explicitly configured', async () => {
     const app = await application({ ...config, environment: 'test' }, 'http://localhost:5173');

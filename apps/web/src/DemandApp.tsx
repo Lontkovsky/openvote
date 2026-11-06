@@ -1,20 +1,70 @@
-import { useEffect, useRef, useState } from 'react';
-import { DemandChatRequest, demandFaqItems, demandGtmContainerId } from '../../../packages/domain/src/demand.ts';
-import type { DemandAnswerType, DemandChatResponseType, DemandPollStatusType } from '../../../packages/domain/src/demand.ts';
-import { DemandApiFailure, askDemandChat, loadDemandPoll, recordDemandResponse } from './demand-api.ts';
+import { useEffect, useState } from 'react';
+import { demandFaqItems, demandGtmContainerId } from '../../../packages/domain/src/demand.ts';
+import type { DemandAnswerType, DemandPollStatusType } from '../../../packages/domain/src/demand.ts';
+import { DemandApiFailure, loadDemandPoll, recordDemandResponse } from './demand-api.ts';
 import {
   demandAnalyticsConsentKey,
   enableDemandAnalytics,
   trackDemandAnalytics,
 } from './demand-analytics.ts';
 import type { DemandAnalyticsConsent, DemandAnalyticsSection } from './demand-analytics.ts';
+import { TarasChat } from './TarasChat.tsx';
+import { VoteSuccess } from './VoteSuccess.tsx';
 import openVoteMark from './assets/openvote-mark.svg';
-import tarasAvatar from './assets/taras-avatar.png';
 import walkthroughPoster from './assets/platform-walkthrough-poster.jpg';
 import walkthroughVideo from './assets/platform-walkthrough.mp4';
 
 const launchSupportGoal = 10_000;
 const analyticsSections: DemandAnalyticsSection[] = ['problem', 'how-it-works', 'privacy', 'open-source', 'goal', 'demo', 'faq'];
+const heroPublicationQuotes = [
+  '72% киян готові терпіти війну стільки, скільки буде потрібно.',
+  '90% опитаних вважають важливим бути громадянином України.',
+  '74% опитаних жінок не мають резервного джерела енергії.',
+  '79% українців підтримують вступ України до Європейського Союзу.',
+  '55% українців вважають, що в боротьбі з корупцією є позитивні зрушення.',
+];
+const heroPublicationSources = [
+  {
+    quote: heroPublicationQuotes[0],
+    organization: 'КМІС',
+    period: '12–21 вересня 2026',
+    sample: '1002 дорослих загалом. 72% стосується Києва.',
+    method: 'CATI, випадкова вибірка мобільних номерів',
+    href: 'https://www.kiis.com.ua/?cat=reports&id=1639&lang=ukr&page=2',
+  },
+  {
+    quote: heroPublicationQuotes[1],
+    organization: 'Rating Group',
+    period: '4–9 серпня 2026',
+    sample: '2000 дорослих',
+    method: 'CATI, випадкова вибірка мобільних номерів',
+    href: 'https://www.ratinggroup.ua/news/socpol-aug2026-2',
+  },
+  {
+    quote: heroPublicationQuotes[2],
+    organization: 'Rating Group і Voluntas на замовлення UN Women',
+    period: '25–26 лютого 2026',
+    sample: '1200 дорослих',
+    method: 'CATI',
+    href: 'https://www.ratinggroup.ua/news/energy-genderdiff-2025-2026-news',
+  },
+  {
+    quote: heroPublicationQuotes[3],
+    organization: 'Rating Group для IRI',
+    period: '30 травня – 3 червня 2026',
+    sample: '2404 дорослих',
+    method: 'CATI',
+    href: 'https://www.ratinggroup.ua/news/iri-jun2026',
+  },
+  {
+    quote: heroPublicationQuotes[4],
+    organization: 'КМІС',
+    period: '8–16 жовтня 2026',
+    sample: '1031 дорослий',
+    method: 'CATI, випадкова вибірка мобільних номерів',
+    href: 'https://www.kiis.com.ua/?cat=reports&id=1645&lang=ukr&page=1.Kyiv',
+  },
+];
 
 function errorText(error: unknown): string {
   if (error instanceof DemandApiFailure) {
@@ -40,18 +90,16 @@ export function DemandApp() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [chatQuestion, setChatQuestion] = useState('');
-  const [chatHistory, setChatHistory] = useState<Array<{ question: string; answer: string }>>([]);
-  const [pendingChatQuestion, setPendingChatQuestion] = useState<string | null>(null);
-  const [chatBusy, setChatBusy] = useState(false);
-  const [chatError, setChatError] = useState<string | null>(null);
   const [chatOpen, setChatOpen] = useState(false);
-  const [chatGreetingVisible, setChatGreetingVisible] = useState(false);
   const [analyticsConsent, setAnalyticsConsent] = useState<DemandAnalyticsConsent | 'pending' | null>(null);
-  const chatInput = useRef<HTMLTextAreaElement>(null);
-  const chatMessages = useRef<HTMLDivElement>(null);
-  const chatLauncher = useRef<HTMLButtonElement>(null);
-  const chatInteracted = useRef(false);
+  const [activeHeroQuote, setActiveHeroQuote] = useState(0);
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setActiveHeroQuote(current => (current + 1) % heroPublicationQuotes.length);
+    }, 8_000);
+    return () => { window.clearInterval(interval); };
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -101,18 +149,6 @@ export function DemandApp() {
   }, [analyticsConsent]);
 
   useEffect(() => {
-    if (!chatOpen || chatMessages.current === null) return;
-    chatMessages.current.scrollTop = chatMessages.current.scrollHeight;
-  }, [chatBusy, chatError, chatHistory, chatOpen, pendingChatQuestion]);
-
-  useEffect(() => {
-    const timeout = window.setTimeout(() => {
-      if (!chatInteracted.current) setChatGreetingVisible(true);
-    }, 10_000);
-    return () => { window.clearTimeout(timeout); };
-  }, []);
-
-  useEffect(() => {
     const page = document.querySelector<HTMLElement>('.demand-page');
     if (page === null) throw new Error('DEMAND_PAGE_MISSING');
     const sections = document.querySelectorAll<HTMLElement>('.demand-section');
@@ -140,35 +176,6 @@ export function DemandApp() {
     finally { setBusy(false); }
   }
 
-  async function askQuestion() {
-    const request = DemandChatRequest.safeParse({ question: chatQuestion });
-    if (!request.success) return;
-    setChatBusy(true); setChatError(null); setPendingChatQuestion(request.data.question); setChatQuestion('');
-    try {
-      const result: DemandChatResponseType = await askDemandChat(request.data.question);
-      setChatHistory(history => [...history, { question: request.data.question, answer: result.answer }]);
-    } catch (reason) {
-      setChatQuestion(request.data.question);
-      setChatError(reason instanceof DemandApiFailure && reason.message === 'AI_RATE_LIMITED'
-        ? 'Ліміт запитань вичерпано. Спробуйте пізніше.'
-        : 'Не вдалося отримати відповідь. Спробуйте ще раз.');
-    } finally {
-      setPendingChatQuestion(null);
-      setChatBusy(false);
-    }
-  }
-
-  function toggleChat() {
-    const next = !chatOpen;
-    setChatOpen(next);
-    if (next) {
-      chatInteracted.current = true;
-      setChatGreetingVisible(false);
-      trackDemandAnalytics({ name: 'taras_open' });
-      requestAnimationFrame(() => chatInput.current?.focus());
-    } else requestAnimationFrame(() => chatLauncher.current?.focus());
-  }
-
   function acceptAnalytics() {
     localStorage.setItem(demandAnalyticsConsentKey, 'accepted');
     enableDemandAnalytics(demandGtmContainerId);
@@ -186,89 +193,87 @@ export function DemandApp() {
   return <div className={`demand-page${analyticsConsent === 'pending' ? ' demand-page-consent-pending' : ''}`}>
     <a className="skip" href="#main">До основного вмісту</a>
     <header className="demand-header">
-      <a className="brand" href="#top" aria-label="OpenVote, на початок сторінки"><span className="brand-mark" aria-hidden="true"><img src={openVoteMark} alt="" /></span><span>OpenVote<small>Чесно. Прозоро. Анонімно.</small></span></a>
-      <a className="button primary" href="#poll" onClick={() => { trackDemandAnalytics({ name: 'support_launch_click', location: 'header' }); }}>Проголосувати</a>
+      <a className="brand" href="#top" aria-label="OpenVote, на початок сторінки"><span className="brand-mark" aria-hidden="true"><img src={openVoteMark} alt="" /></span><span>OpenVote 🇺🇦<small>Чесно. Прозоро. Анонімно.</small></span></a>
+      <div className="demand-header-actions">
+        <a className="button secondary demand-demo-link" href="/demo/#/" target="_blank" rel="noreferrer">Демо платформи</a>
+        <a className="button primary" href="#poll" onClick={() => { trackDemandAnalytics({ name: 'support_launch_click', location: 'header' }); }}>Проголосувати</a>
+      </div>
     </header>
     <main id="main" className="demand-main">
       <section className="demand-hero" id="top">
         <div className="demand-hero-copy">
-          <p className="demand-label">Волонтерський open source проєкт</p>
-          <h1>Важливі питання не мають вирішуватися навмання.</h1>
-          <p className="demand-lead">Ми створюємо OpenVote, волонтерську open source платформу, де громадяни України зможуть ставити питання, обговорювати їх, голосувати та бачити зрозумілу картину громадської думки.</p>
+          <div className="demand-hero-quote-slider">
+            <blockquote className="demand-hero-quote" key={activeHeroQuote} aria-live="polite">{heroPublicationQuotes[activeHeroQuote]}</blockquote>
+            <div className="demand-hero-quote-dots" aria-label="Цитати з публікацій">
+              {heroPublicationQuotes.map((quote, index) => <button key={quote} type="button" aria-label={`Показати цитату ${index + 1}`} aria-pressed={activeHeroQuote === index} onClick={() => { setActiveHeroQuote(index); }} />)}
+            </div>
+          </div>
+          <h1>А вас питали?</h1>
+          <p className="demand-lead">Як саме проводилось опитування і як рахували результат, невідомо. Але такі цифри все рівно публікують і поширюють у ЗМІ.<span className="demand-lead-paragraph">Саме тому ми створюємо <strong className="demand-lead-brand">OpenVote</strong>, щоб кожен міг проголосувати, створити власне опитування і побачити чесний і реальний результат.</span></p>
         </div>
         <section className="demand-poll-card demand-hero-poll" id="poll" aria-label="Опитування">
           {loading ? <p role="status">Завантаження опитування…</p> : poll === null ? <div className="notice error" role="alert">{error}</div> : <>
-            {recorded !== null ? <div className="demand-success" role="status"><div className="demand-success-confetti" aria-hidden="true"><i /><i /><i /><i /><i /><i /><i /><i /></div><span className="demand-success-mark" aria-hidden="true">✓</span><h2>Дякуємо за ваш голос.</h2></div> : <form onSubmit={event => { event.preventDefault(); void submit(); }}><fieldset disabled={busy}><legend>{poll.question}</legend><div className="demand-answers">{poll.answers.map(answer => <label className="choice" key={answer}><input type="radio" name="demand-answer" checked={selected === answer} onChange={() => setSelected(answer)} />{answer}</label>)}</div></fieldset>{error !== null && <p className="notice error" role="alert">{error}</p>}<button className="primary" type="submit" disabled={selected === null || busy}>{busy ? 'Надсилання…' : 'Проголосувати'}</button></form>}
-            {recorded !== null && <section className="demand-results" aria-label="Результати голосування">
-              <p className="demand-results-total">Всього відповідей: <strong>{poll.results.totalResponses}</strong></p>
-              <dl>{poll.answers.map((answer, index) => <div key={answer}><dt>{answer}</dt><dd>{poll.results.counts[index]}</dd></div>)}</dl>
-            </section>}
+            {recorded !== null ? <VoteSuccess answers={poll.answers} counts={poll.results.counts} total={poll.results.totalResponses} /> : <form onSubmit={event => { event.preventDefault(); void submit(); }}><fieldset disabled={busy}><legend>{poll.question}</legend><div className="demand-answers">{poll.answers.map(answer => <label className="choice" key={answer}><input type="radio" name="demand-answer" checked={selected === answer} onChange={() => setSelected(answer)} />{answer}</label>)}</div></fieldset>{error !== null && <p className="notice error" role="alert">{error}</p>}<button className="primary" type="submit" disabled={selected === null || busy}>{busy ? 'Надсилання…' : 'Проголосувати'}</button></form>}
           </>}
         </section>
       </section>
 
       <section className="demand-section demand-problem" id="problem" aria-labelledby="problem-title" data-analytics-section>
-        <div className="demand-split-heading"><h2 id="problem-title">Гучність не дорівнює громадській думці</h2><p>У соцмережах найпомітніші голоси не завжди представляють більшість. OpenVote допоможе винести конкретне питання на відкрите голосування та побачити зрозумілий результат.</p></div>
+        <div className="demand-source-heading"><h2 id="problem-title">Покажіть, звідки взялися ці відсотки.</h2><p>Відсоток без дати, вибірки й методики неможливо перевірити. Ось що стоїть за п’ятьма цитатами, які ви щойно побачили.</p></div>
+        <div className="demand-source-grid">
+          {heroPublicationSources.map((source, index) => <article className={`demand-source-card${index === 0 ? ' demand-source-card-featured' : ''}`} key={source.quote}>
+            <p className="demand-source-quote">{source.quote}</p>
+            <dl className="demand-source-meta">
+              <div><dt>Хто</dt><dd>{source.organization}</dd></div>
+              <div><dt>Коли</dt><dd>{source.period}</dd></div>
+              <div><dt>Вибірка</dt><dd>{source.sample}</dd></div>
+              <div><dt>Метод</dt><dd>{source.method}</dd></div>
+            </dl>
+            <a href={source.href} target="_blank" rel="noreferrer">Перевірити першоджерело <span aria-hidden="true">↗</span></a>
+          </article>)}
+        </div>
       </section>
 
       <section className="demand-section demand-how" id="how-it-works" aria-labelledby="how-title" data-analytics-section>
-        <div className="demand-section-intro"><h2 id="how-title">Досить здогадок. Нехай люди скажуть самі.</h2></div>
+        <div className="demand-section-intro"><h2 id="how-title">Ніхто не має говорити за людей. Запитайте їх напряму.</h2></div>
         <div className="demand-feature-grid">
-          <article><div className="demand-step-top"><StepIcon step={1} /></div><h3>Поставте питання</h3><p>Винесіть на голосування тему, яка потребує спільної відповіді.</p></article>
-          <article><div className="demand-step-top"><StepIcon step={2} /></div><h3>Почуйте аргументи</h3><p>Обговоріть питання та ознайомтеся з думками інших людей.</p></article>
-          <article><div className="demand-step-top"><StepIcon step={3} /></div><h3>Побачте результат</h3><p>Проголосуйте й отримайте зрозумілу картину громадської думки.</p></article>
+          <article><div className="demand-step-top"><StepIcon step={1} /></div><h3>Поставте питання</h3><p>Винесіть на голосування тему, про яку всі говорять, але ніхто не запитує людей напряму.</p></article>
+          <article><div className="demand-step-top"><StepIcon step={2} /></div><h3>Почуйте людей</h3><p>Дайте кожному висловитися, проголосувати, побачити аргументи й зробити власний вибір.</p></article>
+          <article><div className="demand-step-top"><StepIcon step={3} /></div><h3>Побачте результат</h3><p>Отримайте відкритий підрахунок без чужих трактувань і вирваних із контексту відсотків.</p></article>
         </div>
       </section>
 
       <section className="demand-section demand-privacy" id="privacy" aria-labelledby="privacy-title" data-analytics-section>
-        <div><h2 id="privacy-title">Говорити правду має бути не страшно.</h2></div>
-        <div><p className="demand-privacy-lead">Ми створюємо OpenVote так, щоб люди могли чесно висловлювати свою думку без страху, тиску чи небажаної уваги. Результати голосувань і опитувань завжди будуть відкритими і агрегованими.</p></div>
+        <div className="demand-privacy-heading"><h2 id="privacy-title">Говорити правду має бути просто.</h2><p className="demand-privacy-lead">Люди часто мовчать не тому, що їм нічого сказати. Вони бояться осуду, тиску або небажаної уваги. OpenVote створюється, щоб кожен міг відповісти чесно, а всі бачили спільний результат, а не вибір конкретної людини.</p></div>
       </section>
 
       <section className="demand-section demand-open-source" id="open-source" aria-labelledby="open-source-title" data-analytics-section>
-        <div><h2 id="open-source-title">Довіра народжується там, де нічого не приховують.</h2><p>OpenVote є безкоштовним волонтерським open source проєктом. Код, рішення й увесь процес розробки відкриті. Кожен може перевірити їх і долучитися до створення платформи.</p><a href="https://github.com/Lontkovsky/openvote">Переглянути код на GitHub <span aria-hidden="true">↗</span></a></div>
+        <div><h2 id="open-source-title">Довіра народжується там, де нічого не приховують.</h2><p>Нас надто часто просять повірити готовим цифрам, не показуючи, як їх отримали. В OpenVote код, правила й процес розробки відкриті. Кожен зможе побачити, як працює платформа і звідки береться результат.</p><a href="https://github.com/Lontkovsky/openvote">Переглянути код на GitHub <span aria-hidden="true">↗</span></a></div>
       </section>
 
       <section className="demand-section demand-goal" id="goal" aria-labelledby="goal-title" data-analytics-section>
-        <div className="demand-goal-copy"><h2 id="goal-title">10 000 голосів можуть запустити OpenVote.</h2><p>Саме стільки підтримки ми хочемо зібрати, щоб підтвердити потребу в платформі та перейти до її повноцінного запуску. Кожен голос наближає нас до цієї мети.</p></div>
+        <div className="demand-goal-copy"><h2 id="goal-title">10 000 голосів покажуть, що OpenVote справді потрібен.</h2><p>Нам не потрібні припущення про те, чи варто створювати платформу. Ми запитуємо людей напряму. Коли OpenVote підтримають 10 000 людей, це стане чітким сигналом переходити від ідеї до повноцінного запуску.</p></div>
         {supportingResponses !== null && <div className="demand-goal-progress" aria-label={`${supportingResponses.toLocaleString('uk-UA')} із ${launchSupportGoal.toLocaleString('uk-UA')} голосів підтримки`}><div className="demand-goal-numbers"><strong>{supportingResponses.toLocaleString('uk-UA')}</strong><span>із {launchSupportGoal.toLocaleString('uk-UA')}</span></div><div className="demand-progress-track" aria-hidden="true"><span style={{ width: `${launchProgress}%` }} /></div><p>{supportingResponses < launchSupportGoal ? <>До мети: <strong>{(launchSupportGoal - supportingResponses).toLocaleString('uk-UA')}</strong></> : <strong>Мету досягнуто.</strong>}</p></div>}
       </section>
 
       <section className="demand-section demand-demo" id="demo" aria-labelledby="demo-title" data-analytics-section>
-        <div className="demand-demo-heading"><h2 id="demo-title">Думаєте, ваш голос нічого не змінить?</h2><p>Подивіться, як OpenVote перетворює окремі відповіді на зрозумілу картину громадської думки.</p></div>
+        <div className="demand-demo-heading"><h2 id="demo-title">Думаєте, ваш голос нічого не змінить?</h2><p>Окремий голос легко не помітити. Тисячі чесних відповідей уже неможливо замінити чужими припущеннями. Подивіться, як OpenVote перетворює голоси людей на відкритий і зрозумілий результат.</p></div>
         <div className="demand-video-frame"><video controls muted playsInline preload="metadata" poster={walkthroughPoster} aria-label="Демонстрація створення питання, голосування та перегляду результату" onPlay={() => { trackDemandAnalytics({ name: 'video_start' }); }} onEnded={() => { trackDemandAnalytics({ name: 'video_complete' }); }}><source src={walkthroughVideo} type="video/mp4" />Не вдалося відтворити відео.</video></div>
       </section>
 
       <section className="demand-section demand-faq" id="faq" aria-labelledby="faq-title" data-analytics-section>
-        <div className="demand-faq-heading"><h2 id="faq-title">У вас є питання. Ми відповідаємо відкрито.</h2><p>Тут зібрано найважливіше про OpenVote, голосування, приватність і поточний етап розробки.</p></div>
+        <div className="demand-faq-heading"><h2 id="faq-title">Поширені питання і відповіді.</h2></div>
         <div className="demand-faq-list">
           {demandFaqItems.map((item, index) => <details key={item.question} onToggle={event => { if (event.currentTarget.open) trackDemandAnalytics({ name: 'faq_open', item: index + 1 }); }}><summary>{item.question}</summary><p>{item.answer}</p></details>)}
         </div>
       </section>
 
       <section className="demand-section demand-final" aria-labelledby="final-title">
-        <div><h2 id="final-title">OpenVote починається з тих, кому не байдуже.</h2><p>Підтримайте запуск платформи своїм голосом і допоможіть перетворити ідею на відкритий громадський інструмент.</p></div><a className="button demand-final-button" href="#poll" onClick={() => { trackDemandAnalytics({ name: 'support_launch_click', location: 'final' }); }}>Проголосувати</a>
+        <div><h2 id="final-title">Вас не питали? Тоді скажіть самі.</h2><p>Проголосуйте за створення OpenVote. Ваш голос покаже, що людям потрібна відкрита платформа, де їхню думку не вигадують за них, а запитують напряму.</p></div><a className="button demand-final-button" href="#poll" onClick={() => { trackDemandAnalytics({ name: 'support_launch_click', location: 'final' }); }}>Проголосувати</a>
       </section>
     </main>
 
-    {chatOpen && <section className="demand-chat-panel" data-ai-chat id="demand-chat" role="dialog" aria-labelledby="demand-chat-title">
-      <header className="demand-chat-header"><span className="demand-chat-avatar" aria-hidden="true"><img src={tarasAvatar} alt="" /></span><div><strong id="demand-chat-title">Тарас</strong></div><button type="button" aria-label="Закрити чат" onClick={toggleChat}>×</button></header>
-      <div className="demand-chat-messages" ref={chatMessages} aria-live="polite">
-        <article className="demand-chat-message assistant"><p>Привіт! Я Тарас. Ви можете запитати мене про все, що стосується OpenVote.</p></article>
-        {chatHistory.map((item, index) => <div key={`${index}-${item.question}`}><article className="demand-chat-message user"><p>{item.question}</p></article><article className="demand-chat-message assistant"><p>{item.answer}</p></article></div>)}
-        {pendingChatQuestion !== null && <article className="demand-chat-message user"><p>{pendingChatQuestion}</p></article>}
-        {chatBusy && <article className="demand-chat-message assistant" role="status"><p>Тарас друкує…</p></article>}
-        {chatError !== null && <p className="demand-chat-error" role="alert">{chatError}</p>}
-      </div>
-      <form className="demand-chat-composer" onSubmit={event => { event.preventDefault(); void askQuestion(); }}>
-        <label className="visually-hidden" htmlFor="demand-ai-question">Повідомлення для Тараса</label>
-        <textarea ref={chatInput} id="demand-ai-question" value={chatQuestion} rows={1} maxLength={400} disabled={chatBusy} onChange={event => setChatQuestion(event.target.value)} onKeyDown={event => { if (event.key === 'Enter' && !event.shiftKey && DemandChatRequest.safeParse({ question: chatQuestion }).success && !chatBusy) { event.preventDefault(); void askQuestion(); } }} />
-        <button className="primary" type="submit" aria-label="Надіслати повідомлення" disabled={!DemandChatRequest.safeParse({ question: chatQuestion }).success || chatBusy}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.2 20.4 3c.5-.2 1 .3.8.8L13 21.2c-.2.5-.9.5-1.1 0l-2.3-6.8-6.8-2.1c-.5-.2-.5-.9.2-1.1Zm7.3 2.1 2 5.7 6.5-13.8-8.5 8.1Z" /></svg></button>
-      </form>
-    </section>}
-    {!chatOpen && (chatGreetingVisible
-      ? <button ref={chatLauncher} className="demand-chat-greeting" type="button" aria-expanded="false" aria-controls="demand-chat" onClick={toggleChat}><span className="demand-chat-avatar demand-chat-greeting-avatar" aria-hidden="true"><img src={tarasAvatar} alt="" /></span><span>Привіт! Я Тарас. Ви можете запитати мене про все, що стосується OpenVote.</span></button>
-      : <button ref={chatLauncher} className="demand-chat-launcher" type="button" aria-expanded="false" aria-controls="demand-chat" aria-label="Відкрити чат з Тарасом" onClick={toggleChat}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-7l-4.8 3.2A.75.75 0 0 1 6 19.6V17H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Zm0 2v9h3v2.2l3.4-2.2H19V6H5Z" /></svg></button>)}
+    <TarasChat open={chatOpen} onOpenChange={setChatOpen} onOpened={() => { trackDemandAnalytics({ name: 'taras_open' }); }} />
 
     <footer className="demand-footer">
       <div className="demand-footer-inner">

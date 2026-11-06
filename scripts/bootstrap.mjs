@@ -40,4 +40,4 @@ await mkdir('apps/web/public/crypto', { recursive: true });
 await run('docker', ['run', '--rm', '--platform', 'linux/amd64', '--network', 'none', '--entrypoint', 'sh',
   '-v', process.cwd() + '/apps/web/public/crypto:/export', 'openvote-crypto:3.3.0', '-c', 'cp /opt/belenios/belenios.js /opt/belenios/libsodium.wasm /opt/belenios/COPYING.belenios /opt/belenios/LICENSE.libsodium /export/']);
 if (!initialized) await writeRuntimeMarker(runtimeRoot, 'development', publicOrigin);
-console.log('Synthetic environment bootstrapped. Private local role configurations were generated without printing secrets.');
+console.log('Test environment bootstrapped. Private local role configurations were generated without printing secrets.');

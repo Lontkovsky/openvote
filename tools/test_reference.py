@@ -25,7 +25,7 @@ def rejected(name, request):
 
 manifest = {'environment': 'test', 'question': 'Чи підтримуєте ви тестову пропозицію відкритих бібліотечних даних?',
             'version': 1, 'policy': {'id': 'verified-rnokpp-owner', 'version': 1}, 'publicationThreshold': 3,
-            'context': 'Синтетичний тест. Жодних реальних учасників.', 'opensAt': '2026-01-01T00:00:00Z',
+            'context': 'Тестовий тест. Жодних реальних учасників.', 'opensAt': '2026-01-01T00:00:00Z',
             'closesAt': '2026-01-02T00:00:00Z'}
 persons = [f'TEST-PERSON-{i:04d}' for i in range(1, 6)]
 setup = process({'action': 'setup', 'manifest': manifest, 'persons': persons})
@@ -114,7 +114,7 @@ out = pathlib.Path(sys.argv[1]); out.mkdir(parents=True, exist_ok=True)
 (out / 'election.bel').write_bytes(base64.b64decode(published['archive']))
 (out / 'result.json').write_text(json.dumps(published['result'], ensure_ascii=False, indent=2) + '\n')
 report = {'core': 'Belenios 3.3.0', 'source': '337887bd1862c7cd057080b530fd80941bfc3c69',
-          'scenario': 'synthetic reference CLI tract; browser tract not covered by this command',
+          'scenario': 'test reference CLI tract; browser tract not covered by this command',
           'seconds': round(time.monotonic() - started, 3), 'checks': checks}
 (out / 'reference-report.json').write_text(json.dumps(report, ensure_ascii=False, indent=2) + '\n')
 print(json.dumps(report, ensure_ascii=False, indent=2))

@@ -12,7 +12,7 @@ import type { DatabaseMap } from '../scripts/runtime-config.ts';
 
 const execute = promisify(execFile);
 const container = `openvote-render-test-${process.pid}`;
-const bootstrapPassword = 'synthetic-render-bootstrap-password';
+const bootstrapPassword = 'test-render-bootstrap-password';
 let port = 0;
 let databases: DatabaseMap;
 const temporaryDirectories: string[] = [];
@@ -61,15 +61,15 @@ beforeAll(async () => {
   await admin.connect();
   try {
     for (const role of ['identity', 'ballot', 'management'] as const) {
-      await admin.query(`CREATE ROLE openvote_${role} LOGIN PASSWORD 'synthetic-${role}-database-password'`);
+      await admin.query(`CREATE ROLE openvote_${role} LOGIN PASSWORD 'test-${role}-database-password'`);
       await admin.query(`CREATE DATABASE openvote_${role} OWNER openvote_${role}`);
       await admin.query(`REVOKE ALL ON DATABASE openvote_${role} FROM PUBLIC`);
     }
   } finally { await admin.end(); }
   databases = {
-    identity: { host: '127.0.0.1', port, database: 'openvote_identity', user: 'openvote_identity', password: 'synthetic-identity-database-password' },
-    ballot: { host: '127.0.0.1', port, database: 'openvote_ballot', user: 'openvote_ballot', password: 'synthetic-ballot-database-password' },
-    management: { host: '127.0.0.1', port, database: 'openvote_management', user: 'openvote_management', password: 'synthetic-management-database-password' },
+    identity: { host: '127.0.0.1', port, database: 'openvote_identity', user: 'openvote_identity', password: 'test-identity-database-password' },
+    ballot: { host: '127.0.0.1', port, database: 'openvote_ballot', user: 'openvote_ballot', password: 'test-ballot-database-password' },
+    management: { host: '127.0.0.1', port, database: 'openvote_management', user: 'openvote_management', password: 'test-management-database-password' },
   };
 }, 60000);
 
@@ -133,7 +133,7 @@ describe('Render runtime initialization', () => {
   it('refuses partial runtime state before reading database contents', async () => {
     const diskRoot = await directory();
     await mkdir(join(diskRoot, 'state'));
-    await writeFile(join(diskRoot, 'state', 'partial-state'), 'synthetic incomplete state');
+    await writeFile(join(diskRoot, 'state', 'partial-state'), 'test incomplete state');
     await expect(initializeRenderRuntime({ port: 10000, publicOrigin: 'https://openvote.com.ua', databases }, diskRoot))
       .rejects.toThrow('RUNTIME_STATE_INCOMPLETE');
   });

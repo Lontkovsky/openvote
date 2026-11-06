@@ -5,10 +5,12 @@ import { Checkpoint, Envelope, Manifest, Receipt, ResultContract, representative
 import { resultCsv, resultSvg } from '../../../packages/domain/src/result-exports.ts';
 import { application, authorize, core, database, envelope, Failure, parseNativeShare, required, sha, transaction } from './common.ts';
 import type { ConfigType } from './common.ts';
+import { developmentPublished } from './development-published.ts';
 
 type ElectionRow = { id: string; manifest_raw: string; manifest_hash: string; archive: string; state: string;
   opens_at: Date; closes_at: Date; threshold: number; final_archive: string | null; result: unknown };
 const Params = z.strictObject({ id: z.string().regex(/^[A-Za-z0-9]{14}$/) });
+const TrackerQuery = z.strictObject({ tracker: z.string().regex(/^[A-Za-z0-9+/]{43}$/) });
 const CoreVerification = z.object({ ballotCount: z.number().int().nonnegative(), election: z.looseObject({ uuid: z.string(), description: z.string() }), result: z.unknown() });
 const CoreAccepted = z.strictObject({ archive: z.string(), tracker: z.string(), replayed: z.boolean(), credential: z.string() });
 const CoreClosed = z.strictObject({ archive: z.string(), ballotCount: z.number().int().nonnegative() });
@@ -35,6 +37,7 @@ export async function ballotApp(config: ConfigType, publicOrigin: string) {
     return row;
   }
   async function publishedResult(id: string) {
+    if (config.environment === 'development' && id === developmentPublished.audit.result.pollId) return developmentPublished.audit.result;
     const record = await election(id);
     if (record.state !== 'Published') throw new Failure(record.state === 'ResultsSuppressed' ? 'RESULTS_SUPPRESSED' : 'RESULT_NOT_PUBLISHED', 409);
     return ResultContract.parse(record.result);
@@ -65,7 +68,12 @@ export async function ballotApp(config: ConfigType, publicOrigin: string) {
     return { registered: true, manifestHash: sha(input.electionRaw) };
   });
   app.get('/v1/elections/:id/manifest', async request => {
-    const { id } = Params.parse(request.params), record = await election(id);
+    const { id } = Params.parse(request.params);
+    if (config.environment === 'development' && id === developmentPublished.audit.result.pollId) {
+      return { electionRaw: developmentPublished.audit.electionRaw, manifestHash: sha(developmentPublished.audit.electionRaw), environment: config.environment,
+        state: 'Published', checkpointPublicKey: developmentPublished.publicKey };
+    }
+    const record = await election(id);
     return { electionRaw: record.manifest_raw, manifestHash: record.manifest_hash, environment: config.environment,
       state: record.state === 'Scheduled' && record.opens_at.getTime() <= Date.now() && record.closes_at.getTime() > Date.now() ? 'Open' : record.state,
       checkpointPublicKey: required(config.publicKey) };
@@ -96,6 +104,14 @@ export async function ballotApp(config: ConfigType, publicOrigin: string) {
     const result = await pool.query<{ receipt: unknown }>('SELECT receipt FROM ballots WHERE poll_id=$1 AND tracker=$2', [id, tracker]);
     return result.rows[0] ? { included: true, receipt: Envelope.parse(result.rows[0].receipt), scope: 'InclusionOnly' }
       : { included: false, scope: 'InclusionOnly' };
+  });
+  app.get('/v1/tracker', async request => {
+    const { tracker } = TrackerQuery.parse(request.query);
+    const result = await pool.query<{ poll_id: string; receipt: unknown }>('SELECT poll_id,receipt FROM ballots WHERE tracker=$1 LIMIT 2', [tracker]);
+    if (result.rows.length === 0) return { included: false, scope: 'InclusionOnly' };
+    if (result.rows.length !== 1) throw new Failure('TRACKER_NOT_UNIQUE', 409);
+    const row = required(result.rows[0]);
+    return { included: true, pollId: row.poll_id, receipt: Envelope.parse(row.receipt), scope: 'InclusionOnly' };
   });
   app.post('/internal/close/:id', async request => {
     authorize(request.headers.authorization, config.serviceToken);
@@ -190,11 +206,16 @@ export async function ballotApp(config: ConfigType, publicOrigin: string) {
   });
   app.get('/v1/elections/:id/checkpoints', async request => {
     const { id } = Params.parse(request.params);
+    if (config.environment === 'development' && id === developmentPublished.audit.result.pollId) {
+      return { checkpoints: developmentPublished.audit.checkpoints, publicKey: developmentPublished.publicKey };
+    }
     const result = await pool.query<{ envelope: unknown }>('SELECT envelope FROM checkpoints WHERE poll_id=$1 ORDER BY sequence', [id]);
     return { checkpoints: result.rows.map(row => Envelope.parse(row.envelope)), publicKey: required(config.publicKey) };
   });
   app.get('/v1/elections/:id/audit', async request => {
-    const { id } = Params.parse(request.params), record = await election(id);
+    const { id } = Params.parse(request.params);
+    if (config.environment === 'development' && id === developmentPublished.audit.result.pollId) return developmentPublished.audit;
+    const record = await election(id);
     if (record.state !== 'Published') throw new Failure('AUDIT_NOT_PUBLISHABLE', 409);
     const checkpoints = await pool.query<{ envelope: unknown }>('SELECT envelope FROM checkpoints WHERE poll_id=$1 ORDER BY sequence', [id]);
     return { format: 'openvote-audit-v1', core: 'Belenios 3.3.0', electionRaw: record.manifest_raw, archive: record.archive,

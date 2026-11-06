@@ -27,7 +27,7 @@ The downloaded CSV evidence is stored byte-for-byte. A scoped Git attribute pres
 
 ## Share card
 
-The downloadable SVG shows the complete question, content and policy versions, native ID, N, all three counts and percentages, eligibility, exact UTC bounds, publication and verification status, and self-selection warning. It explicitly labels synthetic test data. It does not claim external audit, population representativeness or control over third-party copies. It contains no scripts, event handlers, external fonts, images or links.
+The downloadable SVG shows the complete question, content and policy versions, native ID, N, all three counts and percentages, eligibility, exact UTC bounds, publication and verification status, and self-selection warning. It explicitly labels test test data. It does not claim external audit, population representativeness or control over third-party copies. It contains no scripts, event handlers, external fonts, images or links.
 
 SVG `metadata#result-contract` carries the unchanged JSON contract. Text is XML-escaped and laid out with bounded monospace lines; long content increases card height. The question schema rejects characters outside [XML 1.0's character repertoire](https://www.w3.org/TR/xml/#charsets), including NUL and unpaired surrogates, at input rather than deleting or replacing them at export. Existing valid questions and stored result fields require no database migration.
 

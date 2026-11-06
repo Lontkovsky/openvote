@@ -15,7 +15,7 @@ Prepare a JSON file matching `ObserverConfig` in `packages/domain/src/observer.t
 | `trust.publicKey` | Previously authenticated checkpoint-signing public key in PEM form |
 | `receipts` | Array of signed public receipt envelopes held by this observer; an empty array explicitly means no individual acknowledgement evidence |
 
-Do not learn the trusted key/hash solely from the endpoint being checked and then treat the comparison as independent authentication. Obtain and compare them through the declared ceremony/release channel. The local evidence used a previously retained public signing key and browser-exported manifest from this synthetic development deployment. It was not an independent organizational ceremony or external audit.
+Do not learn the trusted key/hash solely from the endpoint being checked and then treat the comparison as independent authentication. Obtain and compare them through the declared ceremony/release channel. The local evidence used a previously retained public signing key and browser-exported manifest from this test development deployment. It was not an independent organizational ceremony or external audit.
 
 Keep previously observed receipts in the configuration when adding more. The command rejects removal of known receipt evidence. There are no person identifiers, identity sessions or private voting credentials in this input. A receipt shows an acknowledgement/inclusion claim, not the participant's choice or cast-as-intended verification.
 
@@ -23,7 +23,7 @@ Keep previously observed receipts in the configuration when adding more. The com
 
 The observer takes an action (`init`, `check` or `compare`), followed by the trusted configuration path and state path. `compare` requires a second state path. The audit exporter takes the trusted configuration path and output path. The read-only mirror exporter takes the trusted configuration path and a new output-directory path. Recovery verification takes trusted configuration, a separately retained prior observation and a new approval path. All file arguments are required.
 
-The following commands were executed successfully against the locally retained synthetic poll `bWR6QtTPMZawJd`. Their configuration is private local runtime input, not a universal configuration for another checkout:
+The following commands were executed successfully against the locally retained test poll `bWR6QtTPMZawJd`. Their configuration is private local runtime input, not a universal configuration for another checkout:
 
 ```sh
 pnpm observer init .runtime/observer-live-trust.json .runtime/observer-live-state.json
@@ -61,4 +61,4 @@ After building the pinned reference image and installing locked dependencies, ru
 pnpm exec vitest run tests/observer.test.ts
 ```
 
-This suite serves a committed real browser audit through a local read-only fixture server and uses a newly generated test envelope signer. The native archive is unchanged and verified by Belenios; the fixture signer is explicitly synthetic. The suite tests public GET-only access, rollback, missing acknowledgement, ballot additions after closure, signature/manifest substitution, hidden/removed poll, split views, response limits/redirects, atomic persistence, verified export and static mirror hosting. It does not require an identity database. The full `pnpm test` also runs the live application suites.
+This suite serves a committed real browser audit through a local read-only fixture server and uses a newly generated test envelope signer. The native archive is unchanged and verified by Belenios; the fixture signer is explicitly test. The suite tests public GET-only access, rollback, missing acknowledgement, ballot additions after closure, signature/manifest substitution, hidden/removed poll, split views, response limits/redirects, atomic persistence, verified export and static mirror hosting. It does not require an identity database. The full `pnpm test` also runs the live application suites.

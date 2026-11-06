@@ -4,7 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { spawn } from 'node:child_process';
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { z } from 'zod';
-import { Envelope, Manifest, Poll, Receipt, RemovedPoll, ResultContract, Session } from '../packages/domain/src/index.ts';
+import { Content, Envelope, Manifest, Poll, Receipt, RemovedPoll, ResultContract, Session } from '../packages/domain/src/index.ts';
 import { database, pseudonym, readConfig, required, sha, unseal } from '../apps/api/src/common.ts';
 import { call, createPoll, fixtureContent, generateBallot, login, ok, approvedReview } from './support/flow.ts';
 import { FinalSet, Trust, verifyFinal } from '../packages/domain/src/checkpoints.ts';
@@ -39,29 +39,24 @@ afterAll(async () => {
 }, 20000);
 
 describe('real service boundaries', () => {
-  it('enforces verified pseudonymous drafting, required sources, similar search and chronological catalog order', async () => {
+  it('enforces verified pseudonymous drafting without forced analysis blocks, similar search and chronological catalog order', async () => {
     const authorA = await login('TEST-PERSON-0004', 'A'), authorB = await login('TEST-PERSON-0004', 'B');
     const other = await login('TEST-PERSON-0005', 'A'), unverified = await login('TEST-PERSON-0010', 'B');
     const tokens = [authorA.token, authorB.token, other.token, unverified.token];
     const config = await readConfig('management'), pool = database(config), pollIds: string[] = [];
     try {
-      const content = fixtureContent(new Date(Date.now() + 3600000), 'Чи підтверджує синтетичний сценарій межі авторської чернетки?');
+      const fixture = fixtureContent(new Date(Date.now() + 3600000), 'Чи підтверджує тестовий сценарій межі авторської чернетки?');
+      const content = Content.parse({ ...fixture, context: '', consequences: '', argumentsFor: [], argumentsAgainst: [] });
       expect(await call('management', '/v1/drafts', 'POST', content, unverified.token))
         .toEqual({ status: 403, value: { error: 'VERIFIED_OWNER_REQUIRED' } });
-      expect(await call('management', '/v1/drafts', 'POST', { ...content, argumentsFor: [] }, authorA.token))
-        .toEqual({ status: 400, value: { error: 'INVALID_INPUT' } });
-      expect(await call('management', '/v1/drafts', 'POST', { ...content, argumentsAgainst: [] }, authorA.token))
-        .toEqual({ status: 400, value: { error: 'INVALID_INPUT' } });
-      expect(await call('management', '/v1/drafts', 'POST', {
-        ...content, argumentsFor: [{ text: 'Синтетичний аргумент без джерела має бути відхилений.' }],
-      }, authorA.token)).toEqual({ status: 400, value: { error: 'INVALID_INPUT' } });
 
       const draft = z.object({ poll: Poll }).parse(await ok('management', '/v1/drafts', 'POST', content, authorA.token)).poll;
       pollIds.push(draft.id);
-      expect({ state: draft.state, version: draft.version, alias: draft.content.authorAlias })
-        .toEqual({ state: 'Draft', version: 1, alias: 'Тестова ініціатива' });
+      expect({ state: draft.state, version: draft.version, alias: draft.content.authorAlias, context: draft.content.context,
+        consequences: draft.content.consequences, argumentsFor: draft.content.argumentsFor, argumentsAgainst: draft.content.argumentsAgainst })
+        .toEqual({ state: 'Draft', version: 1, alias: 'Тестова ініціатива', context: '', consequences: '', argumentsFor: [], argumentsAgainst: [] });
 
-      const editedContent = { ...content, context: content.context + ' Редагування виконано тією самою особою через другого провайдера.' };
+      const editedContent = { ...content, context: 'Опис додано тією самою особою через другого провайдера.' };
       const edited = z.object({ poll: Poll }).parse(await ok('management', `/v1/polls/${draft.id}`, 'PATCH', editedContent, authorB.token)).poll;
       expect({ state: edited.state, version: edited.version, context: edited.content.context })
         .toEqual({ state: 'Draft', version: 2, context: editedContent.context });
@@ -89,7 +84,7 @@ describe('real service boundaries', () => {
         { id: thirdId, createdAt: olderAt, suffix: 'три' },
       ];
       for (const row of rows) {
-        const rowContent = fixtureContent(new Date(Date.now() + 3600000), `Чи підтримуєте синтетичнокаталоговий приклад номер ${row.suffix}?`);
+        const rowContent = fixtureContent(new Date(Date.now() + 3600000), `Чи підтримуєте у тестовому режимікаталоговий приклад номер ${row.suffix}?`);
         const poll = Poll.parse({ id: row.id, version: 1, state: 'Closed', content: rowContent, createdAt: row.createdAt.toISOString(),
           cryptoId: randomUUID(), manifestRaw: '{}', review: approvedReview, methodologyStatus: 'Reviewed', contentStatus: 'Visible' });
         await pool.query('INSERT INTO polls(id,author_person,doc,published_at,created_at) VALUES($1,$2,$3,$4,$5)',
@@ -104,7 +99,7 @@ describe('real service boundaries', () => {
       expect(catalogue.polls.some(poll => poll.id === draft.id)).toBe(false);
 
       const similar = z.object({ polls: z.array(Poll), method: z.string() }).parse(
-        await ok('management', '/v1/similar?q=' + encodeURIComponent('синтетичнокаталоговий')),
+        await ok('management', '/v1/similar?q=' + encodeURIComponent('у тестовому режимікаталоговий')),
       );
       expect(similar.method).toBe('PostgreSQL simple full-text conjunction; no automatic merging or deletion');
       expect(similar.polls.map(poll => poll.id)).toEqual([...tieOrder, thirdId]);
@@ -124,7 +119,7 @@ describe('real service boundaries', () => {
     const author = await login('TEST-PERSON-0001', 'A'), moderator = await login('TEST-PERSON-0012', 'A');
     const tokens = [author.token, moderator.token], pollIds: string[] = [];
     try {
-      const base = fixtureContent(new Date(Date.now() + 600000), 'Чи зберігає нове синтетичне питання посилання на попереднє?');
+      const base = fixtureContent(new Date(Date.now() + 600000), 'Чи зберігає нове тестове питання посилання на попереднє?');
       const invalidSchedule = { ...base, opensAt: new Date(Date.now() + 1200000).toISOString() };
       expect(await call('management', '/v1/drafts', 'POST', invalidSchedule, author.token))
         .toEqual({ status: 400, value: { error: 'INVALID_SCHEDULE' } });
@@ -133,7 +128,7 @@ describe('real service boundaries', () => {
         .toEqual({ status: 400, value: { error: 'DEADLINE_IN_PAST' } });
 
       const predecessorContent = { ...base, authorAlias: 'Браузерний тест',
-        question: 'Чи має синтетичне попереднє голосування залишитися пов’язаним із наступником?' };
+        question: 'Чи має тестове попереднє голосування залишитися пов’язаним із наступником?' };
       const predecessor = z.object({ poll: Poll }).parse(await ok('management', '/v1/drafts', 'POST', predecessorContent, author.token)).poll;
       pollIds.push(predecessor.id);
       const content = { ...base, authorAlias: 'Браузерний тест', relatedPolls: [predecessor.id] };
@@ -162,7 +157,7 @@ describe('real service boundaries', () => {
         .toEqual({ status: 409, value: { error: 'DEADLINE_NOT_REACHED' } });
       expect(await call('management', `/v1/polls/${opened.id}/demo-tally`, 'POST', {}, moderator.token))
         .toEqual({ status: 409, value: { error: 'INVALID_TRANSITION' } });
-      const prematureInvalidation = { action: 'Invalidated', kind: 'InvalidProof', reason: 'Синтетична передчасна спроба визнати неопублікований результат недійсним.' };
+      const prematureInvalidation = { action: 'Invalidated', kind: 'InvalidProof', reason: 'Тестова передчасна спроба визнати неопублікований результат недійсним.' };
       expect(await call('management', `/v1/polls/${opened.id}/incident`, 'POST', prematureInvalidation, moderator.token))
         .toEqual({ status: 409, value: { error: 'INVALID_TRANSITION' } });
       expect(await call('management', `/v1/polls/${opened.id}/incident`, 'POST', {
@@ -170,7 +165,7 @@ describe('real service boundaries', () => {
         .toEqual({ status: 400, value: { error: 'INVALID_INPUT' } });
 
       const cancellation = { action: 'Cancelled', kind: 'SecurityIncident',
-        reason: 'Синтетичний інцидент життєвого циклу з явною причиною, не пов’язаною з результатом.' };
+        reason: 'Тестовий інцидент життєвого циклу з явною причиною, не пов’язаною з результатом.' };
       const cancelled = z.object({ poll: Poll }).parse(await ok('management', `/v1/polls/${opened.id}/incident`, 'POST', cancellation, moderator.token)).poll;
       expect({ state: cancelled.state, links: cancelled.content.relatedPolls }).toEqual({ state: 'Cancelled', links: [predecessor.id] });
       const journal = z.object({ poll: Poll, events: z.array(z.object({ kind: z.string(), reason: z.string() })) })
@@ -206,7 +201,7 @@ describe('real service boundaries', () => {
       expect(introspection.status).toBe(200);
 
       const paraphrases = await Promise.all(Array.from({ length: 7 }, (_, index) => call('management', '/v1/drafts', 'POST',
-        fixtureContent(new Date(Date.now() + 3600000), `Чи підтримуєте синтетичне перефразоване питання номер ${index + 1}?`), index % 2 === 0 ? authorA.token : authorB.token)));
+        fixtureContent(new Date(Date.now() + 3600000), `Чи підтримуєте тестове перефразоване питання номер ${index + 1}?`), index % 2 === 0 ? authorA.token : authorB.token)));
       for (const response of paraphrases) if (response.status === 200) pollIds.push(z.object({ poll: Poll }).parse(response.value).poll.id);
       expect(paraphrases.filter(response => response.status === 200)).toHaveLength(6);
       expect(paraphrases.filter(response => response.status === 429).map(response => response.value)).toEqual([{ error: 'DRAFT_LIMIT_REACHED' }]);
@@ -225,12 +220,12 @@ describe('real service boundaries', () => {
       await clearPolls();
 
       const cooldown = await reviewDraft('Чи застосовується пауза між публікаціями автора?');
-      await seedPublished('Closed', new Date(), 'Чи щойно опубліковано попереднє синтетичне питання?');
+      await seedPublished('Closed', new Date(), 'Чи щойно опубліковано попереднє тестове питання?');
       expect(await call('management', `/v1/polls/${cooldown.id}/review`, 'POST', approvedReview, moderator.token)).toEqual({ status: 429, value: { error: 'PUBLICATION_COOLDOWN' } });
       await clearPolls();
 
       const simultaneous = await reviewDraft('Чи обмежено кількість одночасно відкритих питань автора?');
-      for (let index = 0; index < 2; index++) await seedPublished('Open', new Date(Date.now() - (index + 2) * 3600000), `Чи відкрите синтетичне питання номер ${index + 1}?`);
+      for (let index = 0; index < 2; index++) await seedPublished('Open', new Date(Date.now() - (index + 2) * 3600000), `Чи відкрите тестове питання номер ${index + 1}?`);
       expect(await call('management', `/v1/polls/${simultaneous.id}/review`, 'POST', approvedReview, moderator.token)).toEqual({ status: 429, value: { error: 'OPEN_POLL_QUOTA_REACHED' } });
     } finally {
       await clearPolls();
@@ -253,7 +248,7 @@ describe('real service boundaries', () => {
       expect(await call('management', `/v1/polls/${pollId}/review`, 'POST', incomplete, participant.token)).toEqual({ status: 403, value: { error: 'MODERATOR_REQUIRED' } });
       expect(await call('management', `/v1/polls/${pollId}/review`, 'POST', incomplete, moderator.token)).toEqual({ status: 400, value: { error: 'RUBRIC_INCOMPLETE' } });
 
-      const duplicate = { ...incomplete, action: 'duplicate' as const, reason: 'Синтетичне питання позначено дублікатом із явною причиною для перевірки апеляції.' };
+      const duplicate = { ...incomplete, action: 'duplicate' as const, reason: 'Тестове питання позначено дублікатом із явною причиною для перевірки апеляції.' };
       const rejected = Poll.parse(z.object({ poll: Poll }).parse(await ok('management', `/v1/polls/${pollId}/review`, 'POST', duplicate, moderator.token)).poll);
       expect(rejected.state).toBe('Rejected');
       expect(rejected.review).toEqual(duplicate);
@@ -290,10 +285,10 @@ describe('real service boundaries', () => {
     const participant = await login('TEST-PERSON-0002', 'B'), tokens = [author.token, moderator.token, participant.token];
     let pollId: string | null = null;
     try {
-      const content = fixtureContent(new Date(Date.now() + 3600000), 'Чи приховує законне вилучення синтетичний зміст питання?');
+      const content = fixtureContent(new Date(Date.now() + 3600000), 'Чи приховує законне вилучення тестовий зміст питання?');
       const draft = z.object({ poll: Poll }).parse(await ok('management', '/v1/drafts', 'POST', content, author.token)).poll;
       pollId = draft.id;
-      const removal = { action: 'Cancelled', kind: 'LegalContentRemoval', reason: 'Синтетичний тест законного вилучення без реального персонального або незаконного матеріалу.' };
+      const removal = { action: 'Cancelled', kind: 'LegalContentRemoval', reason: 'Тестовий тест законного вилучення без реального персонального або незаконного матеріалу.' };
       expect(await call('management', `/v1/polls/${pollId}/incident`, 'POST', removal, participant.token)).toEqual({ status: 403, value: { error: 'MODERATOR_REQUIRED' } });
 
       const tombstone = RemovedPoll.parse(z.object({ poll: RemovedPoll }).parse(await ok('management', `/v1/polls/${pollId}/incident`, 'POST', removal, moderator.token)).poll);
@@ -337,7 +332,7 @@ describe('real service boundaries', () => {
     try {
       for (const [index, author] of [authorA, authorB].entries()) {
         const poll = await createPoll(author.token, moderator.token, fixtureContent(new Date(Date.now() + 3600000),
-          `Чи підтримуєте синтетичну перевірку розділення сховищ номер ${index + 1}?`));
+          `Чи підтримуєте тестову перевірку розділення сховищ номер ${index + 1}?`));
         if (poll.cryptoId === null) throw new Error('PRIVACY_TEST_POLL_NOT_PROVISIONED');
         const pollId = poll.cryptoId;
         const recorded = { id: poll.id, cryptoId: pollId };
@@ -399,7 +394,7 @@ describe('real service boundaries', () => {
     const tokens = [owner.token, other.token];
     let pollId: string | null = null;
     try {
-      const content = fixtureContent(new Date(Date.now() + 3600000), 'Чи безпечно <script>alert(1)</script> у синтетичному питанні?');
+      const content = fixtureContent(new Date(Date.now() + 3600000), 'Чи безпечно <script>alert(1)</script> у тестовому питанні?');
       content.argumentsFor[0] = { ...required(content.argumentsFor[0]), text: '<img src=x onerror=alert(1)> лишається текстом.', url: 'https://127.0.0.1:1/private' };
       const response = await fetch('http://127.0.0.1:4303/v1/drafts', { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + owner.token }, body: JSON.stringify(content) });
       expect(response.status).toBe(200);
@@ -418,7 +413,7 @@ describe('real service boundaries', () => {
       expect(await call('management', `/v1/polls/${pollId}`, 'PATCH', content, other.token)).toEqual({ status: 403, value: { error: 'AUTHOR_REQUIRED' } });
       expect(await call('management', `/v1/polls/${pollId}/review`, 'POST', approvedReview, other.token)).toEqual({ status: 403, value: { error: 'MODERATOR_REQUIRED' } });
       expect(await call('management', `/v1/polls/${pollId}/incident`, 'POST', {
-        action: 'Cancelled', kind: 'SecurityIncident', reason: 'Синтетична спроба підвищення повноважень звичайного учасника.' }, other.token))
+        action: 'Cancelled', kind: 'SecurityIncident', reason: 'Тестова спроба підвищення повноважень звичайного учасника.' }, other.token))
         .toEqual({ status: 403, value: { error: 'MODERATOR_REQUIRED' } });
 
       const injection = await call('management', `/v1/polls?q=${encodeURIComponent("' OR 1=1 --")}`);
@@ -491,7 +486,7 @@ describe('real service boundaries', () => {
     await control('A', false); await control('B', false);
     const unavailable = z.object({ attempt: z.string() }).parse(await ok('identity', '/v1/auth/start', 'POST', { provider: 'B', subject: 'TEST-PERSON-0002' }));
     expect((await call('identity', '/v1/auth/finish', 'POST', unavailable)).status).toBe(503);
-    expect((await call('identity', '/v1/auth/start', 'POST', { provider: 'A', subject: 'NOT-A-SYNTHETIC-PERSON' })).status).toBe(400);
+    expect((await call('identity', '/v1/auth/start', 'POST', { provider: 'A', subject: 'NOT-A-TEST-PERSON' })).status).toBe(400);
     await control('A', true); await control('B', true);
   });
 
@@ -545,7 +540,7 @@ describe('real service boundaries', () => {
     const unverified = await login('TEST-PERSON-0010');
     expect((await call('management', '/v1/drafts', 'POST', fixtureContent(new Date(Date.now() + 60000)), unverified.token)).status).toBe(403);
     const closesAt = new Date(Date.now() + 35000);
-    const content = fixtureContent(closesAt, 'Чи підтримуєте відкриту перевірку синтетичного інтеграційного сценарію?');
+    const content = fixtureContent(closesAt, 'Чи підтримуєте відкриту перевірку тестового інтеграційного сценарію?');
     const poll = await createPoll(author.token, moderator.token, content);
     if (poll.cryptoId === null) throw new Error('Missing crypto id');
     const id = poll.cryptoId;
@@ -700,7 +695,7 @@ describe('real service boundaries', () => {
     expect((await call('identity', '/v1/auth/finish', 'POST', start)).value).toEqual({ error: 'PROVIDER_ATTRIBUTES_CONFLICT' });
     expect((await call('identity', '/v1/session', 'GET', undefined, identity.token)).status).toBe(401);
     await control('B', true);
-    // Restore exactly this synthetic identity fixture for repeatable test runs.
+    // Restore exactly this test identity fixture for repeatable test runs.
     const { pseudonym } = await import('../apps/api/src/common.ts');
     const config = await readConfig('identity'), pool = database(config);
     await pool.query('UPDATE persons SET revoked=false WHERE person=$1', [pseudonym('TEST-PERSON-0008', required(config.dedupKey))]);
@@ -776,7 +771,7 @@ describe('real service boundaries', () => {
       expect(foreign.statusCode).toBe(422); expect(foreign.json()).toEqual({ error: 'REFERENCE_REJECTED' });
       expect(required((await ballotStore.query<{ archive: string }>('SELECT archive FROM elections WHERE id=$1', [setup.uuid])).rows[0]).archive === setup.archive).toBe(true);
       const ballot = await generateBallot(setup.archive, required(setup.privateCredentials['TEST-PERSON-0001']), 0);
-      for (const headers of [{ cookie: 'synthetic-session=forbidden' }, { 'x-user-id': 'TEST-PERSON-0001' }]) {
+      for (const headers of [{ cookie: 'test-session=forbidden' }, { 'x-user-id': 'TEST-PERSON-0001' }]) {
         const response = await box.inject({ method: 'POST', url: `/v1/elections/${setup.uuid}/ballots`, payload: { ballot }, headers });
         expect(response.statusCode).toBe(400); expect(response.json()).toEqual({ error: 'IDENTITY_METADATA_FORBIDDEN' });
       }

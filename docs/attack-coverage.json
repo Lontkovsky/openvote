@@ -40,7 +40,7 @@
         "artifacts/services/tests.json",
         "docs/RECOVERY.md",
         "The ballot API rejected a corrupted zero-knowledge proof, accepted exactly one of two distinct concurrent ciphertexts for the same cross-provider right, and returned idempotent receipts for five exact redeliveries",
-        "The stale synthetic ballot database accepted the same encrypted ballot as non-idempotent; recovery verification with the retained receipt then rejected that restored state before any retry"
+        "The stale test ballot database accepted the same encrypted ballot as non-idempotent; recovery verification with the retained receipt then rejected that restored state before any retry"
       ],
       "remainingAcceptanceCriteria": "Local stale-restore detection is implemented. Automatic host enforcement, complete retained-evidence custody and an actual hosted backup/restore exercise remain pending"
     },
@@ -127,8 +127,8 @@
       "title": "Компрометація БД, логів і backups",
       "attackerCapabilities": "Reads one or all stores, runtime secrets and backups",
       "trustBoundary": "Runtime/host operator controls keys in this simulation",
-      "controls": "Separate DB users and origins, sealed credentials, no application request logging, public encrypted audit, fail-closed runtime disk/database binding, a two-poll compromise matrix and recovery verification against external receipts/checkpoints",
-      "residualRisk": "A combined operator can link pseudonymous participation to ciphertext and can bypass the documented no-write recovery procedure. Infrastructure/provider logs and hosted backup custody remain pending operational evidence",
+      "controls": "Separate DB users and origins, sealed credentials, no application request logging, public encrypted audit, fail-closed runtime disk/database binding, comment capability hashes without identity-session linkage, a two-poll compromise matrix and recovery verification against external receipts/checkpoints",
+      "residualRisk": "A management-store reader sees comment text and browser-capability reaction records, while a combined operator can link pseudonymous participation to ciphertext and can bypass the documented no-write recovery procedure. Infrastructure/provider logs and hosted backup custody remain pending operational evidence",
       "requirements": [
         "15.1",
         "15.4"
@@ -144,6 +144,7 @@
       "implementationState": "Partial",
       "verification": [
         "tests/render-start.test.ts",
+        "tests/comments.test.ts",
         "tests/services.test.ts",
         "tests/observer.test.ts",
         "scripts/recovery-verify.ts"
@@ -152,9 +153,10 @@
         "docs/DEPLOYMENT.md",
         "docs/PRIVACY_COMPROMISE.md",
         "Identity-only, ballot-only, management-only, combined private stores and public-plus-internal evidence are evaluated separately for person, participation, cross-poll, ciphertext and choice linkage",
-        "A stale restore that reopened an accepted right was detected by the separately retained receipt; rollback or missing acknowledgement created no recovery approval"
+        "A stale restore that reopened an accepted right was detected by the separately retained receipt; rollback or missing acknowledgement created no recovery approval",
+        "Comment deletion and reaction capabilities were stored only as SHA-256 hashes, while no identity session, IP address or user-agent field was added to the comment schema"
       ],
-      "remainingAcceptanceCriteria": "Synthetic compromise and stale-restore detection are covered. An actual hosted restore, automatic maintenance enforcement and production log/provider/backup custody evidence remain pending"
+      "remainingAcceptanceCriteria": "Test compromise and stale-restore detection are covered. An actual hosted restore, automatic maintenance enforcement and production log/provider/backup custody evidence remain pending"
     },
     {
       "id": "A05",
@@ -259,7 +261,7 @@
       ],
       "actualEvidence": [
         "The actual management API accepted one pseudonymous draft and its edit through the same person recovered by another provider, rejected an unverified author, a different author, missing bilateral arguments, a missing source and editing after submission",
-        "Three distinct synthetic similar questions remained separate and followed the same explicit created-at-descending and identifier tie-break order as the nonpersonalized public catalogue; the private review item was absent",
+        "Three distinct test similar questions remained separate and followed the same explicit created-at-descending and identifier tie-break order as the nonpersonalized public catalogue; the private review item was absent",
         "Seven concurrent paraphrased drafts sent through provider A and B produced exactly six accepted drafts and one DRAFT_LIMIT_REACHED response for the shared deduplicated author",
         "The actual management API rejected a fourth publication within 24 hours, a publication during the configured cooldown and a third simultaneously open poll with distinct exact error contracts"
       ],
@@ -270,8 +272,8 @@
       "title": "Цензура та суперечливі історії",
       "attackerCapabilities": "Operator rolls back DB or serves split views",
       "trustBoundary": "Observers must exchange incompatible evidence",
-      "controls": "Separate public observer with pinned signer/manifest, signed history persistence, known acknowledgements, closed-set freeze, catalogue/content comparison, native public result verification, minimal lawful-removal tombstones, verified static recovery and a restore approval gate",
-      "residualRisk": "Observers must exchange evidence to detect isolated forks; retained state/trust/receipt custody must be protected. Restore isolation and separately hosted snapshot withdrawal require operator compliance",
+      "controls": "Separate public observer with pinned signer/manifest, signed history persistence, known acknowledgements, closed-set freeze, catalogue/content comparison, native public result verification, minimal lawful-removal tombstones, owner-only comment tombstones that retain replies, verified static recovery and a restore approval gate",
+      "residualRisk": "Observers must exchange evidence to detect isolated forks; retained state/trust/receipt custody must be protected. Production comment retention and lawful removal, restore isolation and separately hosted snapshot withdrawal require operator compliance",
       "requirements": [
         "15.1",
         "15.7"
@@ -290,6 +292,7 @@
         "scripts/observer.ts",
         "scripts/audit-export.ts",
         "scripts/mirror-export.ts",
+        "tests/comments.test.ts",
         "tests/services.test.ts",
         "scripts/recovery-verify.ts"
       ],
@@ -300,7 +303,8 @@
         "docs/OBSERVER.md",
         "A legal-content incident replaced the public document with a strict four-field tombstone, removed it from catalogue and author views, and preserved only the separate reasoned incident event",
         "A natively verified static page, result JSON and audit package were served by an independent GET-only host with no identity request; POST returned 405 and removed content produced no export",
-        "Recovery approval was created only for state consistent with retained observation and receipt evidence; missing acknowledgement and checkpoint rollback produced no approval"
+        "Recovery approval was created only for state consistent with retained observation and receipt evidence; missing acknowledgement and checkpoint rollback produced no approval",
+        "A matching browser deletion capability replaced only the comment text with a tombstone and retained its nested reply; a wrong capability was rejected"
       ],
       "remainingAcceptanceCriteria": "Local observer, withdrawal, static recovery and stale-restore checks are covered. Final Browser execution, hosted recovery exercise, PR and CI remain pending; isolated-fork detection and operator procedures retain their declared conditions."
     },

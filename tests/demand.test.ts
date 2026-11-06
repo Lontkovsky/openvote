@@ -247,8 +247,8 @@ describe('demand Render configuration', () => {
     OPENVOTE_ENVIRONMENT: 'demand',
     OPENVOTE_PUBLIC_ORIGIN: 'https://openvote.com.ua',
     PORT: '10000',
-    DEMAND_DATABASE_URL: 'postgresql://openvote_demand:synthetic-password@internal.example:5432/openvote_demand',
-    OPENAI_API_KEY: 'synthetic-openai-key-for-tests-only',
+    DEMAND_DATABASE_URL: 'postgresql://openvote_demand:test-password@internal.example:5432/openvote_demand',
+    OPENAI_API_KEY: 'test-openai-key-for-tests-only',
   };
 
   it('accepts only the exact minimal launch configuration', () => {
@@ -256,7 +256,7 @@ describe('demand Render configuration', () => {
   });
 
   it('accepts the Render internal URL with the default PostgreSQL port', () => {
-    const environment = { ...valid, DEMAND_DATABASE_URL: 'postgresql://openvote_demand:synthetic-password@internal.example/openvote_demand' };
+    const environment = { ...valid, DEMAND_DATABASE_URL: 'postgresql://openvote_demand:test-password@internal.example/openvote_demand' };
     expect(parseDemandConfiguration(environment)).toEqual({ port: 10000, publicOrigin: 'https://openvote.com.ua', databaseUrl: environment.DEMAND_DATABASE_URL, openAiApiKey: valid.OPENAI_API_KEY });
   });
 

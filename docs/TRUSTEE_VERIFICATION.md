@@ -39,4 +39,4 @@ pnpm test:crypto
 pnpm test
 ```
 
-`tests/trustees.test.ts` creates temporary synthetic keys and removes them. `tools/test_reference.py` checks all three allowed threshold pairs with the mandatory trustee, corrupted shares, wrong owner/hash, early/late share intake and insufficient quorum. Its output in `artifacts/reference/` contains only public aggregate evidence. The service report in `artifacts/services/tests.json` records the API assertions. The Browser procedure is documented separately in `docs/BROWSER_TESTING.md`; a local native test is not a browser or independent audit result.
+`tests/trustees.test.ts` creates temporary test keys and removes them. `tools/test_reference.py` checks all three allowed threshold pairs with the mandatory trustee, corrupted shares, wrong owner/hash, early/late share intake and insufficient quorum. Its output in `artifacts/reference/` contains only public aggregate evidence. The service report in `artifacts/services/tests.json` records the API assertions. The Browser procedure is documented separately in `docs/BROWSER_TESTING.md`; a local native test is not a browser or independent audit result.

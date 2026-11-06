@@ -75,21 +75,13 @@ export async function createRunner(tab, input) {
   }
   const stages = {
     async create(assertions) {
-      await state(); await signOut(); await click('link', 'Голосування'); await click('link', '+ Створити питання');
-      await signIn('TEST-PERSON-0005', 'A'); await visible('heading', 'Створити питання');
+      await state(); await signOut(); await click('link', 'Опитування'); await click('link', 'Створити опитування');
+      await signIn('TEST-PERSON-0005', 'A'); await visible('heading', 'Створити опитування');
       await fill('Формулювання питання', title);
       await click('button', 'Знайти схожі питання'); await visible('heading', 'Схожі питання'); assertions.push('Similar search returns visible outcomes without merging votes');
-      await fill('Контекст', 'Синтетичне браузерне випробування повного сценарію. Жодне реальне рішення організації цим питанням не ухвалюється.');
-      await fill('Можливі наслідки', 'У тестовому сценарії можна перевірити незмінність питання, приватне шифрування та публічний підсумок.');
-      const supporting = p.getByRole('heading', { name: 'Аргументи за', exact: true });
-      if (!await supporting.isVisible()) throw new Error('ARGUMENTS_NOT_VISIBLE');
-      const fields = await p.getByLabel('Текст аргументу', { exact: true }).all();
-      if (fields.length !== 2) throw new Error('EXPECTED_TWO_ARGUMENT_SIDES');
-      await fields[0].fill('Оцінка тестового автора: відкритий код дозволяє дослідити виконані правила.'); await state();
-      await fields[1].fill('Оцінка тестового автора: сама відкритість коду не гарантує його безпеку.'); await state();
-      const sources = await p.getByLabel('HTTPS-посилання на джерело', { exact: true }).all();
-      await sources[0].fill('https://www.gnu.org/licenses/agpl-3.0.html'); await state();
-      await sources[1].fill('https://www.belenios.org/faq.html'); await state();
+      await fill('Опис (необов’язково)', 'Тестове браузерне випробування повного сценарію. Жодне реальне рішення організації цим питанням не ухвалюється.');
+      if (await p.getByText('Можливі наслідки', { exact: true }).count() !== 0) throw new Error('FORCED_CONSEQUENCES_VISIBLE');
+      if (await p.getByText('Аргументи за', { exact: true }).count() !== 0) throw new Error('FORCED_ARGUMENTS_VISIBLE');
       await p.getByRole('combobox', { name: 'Категорія', exact: true }).selectOption('Технології'); await state();
       await fill('Публічний псевдонім автора', 'Браузерний тест');
       await fill('Закриття (місцевий час)', localDate(run.closesAt));
@@ -103,12 +95,12 @@ export async function createRunner(tab, input) {
       if (!/^[a-f0-9-]{36}$/.test(pollId)) throw new Error('CREATED_POLL_ID_MISSING');
       await writeFile(new URL('.runtime/e2e-polls.json', root), JSON.stringify([pollId]), { mode: 0o600 });
       await click('link', 'Редагувати чернетку'); await visible('heading', 'Редагувати чернетку');
-      await fill('Можливі наслідки', 'Уточнені наслідки синтетичного сценарію: перевірити незмінність питання, клієнтське шифрування і підсумок.');
+      await fill('Опис (необов’язково)', 'Опис уточнено тією самою тестовою особою перед поданням на перевірку.');
       await click('button', 'Зберегти чернетку'); await visible('heading', title);
       if (await p.getByText(/Версія 2/).count() !== 1) throw new Error('DRAFT_VERSION_NOT_INCREMENTED');
       await click('button', 'Надіслати на перевірку');
       await p.getByText('На перевірці', { exact: true }).waitFor({ state: 'visible' });
-      assertions.push('Verified author creates required structured draft', 'Draft edit increments version before submission', 'Submission enters Review');
+      assertions.push('Verified author creates a draft without forced consequences, arguments or sources', 'Draft edit increments version before submission', 'Submission enters Review');
     },
     async reviewStart(assertions) {
       await signOut(); await click('link', 'Підтвердити участь'); await signIn('TEST-PERSON-0012', 'A');
@@ -116,8 +108,8 @@ export async function createRunner(tab, input) {
       await visible('link', title);
       const form = p.locator('form').filter({ has: p.getByRole('link', { name: title, exact: true }) });
       if (await form.count() !== 1) throw new Error('REVIEW_CARD_NOT_UNIQUE');
-      for (const label of ['Одна пропозиція без навідного формулювання', 'Без подвійного заперечення', 'Терміни зрозумілі', 'Умови й істотні наслідки явні', 'Факти відокремлені від оцінок']) { await form.getByLabel(label, { exact: true }).check(); await state(); }
-      await form.getByLabel('Причина рішення', { exact: true }).fill('Синтетична пропозиція відповідає всім п’яти критеріям; твердження автора відокремлено від фактів.'); await state();
+      for (const label of ['Одна пропозиція без навідного формулювання', 'Без подвійного заперечення', 'Терміни зрозумілі', 'Факти відокремлені від оцінок']) { await form.getByLabel(label, { exact: true }).check(); await state(); }
+      await form.getByLabel('Причина рішення', { exact: true }).fill('Тестова пропозиція відповідає всім чотирьом критеріям; твердження автора відокремлено від фактів.'); await state();
       await form.getByRole('button', { name: 'Зафіксувати рішення', exact: true }).click(); await state();
       assertions.push('Moderator completes rubric and submits a reasoned review');
     },
@@ -138,7 +130,7 @@ export async function createRunner(tab, input) {
       await p.getByRole('status').filter({ hasText: 'Бюлетень включено. Підпис квитанції перевірено.' }).waitFor({ state: 'visible' });
       assertions.push('Explicit final confirmation required', 'Original browser cryptography produces accepted ballot', 'Signed receipt and inclusion checked');
     },
-    async voteTwo(assertions) { await participate('TEST-PERSON-0006', 'B', 'Не підтримую'); await visible('heading', 'Бюлетень прийнято'); assertions.push('Second synthetic person casts encrypted opposing vote through B'); },
+    async voteTwo(assertions) { await participate('TEST-PERSON-0006', 'B', 'Не підтримую'); await visible('heading', 'Бюлетень прийнято'); assertions.push('Second test person casts encrypted opposing vote through B'); },
     async voteThree(assertions) { await participate('TEST-PERSON-0007', 'A', 'Утримуюсь'); await visible('heading', 'Бюлетень прийнято'); assertions.push('Abstention is accepted as the third choice'); },
     async duplicate(assertions) {
       await participate('TEST-PERSON-0005', 'B', 'Не підтримую');
@@ -158,8 +150,9 @@ export async function createRunner(tab, input) {
     },
     async publish(assertions) {
       await visible('heading', 'Результат серед 3 учасників цього голосування');
-      const counts = await p.locator('.result-row span').allTextContents({ timeoutMs: 10000 });
-      if (JSON.stringify(counts) !== JSON.stringify(['1 · 33,3%', '1 · 33,3%', '1 · 33,3%'])) throw new Error('VISIBLE_RESULT_NOT_1_1_1');
+      const counts = await p.locator('.result-row-heading span').allTextContents({ timeoutMs: 10000 });
+      const shares = await p.locator('.result-bar > span').allTextContents({ timeoutMs: 10000 });
+      if (JSON.stringify(counts) !== JSON.stringify(['1 із 3', '1 із 3', '1 із 3']) || JSON.stringify(shares) !== JSON.stringify(['33,3%', '33,3%', '33,3%'])) throw new Error('VISIBLE_RESULT_NOT_1_1_1');
       assertions.push('Fixed close enforced without deadline extension', 'Separate test trustees tally the browser ciphertexts', 'Published exact 1/1/1 counts and N=3 include abstention');
     },
     async exports(assertions) {
@@ -240,7 +233,7 @@ export async function createRunner(tab, input) {
       if ((await fixture('/attempt-count', {})).count !== first.count) throw new Error('LIMITED_RETRIES_CREATED_MORE_ATTEMPTS');
       await check('radio', 'Mock B'); await click('button', 'Підтвердити тестову особу'); await visible('button', 'Вийти');
       await control('A', true);
-      assertions.push('Exactly three manual deliveries exhaust the retry limit without new attempts', 'An explicit switch to available B confirms the same synthetic person');
+      assertions.push('Exactly three manual deliveries exhaust the retry limit without new attempts', 'An explicit switch to available B confirms the same test person');
     },
     async providerBothUnavailable(assertions) {
       await signOut(); await control('A', false); await control('B', false); await click('link', 'Підтвердити участь');

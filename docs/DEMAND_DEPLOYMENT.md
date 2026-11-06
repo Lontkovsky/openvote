@@ -17,7 +17,7 @@ The owner approved creating the unified resources. Render suspension is an opera
 
 ## Product and data boundary
 
-The launch serves one Ukrainian landing page and one versioned demand poll. It does not expose the full catalogue, user-created polls, identity verification, Belenios, trustees or the formal closing/publication workflow of the full platform. The landing publicly shows the total number of accepted responses and the exact count for each established answer, including zeros. It must not claim that a response represents a unique person, a Ukrainian citizen or the population of Ukraine.
+The launch serves one Ukrainian landing page, one versioned demand poll and one explicitly marked browser-only demo at `/demo/`. The demo exposes the approved platform interface and fixed test catalogue but does not start identity verification, ballot or management services, Belenios, trustees, formal closing or publication infrastructure. Demo polls, votes, comments, reactions and vote IDs created by a visitor stay only in that browser's local storage and are not public platform records. The landing publicly shows the total number of accepted responses and the exact count for each established answer, including zeros. It must not claim that a demand response represents a unique person, a Ukrainian citizen or the population of Ukraine.
 
 The browser credential is a host-only HttpOnly SameSite=Strict cookie with a one-year maximum age and the Secure flag on HTTPS. Each response row contains only the poll ID and version, the credential hash and the final selected answer; it has no identity, contact, IP address, User-Agent or response timestamp field. The public page must disclose voluntary self-selection and the lack of identity, citizenship and uniqueness verification without exposing cookie implementation details; the technical limitation remains documented here.
 
@@ -42,7 +42,7 @@ In the retained in-app Browser session, open the local demand page and verify th
 
 ## Unified full-stack environment
 
-The same environment also declares the three role databases from issue [#51](https://github.com/Lontkovsky/openvote/issues/51). During demand collection they remain suspended. The full Docker runtime is not active and the attached disk remains uninitialized in this phase.
+The same environment also declares the three role databases from issue [#51](https://github.com/Lontkovsky/openvote/issues/51). During demand collection and browser-only demo access they remain suspended. The static demo uses no platform database. The full Docker runtime is not active and the attached disk remains uninitialized in this phase.
 
 The future full-platform cutover reuses the same `openvote` service and disk: switch the Dockerfile/environment variables and compute plan, resume the three role databases, add the wildcard domain, and suspend `openvote-demand`. Do not start the full runtime without the attached persistent key state.
 
@@ -68,11 +68,11 @@ PR #57 exact-head CI passed and merged as `33042ef83209a290cc1df6ee450ee15405a0e
 
 An actual Render restart made both the page and API temporarily return 502, then recover to 200. Reloading the same retained Browser tab after recovery showed the same `2/0/0` aggregate, proving that the two existing production rows survived the restart. No additional production response was submitted for verification.
 
-## Action-first landing and synthetic walkthrough
+## Action-first landing and test walkthrough
 
 Issue [#59](https://github.com/Lontkovsky/openvote/issues/59) and [PR #60](https://github.com/Lontkovsky/openvote/pull/60) are a presentation-only follow-up to the verified launch in #53. They keep the exact demand API, database, cookie and aggregate contracts, but move the confirmed question and vote action ahead of product explanation. The page retains one concise visible notice that participation is voluntary and identity, citizenship and participant uniqueness are not checked, so the result is not the opinion of Ukrainians generally.
 
-The separate `Як працюватиме платформа` section uses one repository-owned, silent H.264 MP4 with a local poster and native controls. Its three frames were captured in the retained in-app Browser from the existing local synthetic interface at source revision `18869231e2728da393cb4c6c63eb5dec98b195ba`: a populated create form, a selected final vote before submission, and a Published `1/1/1` result. The asset contains no identity selection, credential, key, production response, browser storage, console, local path, narration or third-party media. It is explicitly labeled as a synthetic prototype whose interface may change.
+The separate `Як працюватиме платформа` section uses one repository-owned, silent H.264 MP4 with a local poster and native controls. Its three frames were captured in the retained in-app Browser from the existing local test interface at source revision `18869231e2728da393cb4c6c63eb5dec98b195ba`: a populated create form, a selected final vote before submission, and a Published `1/1/1` result. The asset contains no identity selection, credential, key, production response, browser storage, console, local path, narration or third-party media. It is explicitly labeled as a test prototype whose interface may change.
 
 Focused verification for this follow-up is:
 
@@ -85,9 +85,9 @@ PR #60 exact-head workflow `41130447936` passed and the PR merged as `130b03c2c1
 
 ## OpenVote brand and persistent poll action
 
-Issue [#62](https://github.com/Lontkovsky/openvote/issues/62) supersedes the bilingual display name with one exact `OpenVote` brand. The demand and full synthetic interfaces reuse one repository-owned open-ring vote mark. The landing keeps exactly one `Проголосувати` link in a sticky header, offsets the `#poll` anchor below that header, and replaces normal browser/storage messages with one nontechnical integrity notice and a concise acknowledgment. The demand API, confirmation gate, immutable response, database, Blueprint and Render resources are unchanged.
+Issue [#62](https://github.com/Lontkovsky/openvote/issues/62) supersedes the bilingual display name with one exact `OpenVote` brand. The demand and full test interfaces reuse one repository-owned open-ring vote mark. The landing keeps exactly one `Проголосувати` link in a sticky header, offsets the `#poll` anchor below that header, and replaces normal browser/storage messages with one nontechnical integrity notice and a concise acknowledgment. The demand API, confirmation gate, immutable response, database, Blueprint and Render resources are unchanged.
 
-The walkthrough was re-captured in the retained in-app Browser after the shared branding change, using the same established synthetic create form, selected unsubmitted choice and Published `1/1/1` result. The silent local H.264 asset remains 1280×720, 30 fps, limited-range `yuv420p`, 10.6 seconds and contains no real identity, production response, key, credential, browser-storage message, console or local path.
+The walkthrough was re-captured in the retained in-app Browser after the shared branding change, using the same established test create form, selected unsubmitted choice and Published `1/1/1` result. The silent local H.264 asset remains 1280×720, 30 fps, limited-range `yuv420p`, 10.6 seconds and contains no real identity, production response, key, credential, browser-storage message, console or local path.
 
 ## Grounded FAQ assistant
 
@@ -103,7 +103,7 @@ The retained in-app Browser verified the apex over HTTPS without submitting a po
 
 ## Public project knowledge
 
-Issue [#97](https://github.com/Lontkovsky/openvote/issues/97) supersedes the nine-FAQ-only knowledge boundary without giving Taras live access to the repository. `docs/PUBLIC_KNOWLEDGE.md` is the one reviewed public snapshot. It separates what is live on the demand surface, what exists only in the synthetic development system, what the owner has decided or planned, and what remains open. The visible FAQ is maintained separately and is not copied verbatim into the assistant prompt; confirmed OpenVote facts approved for the FAQ must also be represented in the reviewed snapshot.
+Issue [#97](https://github.com/Lontkovsky/openvote/issues/97) supersedes the nine-FAQ-only knowledge boundary without giving Taras live access to the repository. `docs/PUBLIC_KNOWLEDGE.md` is the one reviewed public snapshot. It separates what is live on the demand surface, what exists only in the test development system, what the owner has decided or planned, and what remains open. The visible FAQ is maintained separately and is not copied verbatim into the assistant prompt; confirmed OpenVote facts approved for the FAQ must also be represented in the reviewed snapshot.
 
 The demand process reads and validates the fixed snapshot once during startup. The production image copies that exact file; missing content, a missing required section or an invalid size stops startup. Each chat request reuses the existing validated demand-poll query and supplies the model only the public poll ID, version, immutable question, total and three labeled counts alongside the fixed snapshot and typed question. The visible FAQ, current browser response, credential, credential hash, rows and request metadata are not supplied. The model has no direct filesystem, GitHub or database access, no tools, no repository write capability and no conversation history.
 
@@ -124,3 +124,13 @@ Issue [#103](https://github.com/Lontkovsky/openvote/issues/103) refreshes only t
 The owner supplied GTM container `GTM-K2V4DRSD`. The demand document does not include the GTM script statically. A compact non-blocking choice with generic cookie-permission wording is stored under `openvote-demand-analytics-consent-v1`; only acceptance creates the exact asynchronous `https://www.googletagmanager.com/gtm.js?id=GTM-K2V4DRSD` script. Rejection persists and leaves that script absent. OpenVote's custom events contain only stable identifiers for CTA location, section, video start/completion, FAQ index and Taras opening. Poll choices, vote payloads, chat questions and chat answers are not custom-event parameters. The demand-only content security policy admits the required Google endpoints, while the full services policy and full client contain no analytics loader. The GTM container is remotely configured and therefore remains an external operational trust input.
 
 The owner completed the local visual review and authorized review [PR #104](https://github.com/Lontkovsky/openvote/pull/104). Merge and production deployment remain unauthorized. Production continues to serve the previous approved demand release. Before any later release, repeat the exact poll and FAQ contract checks, initial-HTML/SEO checks, consent acceptance and rejection paths, full-platform analytics absence, desktop and 390×844 retained in-app Browser flows, exact-head CI, and hosted verification without submitting a production response.
+
+## Browser-only public demo candidate
+
+The owner expanded issue [#103](https://github.com/Lontkovsky/openvote/issues/103) and [PR #104](https://github.com/Lontkovsky/openvote/pull/104) to include the approved public demo and authorized its production deployment. The demand header links to `/demo/#/`; `/demo` redirects to the canonical trailing-slash document. `demo.html` is built into the same demand image and marked `noindex,nofollow`.
+
+The demo reuses the approved full-platform React components and the forty established development questions. One completed example shows the verified development fixture's `100 = 57 / 28 / 15` result, one example is open and the remaining examples demonstrate scheduled state. Visitor-created polls, votes, comments, replies, reactions and vote IDs use one versioned browser-local store. Reloading the same browser preserves them; another browser does not receive them. Clearing site data removes them. They are never sent to identity, ballot or management services and are not copied into `openvote-demand`.
+
+The demo notice states that actions stay only in the current browser. It accepts no document, tax number, BankID response or other real identity input. Demo voting does not use Belenios and makes no claim of production ballot verification. The demo does not load the landing's Google Tag Manager integration. Taras remains the existing same-origin demand assistant, with the same public knowledge and answer boundary.
+
+Local release evidence must cover the landing link, forty-item catalogue, scheduled/open/completed states, creation, one-vote behavior, the shared success result card, vote-ID lookup, comments, replies, reactions, reload persistence, a fresh-browser boundary, mobile geometry and empty warning/error logs in the retained in-app Browser. Hosted verification repeats the public navigation and one browser-local scenario without submitting another demand response or enabling the suspended role databases.

@@ -23,7 +23,7 @@ The application-factory checks use the same handlers, migrations and native brid
 
 ## Post-open admission baseline
 
-Before the V030 test extension, a local development reproduction created an open Belenios election with the committed synthetic roster `TEST-PERSON-0001`, `TEST-PERSON-0003` and `TEST-PERSON-0004`. `TEST-PERSON-0006` is an otherwise eligible adult Ukrainian synthetic participant but was intentionally absent from that roster. The reproduction used provider A and the actual identity application factory.
+Before the V030 test extension, a local development reproduction created an open Belenios election with the committed test roster `TEST-PERSON-0001`, `TEST-PERSON-0003` and `TEST-PERSON-0004`. `TEST-PERSON-0006` is an otherwise eligible adult Ukrainian test participant but was intentionally absent from that roster. The reproduction used provider A and the actual identity application factory.
 
 - The committed participant authenticated and received HTTP 200 twice with the same credential and `SameCredentialOnly` recovery.
 - The outside eligible participant authenticated successfully but the public credential endpoint returned HTTP 403 `NO_ACTIVE_CREDENTIAL`.
@@ -36,7 +36,7 @@ The temporary roster rows, attempts and sessions were removed by the reproductio
 
 | Case | Prerequisite | Expected behavior | Current baseline |
 |---|---|---|---|
-| Committed participant | Open election and valid synthetic provider session | Return the same committed credential | HTTP 200 twice; identical credential |
+| Committed participant | Open election and valid test provider session | Return the same committed credential | HTTP 200 twice; identical credential |
 | New eligible participant | Successful provider authentication after the roster is committed | Refuse credential issuance because no committed credential exists | Automated HTTP 403 `NO_ACTIVE_CREDENTIAL` through the public identity flow |
 | Identity roster extension | Same poll ID with an additional eligible subject | Preserve the original lock and rows | HTTP 409 `IMMUTABLE_ROSTER_MISMATCH`; three rows unchanged |
 | Native archive replacement | Same registered election with an expanded public credential set | Preserve the registered archive | HTTP 409 `IMMUTABLE_ROSTER_MISMATCH` in the existing automated API regression |

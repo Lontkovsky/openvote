@@ -11,6 +11,7 @@ function demandIndex(): Plugin {
     configureServer(server) {
       server.middlewares.use((request, _response, next) => {
         if (request.url === '/') request.url = '/demand.html';
+        if (request.url === '/demo' || request.url === '/demo/') request.url = '/demo.html';
         next();
       });
     },
@@ -31,9 +32,9 @@ export default defineConfig(({ mode }) => {
   }
   return {
     plugins: [react(), ...(mode === 'demand' ? [demandIndex()] : [])],
-    publicDir: mode === 'demand' ? resolve(import.meta.dirname, 'demand-public') : false,
+    publicDir: mode === 'demand' ? resolve(import.meta.dirname, 'demand-public') : mode === 'demand-ssr' ? false : resolve(import.meta.dirname, 'public'),
     build: mode === 'demand'
-      ? { sourcemap: false, target: 'es2023', outDir: 'dist-demand', rollupOptions: { input: resolve(import.meta.dirname, 'demand.html') } }
+      ? { sourcemap: false, target: 'es2023', outDir: 'dist-demand', rollupOptions: { input: { demand: resolve(import.meta.dirname, 'demand.html'), demo: resolve(import.meta.dirname, 'demo.html') } } }
       : mode === 'demand-ssr'
         ? {
             sourcemap: false,
@@ -45,7 +46,7 @@ export default defineConfig(({ mode }) => {
         : { sourcemap: false, target: 'es2023' },
     server: {
       headers: { 'Referrer-Policy': 'no-referrer', 'Cache-Control': 'no-store' },
-      ...(mode === 'demand' ? { proxy: { '/api': { target: 'http://127.0.0.1:4304' } } } : {}),
+      proxy: { '/api': { target: 'http://127.0.0.1:4304' } },
     },
   };
 });

@@ -51,7 +51,7 @@ jobs:
         run: pnpm audit --prod --audit-level high
       - name: Verify reproducible clients and release evidence
         run: pnpm release:verify artifacts/release-ci
-      - name: Bootstrap isolated synthetic services
+      - name: Bootstrap isolated test services
         run: |
           pnpm bootstrap
           pnpm migrate

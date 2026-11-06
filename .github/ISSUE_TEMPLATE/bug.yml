@@ -4,7 +4,7 @@ body:
   - type: textarea
     id: reproduction
     attributes:
-      label: Synthetic reproduction, expected and actual behavior
+      label: Test reproduction, expected and actual behavior
     validations:
       required: true
   - type: textarea

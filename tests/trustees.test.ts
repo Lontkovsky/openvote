@@ -33,7 +33,7 @@ function signedFinal(archive: string, trackers: string[]) {
 }
 
 beforeAll(async () => {
-  const manifest = Manifest.parse({ ...fixtureContent(new Date('2026-01-02T00:00:00Z'), 'Чи підтримуєте перевірку фінальності синтетичного підрахунку?'),
+  const manifest = Manifest.parse({ ...fixtureContent(new Date('2026-01-02T00:00:00Z'), 'Чи підтримуєте перевірку фінальності тестового підрахунку?'),
     opensAt: '2026-01-01T00:00:00.000Z', id: randomUUID(), version: 1, environment: 'test', core: 'Belenios 3.3.0', release: '0.1.0-dev.1',
     incidentPolicy: 'SecurityIncident|LegalContentRemoval|InvalidProof; reason required; no result-based cancellation' });
   const persons = ['TEST-PERSON-0001', 'TEST-PERSON-0002', 'TEST-PERSON-0003', 'TEST-PERSON-0004', 'TEST-PERSON-0005'];
@@ -123,7 +123,7 @@ describe('actual native trustee client guards', () => {
     const path = await directory(), outside = await directory();
     await writeFile(path + '/private.json', JSON.stringify(setup.trustees[0]), { mode: 0o600, flag: 'wx' });
     await prepareTrusteeShare(final, trust, path, 1, now);
-    await writeFile(outside + '/not-a-share', 'synthetic file data outside the trustee directory', { mode: 0o600, flag: 'wx' });
+    await writeFile(outside + '/not-a-share', 'test file data outside the trustee directory', { mode: 0o600, flag: 'wx' });
     await rm(path + '/share.jsons');
     await symlink(resolve(outside + '/not-a-share'), path + '/share.jsons');
     await expect(prepareTrusteeShare(final, trust, path, 1, now)).rejects.toThrow('LOCAL_REFERENCE_REJECTED');

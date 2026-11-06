@@ -13,7 +13,7 @@ import { demandPublicKnowledgePath, loadDemandPublicKnowledge } from '../scripts
 import { migrateDirectory } from '../scripts/migrate.ts';
 
 const origin = 'http://localhost:5174';
-const testApiKey = 'synthetic-openai-key-for-tests-only';
+const testApiKey = 'test-openai-key-for-tests-only';
 let pool: pg.Pool;
 let app: Awaited<ReturnType<typeof demandApp>>;
 let receivedRequests: Array<{ question: string; results: DemandPollResultsType }>;
@@ -49,7 +49,7 @@ async function ask(target: typeof app, cookie: string, question: unknown, reques
   });
 }
 
-function syntheticCookie(index: number): string {
+function testCookie(index: number): string {
   return `${demandCredentialCookie}=${index.toString().padStart(43, 'A')}`;
 }
 
@@ -125,9 +125,9 @@ describe('demand AI chat API', () => {
     const globalApp = await demandApp(globalPool, 'test', origin, chatProvider);
     try {
       for (let index = 0; index < demandChatLimits.global; index += 1) {
-        expect((await ask(globalApp, syntheticCookie(index + 1), `Глобальне питання ${index + 1}`)).statusCode).toBe(200);
+        expect((await ask(globalApp, testCookie(index + 1), `Глобальне питання ${index + 1}`)).statusCode).toBe(200);
       }
-      const limited = await ask(globalApp, syntheticCookie(demandChatLimits.global + 1), 'Понад глобальний ліміт');
+      const limited = await ask(globalApp, testCookie(demandChatLimits.global + 1), 'Понад глобальний ліміт');
       expect(limited.statusCode).toBe(429);
       expect(limited.json()).toEqual({ error: 'AI_RATE_LIMITED' });
     } finally { await globalApp.close(); }
@@ -148,10 +148,10 @@ describe('demand AI chat API', () => {
     const concurrentPool = database(await readConfig('management'));
     const concurrentApp = await demandApp(concurrentPool, 'test', origin, pendingProvider);
     try {
-      const first = ask(concurrentApp, syntheticCookie(201), 'Перше паралельне питання');
-      const second = ask(concurrentApp, syntheticCookie(202), 'Друге паралельне питання');
+      const first = ask(concurrentApp, testCookie(201), 'Перше паралельне питання');
+      const second = ask(concurrentApp, testCookie(202), 'Друге паралельне питання');
       await enteredPromise;
-      const busy = await ask(concurrentApp, syntheticCookie(203), 'Третє паралельне питання');
+      const busy = await ask(concurrentApp, testCookie(203), 'Третє паралельне питання');
       expect(busy.statusCode).toBe(503);
       expect(busy.json()).toEqual({ error: 'AI_BUSY' });
       for (const resolve of resolvers) resolve('Підтверджена паралельна відповідь.');
