@@ -3,11 +3,10 @@ import { demandFaqItems, demandGtmContainerId } from '../../../packages/domain/s
 import type { DemandAnswerType, DemandPollStatusType } from '../../../packages/domain/src/demand.ts';
 import { DemandApiFailure, loadDemandPoll, recordDemandResponse } from './demand-api.ts';
 import {
-  demandAnalyticsConsentKey,
   enableDemandAnalytics,
   trackDemandAnalytics,
 } from './demand-analytics.ts';
-import type { DemandAnalyticsConsent, DemandAnalyticsSection } from './demand-analytics.ts';
+import type { DemandAnalyticsSection } from './demand-analytics.ts';
 import { TarasChat } from './TarasChat.tsx';
 import { VoteSuccess } from './VoteSuccess.tsx';
 import openVoteMark from './assets/openvote-mark.svg';
@@ -91,7 +90,6 @@ export function DemandApp() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [chatOpen, setChatOpen] = useState(false);
-  const [analyticsConsent, setAnalyticsConsent] = useState<DemandAnalyticsConsent | 'pending' | null>(null);
   const [activeHeroQuote, setActiveHeroQuote] = useState(0);
 
   useEffect(() => {
@@ -113,22 +111,10 @@ export function DemandApp() {
   }, []);
 
   useEffect(() => {
-    const saved = localStorage.getItem(demandAnalyticsConsentKey);
-    if (saved === 'accepted') {
-      enableDemandAnalytics(demandGtmContainerId);
-      setAnalyticsConsent('accepted');
-      return;
-    }
-    if (saved === 'rejected') {
-      setAnalyticsConsent('rejected');
-      return;
-    }
-    if (saved !== null) throw new Error('DEMAND_ANALYTICS_CONSENT_INVALID');
-    setAnalyticsConsent('pending');
+    enableDemandAnalytics(demandGtmContainerId);
   }, []);
 
   useEffect(() => {
-    if (analyticsConsent !== 'accepted') return;
     const mapped = new Map<Element, DemandAnalyticsSection>();
     for (const section of analyticsSections) {
       const element = document.getElementById(section);
@@ -146,7 +132,7 @@ export function DemandApp() {
     }, { threshold: 0.35 });
     for (const element of mapped.keys()) observer.observe(element);
     return () => { observer.disconnect(); };
-  }, [analyticsConsent]);
+  }, []);
 
   useEffect(() => {
     const page = document.querySelector<HTMLElement>('.demand-page');
@@ -176,21 +162,10 @@ export function DemandApp() {
     finally { setBusy(false); }
   }
 
-  function acceptAnalytics() {
-    localStorage.setItem(demandAnalyticsConsentKey, 'accepted');
-    enableDemandAnalytics(demandGtmContainerId);
-    setAnalyticsConsent('accepted');
-  }
-
-  function rejectAnalytics() {
-    localStorage.setItem(demandAnalyticsConsentKey, 'rejected');
-    setAnalyticsConsent('rejected');
-  }
-
   const supportingResponses = poll === null ? null : poll.results.counts[0];
   const launchProgress = supportingResponses === null ? 0 : Math.min((supportingResponses / launchSupportGoal) * 100, 100);
 
-  return <div className={`demand-page${analyticsConsent === 'pending' ? ' demand-page-consent-pending' : ''}`}>
+  return <div className="demand-page">
     <a className="skip" href="#main">До основного вмісту</a>
     <header className="demand-header">
       <a className="brand" href="#top" aria-label="OpenVote, на початок сторінки"><span className="brand-mark" aria-hidden="true"><img src={openVoteMark} alt="" /></span><span>OpenVote 🇺🇦<small>Чесно. Прозоро. Анонімно.</small></span></a>
@@ -283,8 +258,5 @@ export function DemandApp() {
       </div>
     </footer>
 
-    {analyticsConsent === 'pending' && <aside className="demand-consent" role="dialog" aria-labelledby="analytics-consent-title" aria-describedby="analytics-consent-description">
-      <div><h2 id="analytics-consent-title">Аналітичні cookies</h2><p id="analytics-consent-description">Дозволити збір статистики відвідування цього сайту?</p></div><div className="demand-consent-actions"><button className="secondary" type="button" onClick={rejectAnalytics}>Відмовитися</button><button className="primary" type="button" onClick={acceptAnalytics}>Дозволити</button></div>
-    </aside>}
   </div>;
 }

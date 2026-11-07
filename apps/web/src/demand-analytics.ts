@@ -1,6 +1,3 @@
-export const demandAnalyticsConsentKey = 'openvote-demand-analytics-consent-v1';
-
-export type DemandAnalyticsConsent = 'accepted' | 'rejected';
 export type DemandAnalyticsSection = 'problem' | 'how-it-works' | 'privacy' | 'open-source' | 'goal' | 'demo' | 'faq' | 'taras';
 export type DemandAnalyticsEvent =
   | { name: 'support_launch_click'; location: 'header' | 'final' }
