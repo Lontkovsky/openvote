@@ -36,6 +36,7 @@ export function App({ demo = false }: { demo?: boolean }) {
   const [route, setRoute] = useState(currentAppRoute);
   const [auth, setAuth] = useState<Auth | null>(demo ? publicDemoAuth : null);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   useEffect(() => {
     if (auth === null || demo) return;
@@ -44,8 +45,7 @@ export function App({ demo = false }: { demo?: boolean }) {
   }, [auth, demo]);
   const [polls, setPolls] = useState<PollType[]>([]), [query, setQuery] = useState(''), [categories, setCategories] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null), [loading, setLoading] = useState(true);
-  const mineActive = route === '/mine' || route === '/mine/new';
-  const createActive = route === '/new' || route === '/mine/new';
+  const mineActive = route === '/mine';
   useEffect(() => {
     const update = () => { setRoute(currentAppRoute()); setMobileNavOpen(false); };
     const event = demo ? 'popstate' : 'hashchange';
@@ -68,8 +68,8 @@ export function App({ demo = false }: { demo?: boolean }) {
   return <>
     <a className="skip" href="#main">До основного вмісту</a>
     <header className={`site-header${mobileNavOpen ? ' mobile-nav-open' : ''}`}><a className="brand" href={demo ? '/' : appHref('/')} aria-label={demo ? 'OpenVote — на головну сторінку' : 'OpenVote — на початок сторінки'}><span className="brand-mark" aria-hidden="true"><img src={openVoteMark} alt="" /></span><span>OpenVote 🇺🇦<small>Чесно. Прозоро. Анонімно.</small></span></a>
-      <nav id="platform-navigation" aria-label="Основна навігація" onClick={() => setMobileNavOpen(false)}><a href={appHref('/')} aria-current={route === '/' || mineActive || createActive ? 'page' : undefined}>Опитування</a><a href={appHref('/trust')} aria-current={route === '/trust' ? 'page' : undefined}>Перевірка</a><a href={appHref('/help')} aria-current={route === '/help' ? 'page' : undefined}>FAQ</a></nav>
-      <div className="header-actions"><a className="button primary header-create" href={appHref(mineActive ? '/mine/new' : '/new')}><span className="header-create-full">Створити опитування</span><span className="header-create-short">Створити</span></a><button className="mobile-menu-toggle" type="button" aria-controls="platform-navigation" aria-expanded={mobileNavOpen} aria-label={mobileNavOpen ? 'Закрити меню' : 'Відкрити меню'} onClick={() => setMobileNavOpen(open => !open)}><span /><span /><span /></button></div></header>
+      <nav id="platform-navigation" aria-label="Основна навігація" onClick={() => setMobileNavOpen(false)}><a href={appHref('/')} aria-current={route === '/' || mineActive ? 'page' : undefined}>Опитування</a><a href={appHref('/trust')} aria-current={route === '/trust' ? 'page' : undefined}>Перевірка</a><a href={appHref('/help')} aria-current={route === '/help' ? 'page' : undefined}>FAQ</a></nav>
+      <div className="header-actions"><button className="primary header-create" type="button" onClick={() => { setMobileNavOpen(false); setCreateOpen(true); }}><span className="header-create-full">Створити опитування</span><span className="header-create-short">Створити</span></button><button className="mobile-menu-toggle" type="button" aria-controls="platform-navigation" aria-expanded={mobileNavOpen} aria-label={mobileNavOpen ? 'Закрити меню' : 'Відкрити меню'} onClick={() => setMobileNavOpen(open => !open)}><span /><span /><span /></button></div></header>
     {demo && <div className="public-demo-notice"><strong>Демо OpenVote.</strong> Тут можна переглядати й створювати опитування. Усі ваші дії залишаються лише у цьому браузері.</div>}
     <main id="main" tabIndex={-1}>
       {route === '/trust' ? <VerificationPage demo={demo} />
@@ -88,9 +88,8 @@ export function App({ demo = false }: { demo?: boolean }) {
         <nav className="poll-workspace-tabs" aria-label="Перегляд опитувань"><a href={appHref('/')} aria-current={mineActive ? undefined : 'page'}>Усі</a><a href={appHref('/mine')} aria-current={mineActive ? 'page' : undefined}>Мої</a></nav>
         {mineActive ? auth === null ? <Identity onSignedIn={setAuth} /> : <MyPolls auth={auth} /> : <section className="catalog-home"><h1 className="visually-hidden">Усі опитування</h1><div className="catalog-tools"><label className="search"><span className="visually-hidden">Пошук опитувань</span><input type="search" value={query} placeholder="Знайти опитування" aria-label="Пошук опитувань" onChange={e => setQuery(e.target.value)} /></label><CategorySelect multiple selected={categories} onChange={setCategories} />{categories.length > 0 && <div className="category-chips" aria-label="Обрані категорії">{categories.map(category => <button type="button" key={category} aria-label={`Прибрати категорію ${category}`} onClick={() => setCategories(current => current.filter(item => item !== category))}><span>{category}</span><span aria-hidden="true">×</span></button>)}</div>}</div>
           <section className="catalog-results" aria-label="Усі опитування"><h2>Усі опитування</h2>{loading ? <p role="status">Завантаження опитувань…</p> : error ? <div className="notice error" role="alert">Не вдалося завантажити опитування: {error}</div> : polls.length === 0 ? <div className="empty"><span className="empty-symbol">+</span><h2>Опитувань ще немає</h2><p>{query || categories.length > 0 ? 'За цими умовами опитувань не знайдено.' : 'Створіть перше опитування.'}</p></div> : <div className="poll-list">{polls.map(poll => <PollCard key={poll.id} id={poll.id} question={poll.content.question} context={poll.content.context} category={poll.content.category} stateLabel={stateNames[poll.state]} opensAt={poll.content.opensAt} closesAt={poll.content.closesAt} />)}</div>}</section></section>}
-        {createActive && <PollDrawer label={auth === null ? 'Підтвердження участі для створення опитування' : 'Створити опитування'} onDismiss={() => navigateApp(mineActive ? '/mine' : '/')}>{auth === null ? <Identity onSignedIn={setAuth} drawer /> : <DraftEditor auth={auth} id={null} drawer />}</PollDrawer>}
       </section>}
-    </main><TarasChat open={chatOpen} onOpenChange={setChatOpen} prepare={loadDemandPoll} /><footer className="platform-footer"><div className="platform-footer-inner"><a className="brand" href={appHref('/')}><span className="brand-mark" aria-hidden="true"><img src={openVoteMark} alt="" /></span><span>OpenVote<small>Чесно. Прозоро. Анонімно.</small></span></a><nav aria-label="Навігація в підвалі"><a href={appHref('/')}>Опитування</a><a href={appHref('/trust')}>Перевірка</a><a href={appHref('/help')}>FAQ</a><a href="https://github.com/Lontkovsky/openvote">GitHub ↗</a></nav><div className="platform-footer-notes"><span>Відкритий код AGPL-3.0</span><span>Не державний сервіс. Не офіційне голосування.</span></div></div></footer>
+    </main>{createOpen && <PollDrawer label={auth === null ? 'Підтвердження участі для створення опитування' : 'Створити опитування'} onDismiss={() => setCreateOpen(false)}>{auth === null ? <Identity onSignedIn={setAuth} drawer /> : <DraftEditor auth={auth} id={null} drawer onCreated={() => setCreateOpen(false)} />}</PollDrawer>}<TarasChat open={chatOpen} onOpenChange={setChatOpen} prepare={loadDemandPoll} /><footer className="platform-footer"><div className="platform-footer-inner"><a className="brand" href={appHref('/')}><span className="brand-mark" aria-hidden="true"><img src={openVoteMark} alt="" /></span><span>OpenVote<small>Чесно. Прозоро. Анонімно.</small></span></a><nav aria-label="Навігація в підвалі"><a href={appHref('/')}>Опитування</a><a href={appHref('/trust')}>Перевірка</a><a href={appHref('/help')}>FAQ</a><a href="https://github.com/Lontkovsky/openvote">GitHub ↗</a></nav><div className="platform-footer-notes"><span>Відкритий код AGPL-3.0</span><span>Не державний сервіс. Не офіційне голосування.</span></div></div></footer>
   </>;
 }
 

@@ -14,7 +14,7 @@ function localDate(value: string) {
   const date = new Date(value);
   return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
 }
-export function DraftEditor({ auth, id, drawer = false }: { auth: Auth; id: string | null; drawer?: boolean }) {
+export function DraftEditor({ auth, id, drawer = false, onCreated }: { auth: Auth; id: string | null; drawer?: boolean; onCreated?: () => void }) {
   const [initial, setInitial] = useState<ContentType | null>(null), [ready, setReady] = useState(id === null);
   const [error, setError] = useState<string | null>(null), [busy, setBusy] = useState(false);
   const [authorVisibility, setAuthorVisibility] = useState<'hidden' | 'shown' | null>(null);
@@ -43,6 +43,7 @@ export function DraftEditor({ auth, id, drawer = false }: { auth: Auth; id: stri
         publicationThreshold: initial === null ? 1 : initial.publicationThreshold, relatedPolls: initial === null ? [] : initial.relatedPolls });
       const path = id === null ? '/v1/drafts' : '/v1/polls/' + id;
       const { poll } = z.object({ poll: Poll }).parse(await request('management', path, id === null ? 'POST' : 'PATCH', content, auth.token));
+      if (id === null) onCreated?.();
       navigateApp('/poll/' + poll.id);
     } catch (e) { setError(e instanceof z.ZodError ? e.issues.map(i => `${i.path.join('.')}: ${i.message}`).join('; ') : e instanceof Error ? e.message : String(e)); } finally { setBusy(false); }
   }

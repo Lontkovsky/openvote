@@ -75,7 +75,7 @@ export async function createRunner(tab, input) {
   }
   const stages = {
     async create(assertions) {
-      await state(); await signOut(); await click('link', 'Опитування'); await click('link', 'Створити опитування');
+      await state(); await signOut(); await click('link', 'Опитування'); await click('button', 'Створити опитування');
       await signIn('TEST-PERSON-0005', 'A'); await visible('heading', 'Створити опитування');
       await fill('Формулювання питання', title);
       await click('button', 'Знайти схожі питання'); await visible('heading', 'Схожі питання'); assertions.push('Similar search returns visible outcomes without merging votes');
