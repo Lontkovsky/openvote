@@ -1057,3 +1057,20 @@ Read the current GitHub issues/board and working tree before proceeding. Do not 
 - Hosted `llms.txt`, `robots.txt` and `sitemap.xml` contained the reviewed contracts. Googlebot and OAI-SearchBot each received HTTP 200 for `/about/` and `llms.txt`; `/about` returned the canonical HTTP 308 redirect to `/about/`. At 390×844, the root, all five information pages and `/demo/` had `clientWidth = scrollWidth = 375`, in-bounds headings and header actions, and empty warning/error logs. The viewport was reset and no production response was submitted.
 - The repository, runtime and hosted discovery surface are complete within project control. Recrawl timing, indexing, ranking, selected snippets and answer-engine citations remain decisions of external crawlers and search systems.
 | Release evidence | PR CI, merge and production deploy | Direct hosted routes, crawler files and analytics isolation pass on the deployed revision | Pending |
+
+## Stateful poll creation drawer
+
+- Reproduced [#113](https://github.com/Lontkovsky/openvote/issues/113) in the retained local in-app Browser before implementation. The header action was an ordinary link to `/demo/new`; clicking it changed the address before the existing creation drawer appeared. The same routed condition also handled `/mine/new` in the full client.
+- The affected-flow audit found one existing drawer, one existing editor and one established browser-local create transition. The smallest complete correction keeps those components and contracts, replaces the route condition with local `App` state, and closes that state immediately before the existing transition to the created poll. No API, database, migration, identity, ballot, cryptographic, browser-storage or dependency contract changes.
+- The drawer now opens above the catalogue, personal collection, poll, verification or FAQ page without changing that page's address. The existing modal lock remains active while open, close and Escape leave the underlying address intact, and the side panel plus backdrop use one 220 ms entrance animation.
+
+| Required case | Prerequisite | Expected result | Actual result and evidence |
+|---|---|---|---|
+| Open from every public-demo surface | Retained local Browser on catalogue, personal collection, poll, verification and FAQ routes | Drawer opens over the current page and the URL stays unchanged | Passed on `/demo/`, `/demo/mine`, `/demo/poll/10000000-0000-4000-8000-000000000002`, `/demo/trust` and `/demo/help`; each retained its exact URL, exposed one open drawer and locked the underlying body |
+| Close behavior | Open drawer | Close control and Escape remove the drawer, unlock the body and preserve the URL | Passed for the close control and Escape in the retained Browser |
+| Opening motion | Open drawer | Shared drawer and backdrop animate once without changing layout | Passed from computed Browser styles: `poll-drawer-enter`, `0.22s` |
+| Browser-local creation | Authenticated public demo | Existing editor creates one local poll, closes the drawer and opens the new poll | Passed with the community poll `Чи потрібні місту додаткові велопарковки біля станцій метро?`; the generated `/demo/poll/:id` opened, the drawer and body lock cleared, and the poll appeared under `/demo/mine` after navigation |
+| Demo isolation and runtime | Fresh public-demo tab | No demand analytics loader and no new warning/error | Passed with zero Google analytics scripts and an empty warning/error console |
+| Focused contracts | Node 24.20.0 | Updated consumers compile and the browser-only demo contract remains valid | Passed: `pnpm types` and `tests/public-demo.test.ts`, 6/6 |
+| Mobile layout | Retained in-app Browser at 390×844 | Drawer fills the mobile viewport without horizontal overflow | Pending Browser viewport verification |
+| Release evidence | PR CI, merge and hosted deployment | The deployed public demo preserves the same route-free drawer flow | Pending |
