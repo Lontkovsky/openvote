@@ -1012,3 +1012,17 @@ Read the current GitHub issues/board and working tree before proceeding. Do not 
 | Client contracts | Node 24.20.0 | Updated client compiles and the demand bundle packages | Passed: `pnpm types` and `pnpm build:demand` |
 
 - A broader `tests/services.test.ts` attempt was not a valid prepared check for this landing-only change: all seventeen service cases failed to connect because the required local service ports `4301` and `4312` were not running. The self-contained demand and public-demo checks above passed; production deployment and hosted verification remain pending.
+
+## Canonical Google Tag Manager bootstrap
+
+- Production reproduction on `https://openvote.com.ua/` confirmed that the landing downloaded `gtm.js?id=GTM-K2V4DRSD`, but a fresh page load and the existing launch CTA emitted no Google Analytics collection request and no `page_view`. The public container includes destination `G-8TVPBMKS6X` and fires it from the `gtm.js` event. The landing loader did not create that event: it called the Google tag `js` command instead of pushing the Google Tag Manager bootstrap object with `gtm.start` and `event: gtm.js`.
+- The affected-flow audit limits the correction to `apps/web/src/demand-analytics.ts`. The demand event names and parameters remain unchanged. The public demo and full platform do not import this entrypoint. No backend, API, database, migration, identity, ballot, cryptographic, routing, design or dependency contract changes.
+
+| Required case | Prerequisite | Expected result | Actual result and evidence |
+|---|---|---|---|
+| Bootstrap order | Fresh demand landing | The canonical `gtm.start` / `gtm.js` object enters `dataLayer` before the owner container script is appended | Passed in the focused unit test with the exact owner container URL and preserved custom-event payload |
+| Page measurement | Fresh local and hosted landing | GA4 destination `G-8TVPBMKS6X` receives a real collection request with `page_view` | Passed locally in the retained in-app Browser: observed `region1.google-analytics.com/g/collect` with exact `tid` and `en=page_view`; hosted verification remains pending |
+| Existing custom event | Landing launch CTA | The established `support_launch_click` event remains compatible | Passed in the focused unit test with unchanged `event`, name and location arguments |
+| Banner state | Fresh landing | No cookie-consent banner returns | Passed locally with the established banner-free landing |
+| Demo isolation | `/demo/` | No GTM or Google Analytics resource loads | Passed locally with zero matching resources and an empty warning/error console log |
+| Focused contracts | Node 24.20.0 | Analytics unit test, demand/demo tests, types, demand build and public scan pass | Unit, demand and demo tests passed `31/31`; types, demand build, public artifact hygiene and whitespace checks passed |
