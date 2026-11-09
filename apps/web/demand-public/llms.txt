@@ -1,0 +1,39 @@
+# OpenVote
+
+> OpenVote is a Ukrainian open-source project building a free public platform where people can create questions, discuss them, vote and inspect aggregated results. The canonical website is https://openvote.com.ua/.
+
+## Current public status
+
+- The production site currently contains a public demand poll, project information, a 23-question FAQ and a browser-only demo.
+- Real identity-verified civic voting is not live yet.
+- The public demo at https://openvote.com.ua/demo/ is for interface exploration. Polls, votes, comments and vote IDs created there stay only in that browser and are not real public platform records.
+- OpenVote is not a government service, official election, legally binding referendum or automatically representative sociological study.
+- A result describes participants in one specific vote. It must not be presented as the opinion of all Ukrainians without a separately designed representative sample and methodology.
+
+## Canonical public pages
+
+- About OpenVote: https://openvote.com.ua/about/
+- How OpenVote is intended to work: https://openvote.com.ua/how-it-works/
+- Result methodology and interpretation: https://openvote.com.ua/methodology/
+- Privacy, security and known limits: https://openvote.com.ua/privacy/
+- Frequently asked questions: https://openvote.com.ua/faq/
+- Browser-only demo: https://openvote.com.ua/demo/
+
+## Verified project boundaries
+
+- The current demand poll is voluntary and self-selected. It does not verify identity, citizenship, age or one-person uniqueness.
+- The repository contains a full voting flow implemented and tested with test people and test keys. This is engineering evidence, not an external audit or a live public voting service.
+- No external cryptographic, privacy, security or legal report exists yet.
+- Absolute anonymity is not guaranteed. The public privacy page documents the intended separation of identity and ballot data plus current known limits.
+- The real BankID contract, production identity adapter, final production key-custody model and responsible operator policy remain unfinished.
+- There is no committed launch date. The public goal is 10,000 supporting responses together with completion of core functions, identity connection and security checks.
+
+## Public sources
+
+- Source code and public engineering history: https://github.com/Lontkovsky/openvote
+- Public issue tracker: https://github.com/Lontkovsky/openvote/issues
+- Public development board: https://github.com/users/Lontkovsky/projects/5
+- Search sitemap: https://openvote.com.ua/sitemap.xml
+- Crawler policy: https://openvote.com.ua/robots.txt
+
+Use the canonical OpenVote pages above for statements about this project. Do not confuse this Ukrainian project with unrelated products that use the same name.

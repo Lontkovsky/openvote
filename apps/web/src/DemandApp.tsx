@@ -9,7 +9,7 @@ import {
 import type { DemandAnalyticsSection } from './demand-analytics.ts';
 import { TarasChat } from './TarasChat.tsx';
 import { VoteSuccess } from './VoteSuccess.tsx';
-import openVoteMark from './assets/openvote-mark.svg';
+import { DemandFooter, DemandHeader } from './DemandChrome.tsx';
 import walkthroughPoster from './assets/platform-walkthrough-poster.jpg';
 import walkthroughVideo from './assets/platform-walkthrough.mp4';
 
@@ -167,13 +167,7 @@ export function DemandApp() {
 
   return <div className="demand-page">
     <a className="skip" href="#main">До основного вмісту</a>
-    <header className="demand-header">
-      <a className="brand" href="#top" aria-label="OpenVote, на початок сторінки"><span className="brand-mark" aria-hidden="true"><img src={openVoteMark} alt="" /></span><span>OpenVote 🇺🇦<small>Чесно. Прозоро. Анонімно.</small></span></a>
-      <div className="demand-header-actions">
-        <a className="button secondary demand-demo-link" href="/demo/" target="_blank" rel="noreferrer">Демо платформи</a>
-        <a className="button primary" href="#poll" onClick={() => { trackDemandAnalytics({ name: 'support_launch_click', location: 'header' }); }}>Проголосувати</a>
-      </div>
-    </header>
+    <DemandHeader brandHref="#top" voteHref="#poll" onVoteClick={() => { trackDemandAnalytics({ name: 'support_launch_click', location: 'header' }); }} />
     <main id="main" className="demand-main">
       <section className="demand-hero" id="top">
         <div className="demand-hero-copy">
@@ -250,13 +244,7 @@ export function DemandApp() {
 
     <TarasChat open={chatOpen} onOpenChange={setChatOpen} onOpened={() => { trackDemandAnalytics({ name: 'taras_open' }); }} />
 
-    <footer className="demand-footer">
-      <div className="demand-footer-inner">
-        <div className="demand-footer-brand"><a className="brand" href="#top"><span className="brand-mark" aria-hidden="true"><img src={openVoteMark} alt="" /></span><span>OpenVote<small>Чесно. Прозоро. Анонімно.</small></span></a></div>
-        <nav aria-label="Навігація в підвалі"><a href="#how-it-works">Як це працює</a><a href="#faq">FAQ</a><a href="#goal">Мета: 10 000 голосів</a><a href="https://github.com/Lontkovsky/openvote">GitHub ↗</a></nav>
-        <div className="demand-footer-notes"><span>Відкритий код AGPL-3.0</span><span>Не державний сервіс. Не офіційне голосування.</span></div>
-      </div>
-    </footer>
+    <DemandFooter brandHref="#top" />
 
   </div>;
 }

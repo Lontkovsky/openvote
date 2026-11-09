@@ -104,6 +104,160 @@
   overflow: hidden;
 }
 
+.demand-info-main {
+  overflow: hidden;
+  background: var(--demand-surface-white);
+}
+
+.demand-info-hero {
+  padding: 128px max(5%, calc((100% - 1180px) / 2)) 82px;
+  background: var(--demand-surface-light);
+}
+
+.demand-info-container {
+  max-width: 980px;
+}
+
+.demand-breadcrumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 32px;
+  color: var(--demand-muted);
+  font-size: .9rem;
+}
+
+.demand-breadcrumbs a {
+  color: var(--demand-violet);
+  text-decoration: none;
+}
+
+.demand-info-hero h1 {
+  max-width: 940px;
+  margin: 0;
+  color: var(--demand-ink);
+  font-size: clamp(3.4rem, 7vw, 6.7rem);
+  line-height: .98;
+  letter-spacing: -.065em;
+}
+
+.demand-info-hero p {
+  max-width: 860px;
+  margin: 36px 0 0;
+  color: var(--demand-muted);
+  font-size: clamp(1.1rem, 2vw, 1.35rem);
+  line-height: 1.65;
+}
+
+.demand-info-navigation {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 28px;
+  width: min(90%, 980px);
+  margin: 0 auto;
+  padding: 32px 0;
+  border-bottom: 1px solid var(--demand-line);
+}
+
+.demand-info-navigation a {
+  color: var(--demand-muted);
+  font-variation-settings: "wght" 650;
+  text-decoration: none;
+}
+
+.demand-info-navigation a:hover,
+.demand-info-navigation a[aria-current="page"] {
+  color: var(--demand-violet);
+}
+
+.demand-info-content {
+  width: min(90%, 980px);
+  margin: 0 auto;
+  padding: 34px 0 90px;
+}
+
+.demand-info-content > section {
+  padding: 48px 0;
+  border-bottom: 1px solid var(--demand-line);
+}
+
+.demand-info-content > section:last-child {
+  border-bottom: 0;
+}
+
+.demand-info-content h2 {
+  max-width: 820px;
+  margin: 0 0 24px;
+  color: var(--demand-ink);
+  font-size: clamp(2rem, 4vw, 3.3rem);
+  line-height: 1.08;
+  letter-spacing: -.045em;
+}
+
+.demand-info-content p,
+.demand-info-content li {
+  max-width: 840px;
+  color: var(--demand-muted);
+  font-size: 1.05rem;
+  line-height: 1.75;
+}
+
+.demand-info-content p {
+  margin: 0 0 18px;
+}
+
+.demand-info-content p:last-child {
+  margin-bottom: 0;
+}
+
+.demand-info-content ul {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding-left: 24px;
+}
+
+.demand-info-faq {
+  padding-top: 54px;
+}
+
+.demand-info-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 48px;
+  width: min(90%, 1180px);
+  margin: 0 auto 90px;
+  padding: 48px;
+  border-radius: 24px;
+  color: #fff;
+  background: var(--demand-surface-dark);
+}
+
+.demand-info-cta > div {
+  max-width: 780px;
+}
+
+.demand-info-cta h2 {
+  margin: 0 0 14px;
+  color: #fff;
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  line-height: 1.06;
+  letter-spacing: -.045em;
+}
+
+.demand-info-cta p {
+  margin: 0;
+  color: rgba(255, 255, 255, .78);
+  line-height: 1.65;
+}
+
+.demand-info-cta .button {
+  flex: 0 0 auto;
+  color: var(--demand-violet-dark);
+  background: #fff;
+}
+
 .demand-hero {
   position: relative;
   min-height: 760px;
@@ -987,6 +1141,15 @@
 }
 
 @media (max-width: 900px) {
+  .demand-info-hero {
+    padding-top: 112px;
+  }
+
+  .demand-info-cta {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
   .demand-hero {
     min-height: 0;
     grid-template-columns: 1fr;
@@ -1039,6 +1202,60 @@
 }
 
 @media (max-width: 600px) {
+  .demand-info-hero {
+    padding: 96px 5% 58px;
+  }
+
+  .demand-info-hero h1 {
+    font-size: 3rem;
+  }
+
+  .demand-info-hero p {
+    margin-top: 24px;
+    font-size: 1rem;
+  }
+
+  .demand-breadcrumbs {
+    margin-bottom: 24px;
+  }
+
+  .demand-info-navigation {
+    gap: 10px 20px;
+    padding: 24px 0;
+    font-size: .88rem;
+  }
+
+  .demand-info-content {
+    padding-bottom: 64px;
+  }
+
+  .demand-info-content > section {
+    padding: 36px 0;
+  }
+
+  .demand-info-content h2 {
+    font-size: 2rem;
+  }
+
+  .demand-info-content p,
+  .demand-info-content li {
+    font-size: 1rem;
+  }
+
+  .demand-info-faq {
+    padding-top: 40px;
+  }
+
+  .demand-info-cta {
+    margin-bottom: 64px;
+    padding: 30px 24px;
+    border-radius: 20px;
+  }
+
+  .demand-info-cta .button {
+    width: 100%;
+  }
+
   .demand-header {
     min-height: 72px;
   }
@@ -1049,6 +1266,10 @@
 
   .demand-header-actions {
     gap: 6px;
+  }
+
+  .demand-demo-link {
+    display: none;
   }
 
   .demand-header-actions .button {

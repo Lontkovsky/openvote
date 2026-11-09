@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { DemandPublicKnowledge, OpenAiDemandChatProvider } from '../apps/api/src/demand-chat-provider.ts';
 import { demandApp } from '../apps/api/src/demand.ts';
 import { parsePublicOrigin } from '../apps/api/src/common.ts';
+import { publicInfoPageSlugs } from '../apps/web/src/public-info-content.ts';
 import { migrateDirectory } from './migrate.ts';
 
 type DemandConfiguration = { port: number; publicOrigin: string; databaseUrl: string; openAiApiKey: string };
@@ -53,6 +54,10 @@ export async function createDemandService(configuration: DemandConfiguration, st
     app.get('/demo', (_request, reply) => reply.redirect('/demo/', 308));
     app.get('/demo/', (_request, reply) => reply.sendFile('demo.html'));
     app.get('/demo/*', (_request, reply) => reply.sendFile('demo.html'));
+    for (const slug of publicInfoPageSlugs) {
+      app.get(`/${slug}`, (_request, reply) => reply.redirect(`/${slug}/`, 308));
+      app.get(`/${slug}/`, (_request, reply) => reply.sendFile(`${slug}/index.html`));
+    }
     return app;
   } catch (error) {
     await databasePool.end();
