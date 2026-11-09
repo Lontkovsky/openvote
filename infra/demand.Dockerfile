@@ -16,6 +16,7 @@ WORKDIR /app
 RUN apt-get update -qq && apt-get upgrade -y && rm -rf /var/lib/apt/lists/* /usr/local/lib/node_modules/npm && rm -f /usr/local/bin/npm /usr/local/bin/npx
 COPY --from=demand-build /app/node_modules node_modules
 COPY --from=demand-build /app/apps/web/dist-demand apps/web/dist-demand
+COPY apps/web/src/public-info-content.ts apps/web/src/public-info-content.ts
 COPY apps/api apps/api
 COPY packages/domain packages/domain
 COPY scripts/demand-start.ts scripts/demand-start.ts
