@@ -1011,7 +1011,7 @@ Read the current GitHub issues/board and working tree before proceeding. Do not 
 | Focused contracts | Node 24.20.0 | Demand and demo contracts remain valid | Passed: `tests/demand.test.ts` and `tests/public-demo.test.ts`, 30/30 |
 | Client contracts | Node 24.20.0 | Updated client compiles and the demand bundle packages | Passed: `pnpm types` and `pnpm build:demand` |
 
-- A broader `tests/services.test.ts` attempt was not a valid prepared check for this landing-only change: all seventeen service cases failed to connect because the required local service ports `4301` and `4312` were not running. The self-contained demand and public-demo checks above passed; production deployment and hosted verification remain pending.
+- A broader `tests/services.test.ts` attempt was not a valid prepared check for this landing-only change: all seventeen service cases failed to connect because the required local service ports `4301` and `4312` were not running. The self-contained demand and public-demo checks above passed. The initial hosted release loaded the container but emitted no GA4 page view; the canonical bootstrap follow-up below resolved and verified that production gap.
 
 ## Canonical Google Tag Manager bootstrap
 
@@ -1021,8 +1021,11 @@ Read the current GitHub issues/board and working tree before proceeding. Do not 
 | Required case | Prerequisite | Expected result | Actual result and evidence |
 |---|---|---|---|
 | Bootstrap order | Fresh demand landing | The canonical `gtm.start` / `gtm.js` object enters `dataLayer` before the owner container script is appended | Passed in the focused unit test with the exact owner container URL and preserved custom-event payload |
-| Page measurement | Fresh local and hosted landing | GA4 destination `G-8TVPBMKS6X` receives a real collection request with `page_view` | Passed locally in the retained in-app Browser: observed `region1.google-analytics.com/g/collect` with exact `tid` and `en=page_view`; hosted verification remains pending |
+| Page measurement | Fresh local and hosted landing | GA4 destination `G-8TVPBMKS6X` receives a real collection request with `page_view` | Passed locally and on the hosted landing in the retained in-app Browser: observed `region1.google-analytics.com/g/collect` with exact `tid=G-8TVPBMKS6X`, `en=page_view` and production document URL |
 | Existing custom event | Landing launch CTA | The established `support_launch_click` event remains compatible | Passed in the focused unit test with unchanged `event`, name and location arguments |
 | Banner state | Fresh landing | No cookie-consent banner returns | Passed locally with the established banner-free landing |
 | Demo isolation | `/demo/` | No GTM or Google Analytics resource loads | Passed locally with zero matching resources and an empty warning/error console log |
 | Focused contracts | Node 24.20.0 | Analytics unit test, demand/demo tests, types, demand build and public scan pass | Unit, demand and demo tests passed `31/31`; types, demand build, public artifact hygiene and whitespace checks passed |
+
+- PR #108 exact-head Verification and CodeQL passed, and it squash-merged as `f8b703e6ec8ebe3c73a6e2f64495d4217c5c6463`. Merge Verification `42632121055` and CodeQL `42632121229` passed. Render deploy `dep-dbotbalg1s2s738veqi0` reached `live` for that exact commit.
+- A fresh hosted load of `https://openvote.com.ua/` in the retained in-app Browser loaded the exact owner container and emitted a real `region1.google-analytics.com/g/collect` request with `tid=G-8TVPBMKS6X`, `en=page_view` and `dl=https://openvote.com.ua/`. The landing contained no cookie-consent banner or dialog. A separate hosted `/demo/` tab exposed the demo catalogue with zero GTM, Google Analytics or collection resources. Warning/error logs were empty in both tabs, and no production demand response was submitted.
