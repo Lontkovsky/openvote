@@ -15,10 +15,6 @@ projects:
             dockerfilePath: ./infra/demand.Dockerfile
             dockerContext: .
             healthCheckPath: /health
-            disk:
-              name: openvote-runtime
-              mountPath: /app/.runtime-disk
-              sizeGB: 1
             domains:
               - openvote.com.ua
             envVars:

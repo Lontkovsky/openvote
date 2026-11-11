@@ -1,6 +1,6 @@
 # Minimal demand-validation deployment
 
-Issue [#53](https://github.com/Lontkovsky/openvote/issues/53) owns the initial public launch. The single [`render.yaml`](../render.yaml) declares one `openvote` web service, four databases and one 1 GB persistent disk in one `production` environment. The service currently runs only the demand application; the disk is reserved for the future full runtime.
+Issue [#53](https://github.com/Lontkovsky/openvote/issues/53) owns the initial public launch. The proposed [`render.yaml`](../render.yaml) declares one `openvote` web service and four databases in one `production` environment, without a disk on the demand service. The current service still has the previously reserved disk attached until an explicitly authorized removal is completed.
 
 ## Declared resources and cost boundary
 
@@ -9,9 +9,9 @@ The active demand configuration contains:
 - one Docker web service, `openvote`, on plan `0.5c-512mb`;
 - one PostgreSQL 18 database, `openvote-demand`, on plan `0.1c-256mb` with 1 GB storage;
 - the apex custom domain `openvote.com.ua`;
-- no demand data on the attached disk, wildcard domain, API subdomains, identity service, ballot service, management service or cryptographic runtime in the running container.
+- no demand data on the existing attached disk, wildcard domain, API subdomains, identity service, ballot service, management service or cryptographic runtime in the running container.
 
-The expected steady base is approximately USD 14.45 per month: USD 13.30 for the active web service and demand database, USD 0.25 for the persistent disk, and USD 0.90 for 1 GB storage on each of the three suspended role databases. This is not a billing cap. Bandwidth, build-minute, tax or other usage-based charges can be additional. The Render review screen is authoritative immediately before deployment.
+The previously documented steady base was approximately USD 14.45 per month including USD 0.25 for the persistent disk. Removing the disk would remove that disk charge. This is not a billing cap. Bandwidth, build-minute, tax or other usage-based charges can be additional. The Render review screen is authoritative immediately before deployment.
 
 The owner approved creating the unified resources. Render suspension is an operational action rather than a Blueprint field: after creation, suspend the identity, ballot and management databases and leave only `openvote` plus `openvote-demand` active. Suspended database storage remains billable.
 
@@ -42,9 +42,9 @@ In the retained in-app Browser session, open the local demand page and verify th
 
 ## Unified full-stack environment
 
-The same environment also declares the three role databases from issue [#51](https://github.com/Lontkovsky/openvote/issues/51). During demand collection and browser-only demo access they remain suspended. The static demo uses no platform database. The full Docker runtime is not active and the attached disk remains uninitialized in this phase.
+The same environment also declares the three role databases from issue [#51](https://github.com/Lontkovsky/openvote/issues/51). During demand collection and browser-only demo access they remain suspended. The static demo uses no platform database. The full Docker runtime is not active. The previously reserved disk remains attached pending its separately authorized removal; its current contents have not been inspected.
 
-The future full-platform cutover reuses the same `openvote` service and disk: switch the Dockerfile/environment variables and compute plan, resume the three role databases, add the wildcard domain, and suspend `openvote-demand`. Do not start the full runtime without the attached persistent key state.
+The future full-platform cutover reuses the same `openvote` service: provision and attach a persistent disk, switch the Dockerfile/environment variables and compute plan, resume the three role databases, add the wildcard domain, and suspend `openvote-demand`. Do not start the full runtime without its attached persistent key state.
 
 ## Deployed resources and DNS
 
