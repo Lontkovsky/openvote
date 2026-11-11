@@ -293,6 +293,10 @@
   line-height: 1.4;
 }
 
+@media (max-width: 600px), (min-width: 901px) and (max-width: 1000px) {
+  .demand-hero-quote { min-height: 4.2em; }
+}
+
 .demand-hero-quote-slider {
   max-width: 700px;
   margin-bottom: 20px;
