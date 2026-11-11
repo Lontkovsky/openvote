@@ -10,6 +10,7 @@ it('permits only the observed GTM image endpoint on the demand CSP', async () =>
     const platformCsp = (await platform.inject({ method: 'GET', url: '/health' })).headers['content-security-policy'];
     expect(demandCsp).toContain("img-src 'self' data: https://www.google-analytics.com https://www.googletagmanager.com/td;");
     expect(demandCsp).toContain("script-src 'self' https://www.googletagmanager.com;");
+    expect(demandCsp).toContain("font-src 'self' https: data:;");
     expect(demandCsp).not.toContain("'unsafe-eval'");
     expect(platformCsp).not.toContain('googletagmanager.com');
     expect(platformCsp).not.toContain('google-analytics.com');

@@ -365,6 +365,7 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
+  min-height: 457px;
   padding: 34px;
   border-radius: 24px;
   background: var(--demand-surface-dark);
@@ -1127,10 +1128,6 @@
 }
 
 @media (min-width: 901px) {
-  .demand-hero-poll {
-    min-height: 457px;
-  }
-
   .demand-hero-poll form .demand-answers {
     transform: translateY(24px);
   }
@@ -1417,3 +1414,10 @@
   }
 }
 
+@media (max-width: 320px) {
+  .demand-hero-poll { min-height: 480px; }
+}
+
+@media (max-width: 270px) {
+  .demand-hero-poll { min-height: 530px; }
+}

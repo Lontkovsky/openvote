@@ -58,7 +58,9 @@ export default defineConfig(({ mode }) => {
     plugins: [react(), ...(mode === 'demand' ? [demandIndex()] : [])],
     publicDir: mode === 'demand' ? resolve(import.meta.dirname, 'demand-public') : mode === 'demand-ssr' ? false : resolve(import.meta.dirname, 'public'),
     build: mode === 'demand'
-      ? { sourcemap: false, target: 'es2023', outDir: 'dist-demand', rollupOptions: { input: { demand: resolve(import.meta.dirname, 'demand.html'), demo: resolve(import.meta.dirname, 'demo.html'), info: resolve(import.meta.dirname, 'public-info.html') } } }
+      ? { sourcemap: false, target: 'es2023', outDir: 'dist-demand',
+          assetsInlineLimit: filePath => filePath.endsWith('manrope-cyrillic-wght-normal.woff2') ? true : undefined,
+          rollupOptions: { input: { demand: resolve(import.meta.dirname, 'demand.html'), demo: resolve(import.meta.dirname, 'demo.html'), info: resolve(import.meta.dirname, 'public-info.html') } } }
       : mode === 'demand-ssr'
         ? {
             sourcemap: false,
