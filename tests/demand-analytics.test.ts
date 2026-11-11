@@ -43,6 +43,19 @@ describe('demand analytics bootstrap', () => {
     expect(script.src).toBe('https://www.googletagmanager.com/gtm.js?id=GTM-K2V4DRSD');
 
     trackDemandAnalytics({ name: 'support_launch_click', location: 'header' });
-    expect(entries[1]).toEqual(['event', 'support_launch_click', { location: 'header' }]);
+    trackDemandAnalytics({ name: 'section_view', section: 'faq' });
+    trackDemandAnalytics({ name: 'faq_open', item: 1 });
+    trackDemandAnalytics({ name: 'video_start' });
+    trackDemandAnalytics({ name: 'video_complete' });
+    trackDemandAnalytics({ name: 'taras_open' });
+    for (const command of entries.slice(1)) {
+      expect(Object.prototype.toString.call(command)).toBe('[object Arguments]');
+    }
+    expect(entries[1]).toMatchObject({ 0: 'event', 1: 'support_launch_click', 2: { location: 'header' } });
+    expect(entries[2]).toMatchObject({ 0: 'event', 1: 'section_view', 2: { section: 'faq' } });
+    expect(entries[3]).toMatchObject({ 0: 'event', 1: 'faq_open', 2: { item: 1 } });
+    expect(entries[4]).toMatchObject({ 0: 'event', 1: 'video_start' });
+    expect(entries[5]).toMatchObject({ 0: 'event', 1: 'video_complete' });
+    expect(entries[6]).toMatchObject({ 0: 'event', 1: 'taras_open' });
   });
 });
