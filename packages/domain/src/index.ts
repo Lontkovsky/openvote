@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+if (typeof window !== 'undefined' && import.meta.env.MODE === 'demand') z.config({ jitless: true });
+
 export const Environment = z.enum(['development', 'test', 'demo']);
 export const PollState = z.enum(['Draft', 'Review', 'Scheduled', 'Open', 'Closed', 'Tallying', 'Published', 'Rejected', 'Cancelled', 'Invalidated', 'ResultsSuppressed']);
 export const Answers = ['Підтримую', 'Не підтримую', 'Утримуюсь'] as const;
