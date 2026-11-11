@@ -198,7 +198,7 @@ export async function application<T extends Pick<ConfigType, 'environment' | 'ro
           directives: {
             scriptSrc: ["'self'", 'https://www.googletagmanager.com'],
             connectSrc: ["'self'", 'https://www.google-analytics.com', 'https://region1.google-analytics.com'],
-            imgSrc: ["'self'", 'data:', 'https://www.google-analytics.com'],
+            imgSrc: ["'self'", 'data:', 'https://www.google-analytics.com', 'https://www.googletagmanager.com/td'],
           },
         },
       }

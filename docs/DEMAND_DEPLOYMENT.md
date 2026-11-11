@@ -143,6 +143,8 @@ The pre-change hosted landing downloaded `gtm.js?id=GTM-K2V4DRSD` but emitted no
 
 The retained in-app Browser then loaded `https://openvote.com.ua/` and observed the exact GTM script followed by a real `region1.google-analytics.com/g/collect` request containing `tid=G-8TVPBMKS6X`, `en=page_view` and the production document URL. No cookie-consent banner or dialog was present. A separate hosted `https://openvote.com.ua/demo/` tab displayed the demo catalogue and loaded zero GTM, Google Analytics or collection resources. Warning/error logs were empty in both tabs, and no production demand response was submitted.
 
+The demand CSP also permits the exact GTM image path `https://www.googletagmanager.com/td`, observed in a later Lighthouse report. This is a path-limited image permission, not a wildcard, a change to `script-src`, or a permission for other platform services. The request is controlled by the existing external GTM container and can include the page URL and diagnostic parameters; its full contents are outside the application-owned custom-event contract.
+
 ## Public search and answer-engine discovery
 
 Issue [#110](https://github.com/Lontkovsky/openvote/issues/110) owns the repository-controlled SEO and answer-engine surface. The same demand image builds and serves five direct, trailing-slash public routes: `/about/`, `/how-it-works/`, `/methodology/`, `/privacy/` and `/faq/`. Every route contains pre-rendered Ukrainian content, one H1, a unique title and description, a canonical URL, Open Graph and Twitter metadata, and Organization, WebSite, WebPage and BreadcrumbList structured data. The FAQ route additionally contains the same twenty-three approved FAQ entries in visible HTML and FAQPage structured data.
