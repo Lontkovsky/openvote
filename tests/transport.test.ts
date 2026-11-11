@@ -2,6 +2,23 @@ import { describe, expect, it, vi } from 'vitest';
 import { setTimeout } from 'node:timers/promises';
 import { application, serviceResourceLimits } from '../apps/api/src/common.ts';
 
+it('permits only the observed GTM image endpoint on the demand CSP', async () => {
+  const demand = await application({ environment: 'test', role: 'demand' }, 'http://localhost:5173');
+  const platform = await application({ environment: 'test', role: 'management' }, 'http://localhost:5173');
+  try {
+    const demandCsp = (await demand.inject({ method: 'GET', url: '/health' })).headers['content-security-policy'];
+    const platformCsp = (await platform.inject({ method: 'GET', url: '/health' })).headers['content-security-policy'];
+    expect(demandCsp).toContain("img-src 'self' data: https://www.google-analytics.com https://www.googletagmanager.com/td;");
+    expect(demandCsp).toContain("script-src 'self' https://www.googletagmanager.com;");
+    expect(demandCsp).not.toContain("'unsafe-eval'");
+    expect(platformCsp).not.toContain('googletagmanager.com');
+    expect(platformCsp).not.toContain('google-analytics.com');
+  } finally {
+    await demand.close();
+    await platform.close();
+  }
+});
+
 it('rejects request bodies above the shared limit', async () => {
   const app = await application({ environment: 'test', role: 'management', port: 0, serviceToken: 'test-body-limit-token-not-a-real-secret' }, 'http://localhost:5173');
   app.post('/bounded-body', async () => ({ accepted: true }));
