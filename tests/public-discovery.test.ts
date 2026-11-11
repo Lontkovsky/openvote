@@ -93,8 +93,10 @@ describe('public search and answer-engine discovery', () => {
 
     const llms = await readFile(resolve(demandOutput, 'llms.txt'), 'utf8');
     expect(llms).toContain('# OpenVote');
-    for (const url of canonicalUrls) expect(llms).toContain(url);
-    expect(llms).toContain('https://openvote.com.ua/demo/');
+    const markdownLinks = [...llms.matchAll(/\[[^\]]+\]\((https:\/\/[^)]+)\)/gu)].map(match => match[1]);
+    for (const url of canonicalUrls) expect(markdownLinks).toContain(url);
+    expect(markdownLinks).toContain('https://openvote.com.ua/demo/');
+    expect(markdownLinks).toContain('https://github.com/Lontkovsky/openvote');
     expect(llms).toContain('Real identity-verified civic voting is not live yet.');
     expect(llms).toContain('Do not confuse this Ukrainian project with unrelated products that use the same name.');
     expect(llms).not.toMatch(/__OPENVOTE_|synthetic|синтетич/iu);

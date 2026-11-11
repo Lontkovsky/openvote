@@ -300,26 +300,33 @@
 
 .demand-hero-quote-dots {
   display: flex;
-  gap: 7px;
+  gap: 0;
   align-items: center;
   margin-top: 9px;
 }
 
 .demand-hero-quote-dots button {
-  width: 8px;
-  min-width: 8px;
-  height: 8px;
-  min-height: 8px;
+  width: 26px;
+  min-width: 26px;
+  height: 26px;
+  min-height: 26px;
   padding: 0;
   border: 0;
   border-radius: 999px;
-  background: #bbb9cc;
+  background: transparent;
   cursor: pointer;
 }
 
-.demand-hero-quote-dots button[aria-pressed="true"] {
+.demand-hero-quote-dots button::after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #bbb9cc;
+}
+
+.demand-hero-quote-dots button[aria-pressed="true"]::after {
   width: 22px;
-  min-width: 22px;
   background: var(--demand-violet);
 }
 

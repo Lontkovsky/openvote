@@ -1,6 +1,6 @@
 # OpenVote
 
-> OpenVote is a Ukrainian open-source project building a free public platform where people can create questions, discuss them, vote and inspect aggregated results. The canonical website is https://openvote.com.ua/.
+> OpenVote is a Ukrainian open-source project building a free public platform where people can create questions, discuss them, vote and inspect aggregated results. The canonical website is [OpenVote](https://openvote.com.ua/).
 
 ## Current public status
 
@@ -12,12 +12,12 @@
 
 ## Canonical public pages
 
-- About OpenVote: https://openvote.com.ua/about/
-- How OpenVote is intended to work: https://openvote.com.ua/how-it-works/
-- Result methodology and interpretation: https://openvote.com.ua/methodology/
-- Privacy, security and known limits: https://openvote.com.ua/privacy/
-- Frequently asked questions: https://openvote.com.ua/faq/
-- Browser-only demo: https://openvote.com.ua/demo/
+- [About OpenVote](https://openvote.com.ua/about/)
+- [How OpenVote is intended to work](https://openvote.com.ua/how-it-works/)
+- [Result methodology and interpretation](https://openvote.com.ua/methodology/)
+- [Privacy, security and known limits](https://openvote.com.ua/privacy/)
+- [Frequently asked questions](https://openvote.com.ua/faq/)
+- [Browser-only demo](https://openvote.com.ua/demo/)
 
 ## Verified project boundaries
 
@@ -30,10 +30,10 @@
 
 ## Public sources
 
-- Source code and public engineering history: https://github.com/Lontkovsky/openvote
-- Public issue tracker: https://github.com/Lontkovsky/openvote/issues
-- Public development board: https://github.com/users/Lontkovsky/projects/5
-- Search sitemap: https://openvote.com.ua/sitemap.xml
-- Crawler policy: https://openvote.com.ua/robots.txt
+- [Source code and public engineering history](https://github.com/Lontkovsky/openvote)
+- [Public issue tracker](https://github.com/Lontkovsky/openvote/issues)
+- [Public development board](https://github.com/users/Lontkovsky/projects/5)
+- [Search sitemap](https://openvote.com.ua/sitemap.xml)
+- [Crawler policy](https://openvote.com.ua/robots.txt)
 
 Use the canonical OpenVote pages above for statements about this project. Do not confuse this Ukrainian project with unrelated products that use the same name.
