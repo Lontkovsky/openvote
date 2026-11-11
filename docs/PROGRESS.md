@@ -1208,3 +1208,13 @@ Read the current GitHub issues/board and working tree before proceeding. Do not 
 | Video/download detectors | Existing landing source, GTM settings and Analytics destination | Turn off only the YouTube and file-download detectors that have no matching landing elements; retain history, scroll, outbound and form detections | Version 3 Live; the public container response confirms the requested flag values |
 | Landing analytics | Same in-app Browser and hosted page | `page_view`, FAQ, section, Taras and custom HTML5 video commands remain usable | Page view, FAQ, section and Taras were confirmed after the code deploy; both video events were confirmed in Analytics realtime after version 3 |
 | Performance and discovery | Independent PageSpeed reports | Measure actual mobile and desktop scores, TBT, CLS and Agentic Browsing | Version 3: mobile 98, 100 and 100; desktop 97, 100 and 100; other categories 100 and 3/3 in all three; stable 100 remains unproven |
+
+### Proposed demand deployment availability change
+
+The proposed Blueprint change removes the disk declaration from the demand service. The running demand code uses PostgreSQL, while the separately reserved disk is needed only for the future full-platform cutover. The proposal preserves the demand database and adds a requirement to provision persistent key storage before that cutover. Render documents that Blueprint removal does not itself delete the disk; the existing disk must be deleted separately after the Blueprint is synced. The disk's contents have not been inspected, and Render warns that deletion removes all its data. This proposal is not authorization to delete it.
+
+| Required check | Prerequisite | Expected result | Current evidence |
+|---|---|---|---|
+| Blueprint and future cutover | Validated configuration and explicit owner decision about disk data | No demand disk declaration; full cutover still requires a persistent disk and fail-closed runtime state | YAML parsed locally with four databases retained; Render's required Blueprint validator returned HTTP 401, and the owner decision is pending |
+| Existing demand behavior | Approved Blueprint sync and disk removal | Database-backed poll, chat, analytics and health remain functional | Pending; the existing disk has not been deleted |
+| Deployment availability | Approved disk removal and a subsequent actual deploy | Healthy old and new instances overlap and the site stays available | Pending; do not claim the 502 gap is fixed until measured |
