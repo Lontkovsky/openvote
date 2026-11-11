@@ -115,4 +115,15 @@ describe('public search and answer-engine discovery', () => {
     expect(demo).not.toContain('googletagmanager.com');
     expect(demo).not.toContain('google-analytics.com');
   });
+
+  it('preloads the same Cyrillic font used by the built landing stylesheet', async () => {
+    const root = await readFile(resolve(demandOutput, 'demand.html'), 'utf8');
+    const preload = /<link rel="preload" href="(data:font\/woff2;base64,[^"]+)" as="font" type="font\/woff2" crossorigin\s*\/>/u.exec(root)?.[1];
+    if (preload === undefined) throw new Error('DEMAND_FONT_PRELOAD_MISSING');
+    const expectedFont = await readFile(resolve('apps/web/node_modules/@fontsource-variable/manrope/files/manrope-cyrillic-wght-normal.woff2'));
+    expect(Buffer.from(preload.slice('data:font/woff2;base64,'.length), 'base64').equals(expectedFont)).toBe(true);
+    const paths = [...root.matchAll(/<link rel="stylesheet"[^>]*href="(\/assets\/[^"]+\.css)"/gu)].map(match => match[1]);
+    const stylesheets = await Promise.all(paths.map(path => readFile(resolve(demandOutput, `.${path}`), 'utf8')));
+    expect(stylesheets.some(css => css.includes(preload))).toBe(true);
+  });
 });
