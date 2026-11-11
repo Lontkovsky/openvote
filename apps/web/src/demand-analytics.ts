@@ -18,7 +18,7 @@ let analyticsEnabled = false;
 export function enableDemandAnalytics(containerId: string): void {
   window.dataLayer ??= [];
   window.dataLayer.push({ 'gtm.start': Date.now(), event: 'gtm.js' });
-  window.gtag = (...arguments_: unknown[]) => { window.dataLayer.push(arguments_); };
+  window.gtag = function () { window.dataLayer.push(arguments); };
   const source = new URL('https://www.googletagmanager.com/gtm.js');
   source.searchParams.set('id', containerId);
   const script = document.createElement('script');
